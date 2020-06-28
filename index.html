@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Type" content="text/html charset=utf-8">
 </head>
 
 <body>
@@ -13,18 +13,29 @@
 
   <!-- Allow the C++ to access the canvas element --> 
   <script type='text/javascript'>
-    const canvasEl = document.getElementById('canvas');
+    const canvasEl = document.getElementById('canvas')
     var Module = {
       canvas: canvasEl
-    };
+    }
 
     async function loadFile(src) {
-      const blob = await fetch(src).then(resp => resp.blob());
-      const pointer = _createBuffer(blob.size);
-      Module.HEAP8.set(await blob.arrayBuffer(), pointer);
+      const blob = await fetch(src).then(resp => resp.blob())
+      const pointer = _CPP_createBuffer(blob.size)
+      const buffer = await blob.arrayBuffer()
+
+      const data = new Uint8ClampedArray(buffer)
+      Module.HEAP8.set(data, pointer)
+
       return pointer
     }
-    loadFile("./data/aerowalk.bsp")
+
+    (async function () {
+      // Load assets
+      const aerowalkPointer = await loadFile("./data/aerowalk.bsp")
+      console.log('finished downloading aerowalk')
+      _CPP_setCurrentMap(aerowalkPointer)
+      _CPP_start()
+    })();
 
     function testGlobalJS() {
       console.warn("JS called from JS")
@@ -36,8 +47,8 @@
 
   <!-- Allow the javascript to call C++ functions -->
   <script type='text/javascript'>
-    canvasEl.addEventListener('click', _onClick, false);
-    canvasEl.addEventListener('touchend', _onClick, false);
+    canvasEl.addEventListener('click', _CPP_onClick, false)
+    canvasEl.addEventListener('touchend', _CPP_onClick, false)
   </script>
 
   <!-- Thank you Tim Hutton! https://github.com/timhutton/opengl-canvas-wasm -->
