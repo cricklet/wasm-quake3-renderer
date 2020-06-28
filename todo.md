@@ -4,7 +4,7 @@ Initial work
 
 Injesting a BSP
  - [x] Load a .bsp into JS memory
- - [ ] Load that .bsp into C++
+ - [x] Load that .bsp into C++
  - [ ] Start writing helpers which can traverse the .bsp format
  - [ ] https://www.slideshare.net/JasonCalvert9/quake3bsprendering (p. 13)
  - [ ] http://www.mralligator.com/q3/
