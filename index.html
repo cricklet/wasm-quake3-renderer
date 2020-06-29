@@ -38,17 +38,22 @@
       return pointer
     }
 
-    (async function () {
+    async function loadAssets() {
       // Load assets
       const aerowalkPointer = await loadFile("./data/aerowalk.bsp")
       _CPP_setCurrentMap(aerowalkPointer)
-      
+
       const vertShader = await loadFile("./shader/test.vert")
       const fragShader = await loadFile("./shader/test.frag")
-      _CPP_createShaderProgram("test", vertShader, fragShader)
+      const success = _CPP_createShaderProgram(0, vertShader, fragShader)
+      if (success) {
+        _CPP_start()
+      } else {
+        console.error('failed to create shader program')
+      }
+    }
 
-      _CPP_start()
-    })();
+    loadAssets();
 
     function testGlobalJS() {
       console.warn("JS called from JS")

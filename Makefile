@@ -1,5 +1,5 @@
 CC = emcc
-OPTS =  -O1 -std=c++17 -s USE_SDL=2 -s USE_WEBGL2=1 -s MAX_WEBGL_VERSION=2 -s FULL_ES3=1 -I /usr/local/include
+OPTS =  -O1 -std=c++17 -s USE_SDL=2 -s USE_WEBGL2=1 -s MAX_WEBGL_VERSION=2 -s FULL_ES3=1 -I /usr/local/include -g
 #  -s FULL_ES3=1
 
 CPP_FILES := $(wildcard *.cpp)

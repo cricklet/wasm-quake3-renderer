@@ -8,14 +8,15 @@ const BSPMap* currentMap = nullptr;
 
 bool started = false;
 
-unordered_map<string, GLuint> shaderPrograms = {};
+int TEST_SHADER = 0;
+unordered_map<int, GLuint> shaderPrograms = {};
 
-std::function<void()> renderShader;
+optional<std::function<void()>> currentRenderer;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Working through open.gl again...
 
-std::function<void()> generateTestShader() {
+optional<std::function<void()>> generateTestShader() {
   static float vertices[] = {
     0.0f,  0.5f, // Vertex 1 (X, Y)
     0.5f, -0.5f, // Vertex 2 (X, Y)
@@ -35,10 +36,14 @@ std::function<void()> generateTestShader() {
 
   ////////////////////////////////////////////////////////////////////////////
   // Get the test shader program
-  GLuint program = shaderPrograms.at("test");
+  if (shaderPrograms.count(TEST_SHADER) == 0) {
+    cout << "shader missing\n";
+    return {};
+  }
+  GLuint program = shaderPrograms.at(TEST_SHADER);
 
-  // // Make sure we render the "outColor" from the program
-  // glBindFragDataLocationIndexed(program, 0, 0, "outColor");
+  // Make sure we render the "outColor" from the program
+  glBindFragDataLocationIndexed(program, 0, 0, "outColor"); /// ??????
 
   // And use our vertices VBO above to input into "position"
   GLint posAttrib = glGetAttribLocation(program, "position");
@@ -50,9 +55,13 @@ std::function<void()> generateTestShader() {
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
 
-  return [&]() {
+  return [=]() {
+    glClearColor ( 0.0, 1.0, 1.0, 1.0 );
+    glClear ( GL_COLOR_BUFFER_BIT );
+
     glUseProgram(program);
     glDrawArrays(GL_TRIANGLES, 0, 3);
+    hasErrors();
   };
 }
 
@@ -75,12 +84,15 @@ extern "C" {
     currentMap = (const BSPMap*) pointer;
   }
 
-  EMSCRIPTEN_KEEPALIVE bool CPP_createShaderProgram(const char* name, const void* vert, const void* frag) {
+  EMSCRIPTEN_KEEPALIVE bool CPP_createShaderProgram(int shaderID, const void* vert, const void* frag) {
+    cout << "starting to compile shaders for " << shaderID << "\n";
     optional<GLuint> shaderProgram = compileShaderProgram((const char*) vert, (const char*) frag);
     if (shaderProgram) {
-      shaderPrograms[name] = *shaderProgram;
+      cout << "adding shader program for " << shaderID << "\n";
+      shaderPrograms[shaderID] = *shaderProgram;
       return true;
     }
+    cerr << "failed to create shader program\n";
     return false;
   }
 
@@ -89,7 +101,7 @@ extern "C" {
     BSP::debugString(currentMap);
 
     // Setup shader!
-    renderShader = generateTestShader();
+    currentRenderer = generateTestShader();
   }
 }
 
@@ -110,14 +122,13 @@ void mainLoop() {
 int main() {
   testJS();
 
-  SDL_Window *window;
-  SDL_Renderer *renderer = NULL;
-  SDL_CreateWindowAndRenderer(512, 512, SDL_WINDOW_OPENGL, &window, &renderer);
+  EmscriptenWebGLContextAttributes attr;
+  emscripten_webgl_init_context_attributes(&attr);
+  attr.majorVersion = 3;
+  attr.minorVersion = 0;
+  EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context("#canvas", &attr);
 
-  // glewExperimental = GL_TRUE;
-  // if (GLEW_OK != glewInit()) {
-  //   cerr << "Error setting up glew\n";
-  // }
+  emscripten_webgl_make_context_current(ctx);
 
   printf("OpenGL version supported by this platform : %s\n", glGetString(GL_VERSION));
 
@@ -126,8 +137,13 @@ int main() {
       return;
     }
 
-    // renderShader();
-    SDL_GL_SwapWindow(window);
+    glClearColor ( 0.0, 0.0, 1.0, 1.0 );
+    glClear ( GL_COLOR_BUFFER_BIT );
+
+    if (currentRenderer) {
+      printf("qwert\n");
+      (*currentRenderer)();
+    }
   };
 
   emscripten_set_main_loop(mainLoop, 0, true);

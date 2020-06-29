@@ -1,7 +1,7 @@
 #include "gl_helpers.h"
 
 bool _hasErrors(const char *filename, int line) {
-  bool errored = true;
+  bool errored = false;
 
   GLenum error;
   while ((error = glGetError()) != GL_NO_ERROR) {
@@ -27,7 +27,7 @@ bool _hasErrors(const char *filename, int line) {
 
     // cerr << "GL_" << str.c_str() << "\n";
     cerr << "GL_" << str.c_str() << " - " << filename << ":" << line << "\n";
-    errored = false;
+    errored = true;
   }
 
   return errored;

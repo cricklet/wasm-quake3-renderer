@@ -2,14 +2,15 @@
 #define SUPPORT_H
 
 #include <emscripten.h>
+#include <emscripten/html5.h>
 
 // Window, renderer, input
 #include <SDL2/SDL.h>
-// #include <SDL2/SDL_opengles2.h>
 
 // OpenGL extensions
 // #define GLEW_STATIC
 // #include <GL/glew.h>
+// #include <SDL2/SDL_opengles2.h>
 #include <GLES3/gl3.h>
 
 #include <stdlib.h>
