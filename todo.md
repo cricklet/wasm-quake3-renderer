@@ -12,15 +12,16 @@ Injesting a BSP
  - [ ] http://www.gamers.org/dEngine/quake/spec/quake-spec34/qkspec_4.htm
 
 Getting a pipeline started:
- - [ ] Load a GLSL file
+ - [x] Load a GLSL file
+ - [x] Get GLSL version 300 to load
+ - [ ] Try out GLFW
  - [ ] Render a triangle
 
 Ramping up WebGL:
  - [ ] Draw a cube w/ WebGL
- - [ ] Rotate the cube around with mouse input
  - [ ] Capture mouse input
  - [ ] Capture WASD
- - [ ] Fly around the scene
+ - [ ] Fly around the cube
 
 Rendering faces
 
@@ -33,3 +34,30 @@ Render only visible leaves
 
 Render collision faces (for debugging)
 
+Player physics (ground + gravity, walking, jumping)
+
+Player physics (wall collisions)
+
+VQ3 physics (strafe jumping!)
+
+Rendering + lighting player model (3rd person)
+
+Animating player model
+
+Bots that can navigate
+
+Railgun
+
+Lightning gun
+
+Rockets
+
+Bots that can fight back!
+
+Partical effects (explosions)
+
+Sounds (weapons, footsteps)
+
+Spatial sound engine
+
+Game scripting (lua?)
