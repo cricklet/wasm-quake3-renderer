@@ -1,47 +1,69 @@
-#include <functional>
-#include <stdlib.h>
-#include <emscripten.h>
-#include <SDL.h>
 
-#define GL_GLEXT_PROTOTYPES 1
-#include <SDL_opengles2.h>
-
-namespace BSP {
-  typedef struct {
-    int offset;
-    int length;
-  } direntry_t;
-
-  typedef struct {
-    char magic[4];
-    int version;
-    direntry_t direntries[17];
-  } header_t;
-
-  void debugString(const BSP::header_t* header) {
-    printf("map {\n");
-    printf(" magic: %s\n", header->magic);
-    printf(" version: %d\n", header->version);
-    for (const direntry_t& entry : header->direntries) {
-      printf(" entry offset: %d, size: %d\n", entry.offset, entry.length);
-    }
-    printf("}\n");
-  }
-};
+#include "support.h"
+#include "bsp.h"
+#include "gl_helpers.h"
 
 using BSPMap = BSP::header_t;
 const BSPMap* currentMap = nullptr;
 
 bool started = false;
 
+unordered_map<string, GLuint> shaderPrograms = {};
+
+std::function<void()> renderShader;
+
+///////////////////////////////////////////////////////////////////////////////
+// Working through open.gl again...
+
+std::function<void()> generateTestShader() {
+  static float vertices[] = {
+    0.0f,  0.5f, // Vertex 1 (X, Y)
+    0.5f, -0.5f, // Vertex 2 (X, Y)
+    -0.5f, -0.5f  // Vertex 3 (X, Y)
+  };
+
+  ////////////////////////////////////////////////////////////////////////////
+  // Generate VBO
+  GLuint vbo;
+  glGenBuffers(1, &vbo);
+
+  // Choose the vbo...
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+  // Copy the vertex data into the vbo
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+  ////////////////////////////////////////////////////////////////////////////
+  // Get the test shader program
+  GLuint program = shaderPrograms.at("test");
+
+  // // Make sure we render the "outColor" from the program
+  // glBindFragDataLocationIndexed(program, 0, 0, "outColor");
+
+  // And use our vertices VBO above to input into "position"
+  GLint posAttrib = glGetAttribLocation(program, "position");
+  glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+  glEnableVertexAttribArray(posAttrib);
+
+  // And save this attribute configuration as a vao (vertex array object)
+  GLuint vao;
+  glGenVertexArrays(1, &vao);
+  glBindVertexArray(vao);
+
+  return [&]() {
+    glUseProgram(program);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+  };
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // => C++
 
 extern "C" {
-  void EMSCRIPTEN_KEEPALIVE CPP_onClick() { printf("onClick\n"); }
+  void EMSCRIPTEN_KEEPALIVE CPP_onClick() { cout << "onClick\n"; }
 
   EMSCRIPTEN_KEEPALIVE void* CPP_createBuffer(int bytes) {
-    printf("malloc for %d bytes\n", bytes);
+    cout << "malloc for " <<  bytes << " bytes\n";
     return malloc(bytes * sizeof(char));
   }
 
@@ -53,9 +75,21 @@ extern "C" {
     currentMap = (const BSPMap*) pointer;
   }
 
+  EMSCRIPTEN_KEEPALIVE bool CPP_createShaderProgram(const char* name, const void* vert, const void* frag) {
+    optional<GLuint> shaderProgram = compileShaderProgram((const char*) vert, (const char*) frag);
+    if (shaderProgram) {
+      shaderPrograms[name] = *shaderProgram;
+      return true;
+    }
+    return false;
+  }
+
   EMSCRIPTEN_KEEPALIVE void CPP_start() {
     started = true;
     BSP::debugString(currentMap);
+
+    // Setup shader!
+    renderShader = generateTestShader();
   }
 }
 
@@ -77,18 +111,22 @@ int main() {
   testJS();
 
   SDL_Window *window;
-  SDL_CreateWindowAndRenderer(640, 480, 0, &window, nullptr);
+  SDL_Renderer *renderer = NULL;
+  SDL_CreateWindowAndRenderer(512, 512, SDL_WINDOW_OPENGL, &window, &renderer);
 
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+  // glewExperimental = GL_TRUE;
+  // if (GLEW_OK != glewInit()) {
+  //   cerr << "Error setting up glew\n";
+  // }
+
+  printf("OpenGL version supported by this platform : %s\n", glGetString(GL_VERSION));
 
   loop = [&] {
     if (!started) {
       return;
     }
 
+    // renderShader();
     SDL_GL_SwapWindow(window);
   };
 

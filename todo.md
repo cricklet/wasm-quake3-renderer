@@ -11,6 +11,10 @@ Injesting a BSP
  - [ ] http://hlbsp.sourceforge.net/index.php?content=bspdef
  - [ ] http://www.gamers.org/dEngine/quake/spec/quake-spec34/qkspec_4.htm
 
+Getting a pipeline started:
+ - [ ] Load a GLSL file
+ - [ ] Render a triangle
+
 Ramping up WebGL:
  - [ ] Draw a cube w/ WebGL
  - [ ] Rotate the cube around with mouse input
