@@ -5,7 +5,8 @@
 #include <emscripten/html5.h>
 
 // Window, renderer, input
-#include <SDL2/SDL.h>
+// #include <SDL2/SDL.h>
+#include <GLFW/glfw3.h>
 
 // OpenGL extensions
 // #define GLEW_STATIC

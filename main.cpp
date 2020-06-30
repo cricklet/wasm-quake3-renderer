@@ -23,6 +23,11 @@ optional<std::function<void()>> generateTestShader() {
     -0.5f, -0.5f  // Vertex 3 (X, Y)
   };
 
+  // And save the following attribute configuration as a vao (vertex array object)
+  GLuint vao;
+  glGenVertexArrays(1, &vao);
+  glBindVertexArray(vao);
+
   ////////////////////////////////////////////////////////////////////////////
   // Generate VBO
   GLuint vbo;
@@ -40,26 +45,24 @@ optional<std::function<void()>> generateTestShader() {
     cout << "shader missing\n";
     return {};
   }
-  GLuint program = shaderPrograms.at(TEST_SHADER);
+  GLuint shaderProgram = shaderPrograms.at(TEST_SHADER);
 
   // Make sure we render the "outColor" from the program
-  glBindFragDataLocationIndexed(program, 0, 0, "outColor"); /// ??????
+  // glBindFragDataLocation(program, 0, "outColor"); /// ??????
 
-  // And use our vertices VBO above to input into "position"
-  GLint posAttrib = glGetAttribLocation(program, "position");
+  // Use the program...
+  glLinkProgram(shaderProgram);
+  glUseProgram(shaderProgram);
+
+  // Specify the layout of the vertices
+  GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
   glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(posAttrib);
 
-  // And save this attribute configuration as a vao (vertex array object)
-  GLuint vao;
-  glGenVertexArrays(1, &vao);
-  glBindVertexArray(vao);
-
   return [=]() {
-    glClearColor ( 0.0, 1.0, 1.0, 1.0 );
-    glClear ( GL_COLOR_BUFFER_BIT );
+    glClearColor(0.0, 1.0, 1.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
 
-    glUseProgram(program);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     hasErrors();
   };
@@ -122,13 +125,18 @@ void mainLoop() {
 int main() {
   testJS();
 
-  EmscriptenWebGLContextAttributes attr;
-  emscripten_webgl_init_context_attributes(&attr);
-  attr.majorVersion = 3;
-  attr.minorVersion = 0;
-  EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context("#canvas", &attr);
+  glfwInit();
 
-  emscripten_webgl_make_context_current(ctx);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
+  glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+
+  GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL", nullptr, nullptr); // Windowed
+
+  glfwMakeContextCurrent(window);
 
   printf("OpenGL version supported by this platform : %s\n", glGetString(GL_VERSION));
 
@@ -137,13 +145,12 @@ int main() {
       return;
     }
 
-    glClearColor ( 0.0, 0.0, 1.0, 1.0 );
-    glClear ( GL_COLOR_BUFFER_BIT );
-
     if (currentRenderer) {
-      printf("qwert\n");
       (*currentRenderer)();
     }
+
+    glfwSwapBuffers(window);
+    glfwPollEvents();
   };
 
   emscripten_set_main_loop(mainLoop, 0, true);
