@@ -14,8 +14,8 @@ Injesting a BSP
 Getting a pipeline started:
  - [x] Load a GLSL file
  - [x] Get GLSL version 300 to load
- - [ ] Try out GLFW
- - [ ] Render a triangle
+ - [x] Try out GLFW
+ - [x] Render a triangle
 
 Ramping up WebGL:
  - [ ] Draw a cube w/ WebGL
