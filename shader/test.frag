@@ -1,7 +1,10 @@
 #version 300 es
 
+in lowp vec2 vertexTexCoord;
 out lowp vec4 outColor;
 
+uniform sampler2D tex;
+
 void main() {
-  outColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+  outColor = texture(tex, vertexTexCoord);
 }

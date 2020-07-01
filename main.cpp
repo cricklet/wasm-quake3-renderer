@@ -11,22 +11,39 @@ bool started = false;
 int TEST_SHADER = 0;
 unordered_map<int, GLuint> shaderPrograms = {};
 
+int CAT_TEXTURE = 0;
+unordered_map<int, GLuint> textures = {};
+
 optional<std::function<void()>> currentRenderer;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Working through open.gl again...
 
 optional<std::function<void()>> generateTestShader() {
-  static float vertices[] = {
-    0.0f,  0.5f, // Vertex 1 (X, Y)
-    0.5f, -0.5f, // Vertex 2 (X, Y)
-    -0.5f, -0.5f  // Vertex 3 (X, Y)
+  float vertices[] = {
+    // Position   Texcoords
+    -0.5f,  0.5f, 0.0f, 0.0f, // Top-left
+     0.5f,  0.5f, 1.0f, 0.0f, // Top-right
+     0.5f, -0.5f, 1.0f, 1.0f, // Bottom-right
+    -0.5f, -0.5f, 0.0f, 1.0f  // Bottom-left
+  };
+  GLuint elements[] = {
+    0, 1, 2,
+    2, 3, 0
   };
 
   // And save the following attribute configuration as a vao (vertex array object)
   GLuint vao;
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
+
+  ////////////////////////////////////////////////////////////////////////////
+  // Generate EBO
+  GLuint ebo;
+  glGenBuffers(1, &ebo);
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
 
   ////////////////////////////////////////////////////////////////////////////
   // Generate VBO
@@ -47,23 +64,30 @@ optional<std::function<void()>> generateTestShader() {
   }
   GLuint shaderProgram = shaderPrograms.at(TEST_SHADER);
 
-  // Make sure we render the "outColor" from the program
-  // glBindFragDataLocation(program, 0, "outColor"); /// ??????
-
   // Use the program...
   glLinkProgram(shaderProgram);
   glUseProgram(shaderProgram);
 
-  // Specify the layout of the vertices
+  ////////////////////////////////////////////////////////////////////////////
+  // Specify the inputs
+
+  // For the vertices
   GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
-  glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+  glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
   glEnableVertexAttribArray(posAttrib);
+
+  // And colors
+  GLint texAttrib = glGetAttribLocation(shaderProgram, "texCoord");
+  glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*) (2 * sizeof(float)));
+  glEnableVertexAttribArray(texAttrib);
 
   return [=]() {
     glClearColor(0.0, 1.0, 1.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    // glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawElements(GL_TRIANGLES, sizeof(elements) / sizeof(elements[0]), GL_UNSIGNED_INT, 0);
+
     hasErrors();
   };
 }
@@ -97,6 +121,31 @@ extern "C" {
     }
     cerr << "failed to create shader program\n";
     return false;
+  }
+
+  EMSCRIPTEN_KEEPALIVE bool CPP_createTexture(int textureID, const void* image, int width, int height) {
+    GLuint tex;
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, image);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    if (hasErrors()) {
+      cout << "failed to load texture\n";
+      return false;
+    }
+
+    textures[textureID] = tex;
+    return true;
   }
 
   EMSCRIPTEN_KEEPALIVE void CPP_start() {

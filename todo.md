@@ -11,17 +11,24 @@ Injesting a BSP
  - [ ] http://hlbsp.sourceforge.net/index.php?content=bspdef
  - [ ] http://www.gamers.org/dEngine/quake/spec/quake-spec34/qkspec_4.htm
 
-Getting a pipeline started:
+Getting a WebGL pipeline started:
  - [x] Load a GLSL file
  - [x] Get GLSL version 300 to load
  - [x] Try out GLFW
  - [x] Render a triangle
+ - [x] Drawing polygons (open.gl)
+ - [ ] Textures (open.gl)
+ - [ ] Transformations (open.gl)
+ - [ ] Depth and stencils (open.gl)
+ - [ ] Framebuffers (open.gl)
 
 Ramping up WebGL:
  - [ ] Draw a cube w/ WebGL
  - [ ] Capture mouse input
  - [ ] Capture WASD
  - [ ] Fly around the cube
+
+Generate C++ <=> TS bindings from a schema file
 
 Rendering faces
 
@@ -61,3 +68,6 @@ Sounds (weapons, footsteps)
 Spatial sound engine
 
 Game scripting (lua?)
+
+Docs to read
+ - [ ] https://fabiensanglard.net/quake3/
