@@ -1,3 +1,7 @@
+// import { TEST } from 'helper'
+
+// console.warn(TEST)
+
 canvasEl.addEventListener('click', _CPP_onClick, false)
 canvasEl.addEventListener('touchend', _CPP_onClick, false)
 

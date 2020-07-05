@@ -1,21 +1,20 @@
-CC = emcc
 OPTS =  -O3 -std=c++17 -s USE_WEBGL2=1 -s USE_GLFW=3 -s FULL_ES3=1 -I /usr/local/include -g
-#  -s FULL_ES3=1
+TSC_OPTS = --strictNullChecks --noImplicitAny
 
-CPP_FILES := $(wildcard cpp/*.cpp)
+CPP_FILES := $(wildcard src/cpp/*.cpp)
 OBJ_FILES := $(addprefix output/, $(notdir $(CPP_FILES:.cpp=.bc)))
 
-all: main
+all: tsc main
 
 main: $(OBJ_FILES)
-	$(CC) $(OPTS) -o $@ $^ --js-library js/library.js -o output/index.js
+	emcc $(OPTS) -o $@ $^ --js-library output/library.js -o output/index.js
 
-output/$(notdir %.bc): cpp/%.cpp
-	$(CC) $(OPTS) -c -o $@ $<
+output/$(notdir %.bc): src/cpp/%.cpp
+	emcc $(OPTS) -c -o $@ $<
 
-# tsc:
-# 	@- tsc -m system --outFile output/app.js ts/app.ts
-# 	@- tsc -m system --outFile output/library.js ts/library.ts
+tsc:
+	@- tsc $(TSC_OPTS) -m system --outFile output/app.js src/ts/app.ts
+	@- tsc $(TSC_OPTS) -m system --outFile output/library.js src/ts/library.ts
 
 clean:
 	@- rm -f output/*.bc
