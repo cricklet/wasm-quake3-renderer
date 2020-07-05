@@ -29,6 +29,11 @@ Ramping up WebGL:
  - [ ] Fly around the cube
 
 Generate C++ <=> TS bindings from a schema file
+ - [ ] Reorganize directory structure
+ - [ ] Setup Typescript
+ - [ ] Setup schema.json
+ - [ ] Setup generate_bindings.py
+ - [ ] Generate a ".h" file and a ".ts" definitions file
 
 Rendering faces
 

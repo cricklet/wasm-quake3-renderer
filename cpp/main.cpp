@@ -113,7 +113,7 @@ extern "C" {
 
   EMSCRIPTEN_KEEPALIVE bool CPP_createShaderProgram(int shaderID, const void* vert, const void* frag) {
     cout << "starting to compile shaders for " << shaderID << "\n";
-    optional<GLuint> shaderProgram = compileShaderProgram((const char*) vert, (const char*) frag);
+    optional<GLuint> shaderProgram = GLHelpers::compileShaderProgram((const char*) vert, (const char*) frag);
     if (shaderProgram) {
       cout << "adding shader program for " << shaderID << "\n";
       shaderPrograms[shaderID] = *shaderProgram;
@@ -124,28 +124,13 @@ extern "C" {
   }
 
   EMSCRIPTEN_KEEPALIVE bool CPP_createTexture(int textureID, const void* image, int width, int height) {
-    GLuint tex;
-    glGenTextures(1, &tex);
-    glBindTexture(GL_TEXTURE_2D, tex);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
-                 GL_UNSIGNED_BYTE, image);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    if (hasErrors()) {
-      cout << "failed to load texture\n";
-      return false;
+    optional<GLuint> tex = GLHelpers::loadTexture(image, width, height);
+    if (tex) {
+      textures[textureID] = *tex;
+      return true;
     }
 
-    textures[textureID] = tex;
-    return true;
+    return false;
   }
 
   EMSCRIPTEN_KEEPALIVE void CPP_start() {

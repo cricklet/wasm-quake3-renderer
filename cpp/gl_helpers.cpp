@@ -33,7 +33,7 @@ bool _hasErrors(const char *filename, int line) {
   return errored;
 }
 
-optional<GLuint> compileShader(const char *fileContents, GLenum shaderType) {
+optional<GLuint> GLHelpers::compileShader(const char *fileContents, GLenum shaderType) {
   GLuint shader = glCreateShader(shaderType);
   glShaderSource(shader, 1, &fileContents, NULL);
   glCompileShader(shader);
@@ -53,7 +53,7 @@ optional<GLuint> compileShader(const char *fileContents, GLenum shaderType) {
   return shader;
 }
 
-optional<GLuint> compileShaderProgram(const char* vert, const char* frag) {
+optional<GLuint> GLHelpers::compileShaderProgram(const char* vert, const char* frag) {
   optional<GLuint> vertShader = compileShader(vert, GL_VERTEX_SHADER);
   optional<GLuint> fragShader = compileShader(frag, GL_FRAGMENT_SHADER);
 
@@ -78,4 +78,28 @@ optional<GLuint> compileShaderProgram(const char* vert, const char* frag) {
   }
 
   return shaderProgram;
+}
+
+optional<GLuint> GLHelpers::loadTexture(const void* image, int width, int height) {
+  GLuint tex;
+  glGenTextures(1, &tex);
+  glBindTexture(GL_TEXTURE_2D, tex);
+
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
+                GL_UNSIGNED_BYTE, image);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  glGenerateMipmap(GL_TEXTURE_2D);
+
+  if (hasErrors()) {
+    cout << "failed to load texture\n";
+    return {};
+  }
+
+  return tex;
 }
