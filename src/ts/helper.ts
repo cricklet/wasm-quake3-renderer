@@ -1,1 +1,1 @@
-export const TEST = 'blah'
+export const TEST = 'bundling works'

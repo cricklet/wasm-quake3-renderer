@@ -2,6 +2,7 @@
 #include "support.h"
 #include "bsp.h"
 #include "gl_helpers.h"
+#include "messages.h"
 
 using BSPMap = BSP::header_t;
 const BSPMap* currentMap = nullptr;
@@ -145,9 +146,9 @@ extern "C" {
 ///////////////////////////////////////////////////////////////////////////////
 // => JS
 
-extern "C" {
-  extern void testJS();
-}
+EM_JS(void, testJS, (), {
+  console.warn("JS from C++");
+});
 
 ///////////////////////////////////////////////////////////////////////////////
 

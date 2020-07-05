@@ -1,11 +1,17 @@
-// import { TEST } from 'helper'
+import { TEST } from './helper'
+import { sendMessageToCPP } from './messages'
+console.warn(TEST)
 
-// console.warn(TEST)
-
+declare var canvasEl: HTMLElement
 canvasEl.addEventListener('click', _CPP_onClick, false)
 canvasEl.addEventListener('touchend', _CPP_onClick, false)
 
-async function loadFile(src) {
+// sendMessageToCPP({
+//   type: "TestMessage",
+//   text: "QWOIEJIOWQJEIIOWQJE"
+// })
+
+async function loadFile(src: string) {
   const blob = await fetch(src).then(resp => resp.blob())
   const pointer = _CPP_createBuffer(blob.size)
   const buffer = await blob.arrayBuffer()
@@ -17,7 +23,7 @@ async function loadFile(src) {
 }
 
 const imageCanvas = document.createElement('canvas');
-async function loadImage(src) {
+async function loadImage(src: string) {
   const imgBlob = await fetch(src).then(resp => resp.blob());
   const imageBitmap = await createImageBitmap(imgBlob);
 
@@ -26,7 +32,7 @@ async function loadImage(src) {
   imageCanvas.height = imageBitmap.height;
 
   // Draw image onto imageCanvas
-  const ctx = imageCanvas.getContext('2d');
+  const ctx = imageCanvas.getContext('2d') as CanvasRenderingContext2D;
   ctx.drawImage(imageBitmap, 0, 0);
 
   // Get image data
@@ -64,7 +70,3 @@ async function loadAssets() {
 }
 
 loadAssets();
-
-function testGlobalJS() {
-  console.warn("JS called from JS")
-}
