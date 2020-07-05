@@ -3,6 +3,7 @@
 #include "bsp.h"
 #include "gl_helpers.h"
 #include "messages.h"
+#include "bindings.h"
 
 using BSPMap = BSP::header_t;
 const BSPMap* currentMap = nullptr;
@@ -152,6 +153,20 @@ EM_JS(void, testJS, (), {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+struct MessageLogger : IMessageHandler {
+public:
+  MessageLogger() {}
+  ~MessageLogger() {}
+
+  void handleMessageFromWeb(const TestMessage& message) {
+    cout << "received test message w/ text: " << message.text << "\n";
+  }
+};
+
+shared_ptr<MessageLogger> messageLogger = make_shared<MessageLogger>();
+
+///////////////////////////////////////////////////////////////////////////////
+
 std::function<void()> loop;
 void mainLoop() {
   loop();
@@ -159,8 +174,9 @@ void mainLoop() {
 
 int main() {
   testJS();
-
-  Messages::sendMessageToWeb({ "This is a message from CPP" });
+  MessagesFromWeb::getInstance()->registerHandler(messageLogger);
+  MessageBindings::sendMessageToWeb(CPPLoaded{});
+  MessageBindings::sendMessageToWeb(TestMessage{ "This is a message from CPP" });
 
   glfwInit();
 

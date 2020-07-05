@@ -5,8 +5,7 @@
   "author": "kenrick",
   "license": "MIT",
   "scripts": {
-    "watch-tsc": "make tsc && fswatch -d src/ts make | xargs -n1 -I{} make tsc",
-    "watch-cpp": "make cpp && fswatch -d src/cpp make | xargs -n1 -I{} make cpp"
+    "watch": "fswatch -0 src/ts src/cpp generate_bindings.py schema.py | xargs -0 -n 1 -I {} sh -c 'make && echo \"\n##########\n## Done ##\n##########\n\"'"
   },
   "devDependencies": {
     "@types/emscripten": "^1.39.4",

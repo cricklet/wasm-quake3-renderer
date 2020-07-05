@@ -9,17 +9,20 @@ DEPENDS := $(patsubst %.bc,%.d, $(OBJ_FILES))
 
 TS_FILES := $(wildcard src/ts/*ts)
 
-all: tsc cpp
+all: src/cpp/bindings.h output/app.js output/index.js 
 
-tsc: $(TS_FILES) Makefile
+src/cpp/bindings.h: generate_bindings.py schema.py
+	python3 generate_bindings.py
+
+output/app.js: $(TS_FILES)
 	npx esbuild --bundle src/ts/app.ts --outfile=output/app.js --sourcemap
-	# tsc $(TSC_OPTS) --noEmit
+	tsc $(TSC_OPTS) --noEmit
 
-cpp: $(OBJ_FILES)
+output/index.js: $(OBJ_FILES)
 	emcc $(EMCC_OPTS) -o $@ $^ -o output/index.js
 
 -include $(DEPENDS)
-output/$(notdir %.bc): src/cpp/%.cpp Makefile
+output/$(notdir %.bc): src/cpp/%.cpp
 	emcc $(EMCC_OPTS) $(DEPENDENCY_OPTS) -c -o $@ $<
 
 clean:

@@ -1,26 +1,37 @@
 #include "messages.h"
+#include "bindings.h"
 
-using namespace Messages;
+#include <emscripten/bind.h>
+#include <emscripten/val.h>
 
-void Messages::sendMessageToWeb(const TestMessage& message) {
-  EM_ASM({
-    Window.handleMessageFromWeb($0);
-  }, message.toJson().c_str());
+void MessageBindings::sendMessageToCPP(string value) {
+  json j = json::parse(value);
+  MessagesFromWeb::getInstance()->sendMessage(j);
 }
 
-void Messages::handleMessageFromWeb(const TestMessage& message) {
-  printf("receieved test message %s\n", message.text.c_str());
+EMSCRIPTEN_BINDINGS(my_module) {
+  emscripten::function("sendMessageToCPP", &MessageBindings::sendMessageToCPP);
 }
 
-extern "C" {
-  void EMSCRIPTEN_KEEPALIVE sendMessageToCPP(const char* value) {
-    printf("EWOIFJEIOWJFOJEWIFJIOEWJF: %s\n", value);
-    json j = string {(const char*) value};
-    if (j["type"] == "TestMessage") {
-      TestMessage message = TestMessage::fromJson(j);
-      Messages::handleMessageFromWeb(message);
+MessagesFromWeb* MessagesFromWeb::_instance = nullptr;
+
+MessagesFromWeb* MessagesFromWeb::getInstance() {
+  if (!_instance) {
+    _instance = new MessagesFromWeb();
+  }
+
+  return _instance;
+}
+
+void MessagesFromWeb::sendMessage(const json& j) {
+  if (j["type"] == "TestMessage") {
+    TestMessage message = TestMessage::fromJson(j);
+    for (const auto& handler : _handlers) {
+      handler->handleMessageFromWeb(message);
     }
   }
 }
 
-
+void MessagesFromWeb::registerHandler(shared_ptr<IMessageHandler> handler) {
+  _handlers.push_back(handler);
+}

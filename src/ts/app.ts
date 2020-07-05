@@ -2,10 +2,6 @@ import { TEST } from './helper'
 import { sendMessageToCPP } from './messages'
 console.warn(TEST)
 
-declare var canvasEl: HTMLElement
-canvasEl.addEventListener('click', _CPP_onClick, false)
-canvasEl.addEventListener('touchend', _CPP_onClick, false)
-
 async function loadFile(src: string) {
   const blob = await fetch(src).then(resp => resp.blob())
   const pointer = _CPP_createBuffer(blob.size)
@@ -61,19 +57,35 @@ async function loadAssets() {
   _CPP_destroyBuffer(vertShader)
   _CPP_destroyBuffer(fragShader)
 
-  sendMessageToCPP({
+  Module.sendMessageToCPP(JSON.stringify({
     type: "TestMessage",
-    text: "QWOIEJIOWQJEIIOWQJE"
-  })
+    text: "This is a message from web"
+  }))
 
   _CPP_start()
 }
 
+async function start() {
+  loadAssets();
+}
+
 (function () {
   // Setup bindings
-  Window.handleMessageFromWeb = (json: string) => {
-    console.warn('received CPP => TS', JSON.parse(json))
+  window.MessageHandler = {
+    handleMessageFromCPP: (json: string) => {
+      const val = JSON.parse(json)
+      console.warn(json)
+      switch (val.type) {
+        case 'CPPLoaded': {
+          start()
+          break
+        }
+        case 'TestMessage': {
+          console.warn('received CPP => TS', JSON.parse(json))
+          break
+        }
+      }
+    }
   }
 })();
 
-loadAssets();

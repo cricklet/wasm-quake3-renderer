@@ -6,26 +6,22 @@
 
 using namespace nlohmann;
 
-namespace Messages {
-  struct TestMessage {
-    string text;
+struct IMessageHandler;
 
-    string toJson() const {
-      json j;
-      j["text"] = text;
-      return j.dump();
-    }
-    static TestMessage fromJson(const json& j) {
-      return TestMessage { j["text"] };
-    }
-  };
+namespace MessageBindings {
+  void sendMessageToCPP(string value);
+};
 
-  void sendMessageToWeb(const TestMessage& message);
-  void handleMessageFromWeb(const TestMessage& message);
-}
+struct MessagesFromWeb {
+  static MessagesFromWeb* getInstance();
 
-extern "C" {
-  void EMSCRIPTEN_KEEPALIVE sendMessageToCPP(const char* value);
-}
+  void registerHandler(shared_ptr<IMessageHandler> handler);
+  void sendMessage(const json& value);
+
+private:
+  vector<shared_ptr<IMessageHandler>> _handlers;
+
+  static MessagesFromWeb* _instance;
+};
 
 #endif
