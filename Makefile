@@ -1,5 +1,5 @@
-EMCC_OPTS =  -O3 -std=c++17 -s USE_WEBGL2=1 -s USE_GLFW=3 -s FULL_ES3=1 -I /usr/local/include -g
-DEPENDENCY_OPTS =  -MMD -MP
+EMCC_OPTS =  --bind -O1 -std=c++17 -s USE_WEBGL2=1 -s USE_GLFW=3 -s FULL_ES3=1 -I /usr/local/include -g
+DEPENDENCY_OPTS = -MMD -MP
 
 TSC_OPTS = --strictNullChecks --noImplicitAny
 

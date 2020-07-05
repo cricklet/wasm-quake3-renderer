@@ -6,11 +6,6 @@ declare var canvasEl: HTMLElement
 canvasEl.addEventListener('click', _CPP_onClick, false)
 canvasEl.addEventListener('touchend', _CPP_onClick, false)
 
-// sendMessageToCPP({
-//   type: "TestMessage",
-//   text: "QWOIEJIOWQJEIIOWQJE"
-// })
-
 async function loadFile(src: string) {
   const blob = await fetch(src).then(resp => resp.blob())
   const pointer = _CPP_createBuffer(blob.size)
@@ -66,7 +61,19 @@ async function loadAssets() {
   _CPP_destroyBuffer(vertShader)
   _CPP_destroyBuffer(fragShader)
 
+  sendMessageToCPP({
+    type: "TestMessage",
+    text: "QWOIEJIOWQJEIIOWQJE"
+  })
+
   _CPP_start()
 }
+
+(function () {
+  // Setup bindings
+  Window.handleMessageFromWeb = (json: string) => {
+    console.warn('received CPP => TS', JSON.parse(json))
+  }
+})();
 
 loadAssets();

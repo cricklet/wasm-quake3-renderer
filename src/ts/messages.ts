@@ -7,6 +7,7 @@ interface TestMessage {
 type Message = TestMessage
 
 export const sendMessageToCPP = (message: Message) => {
-  // const text: string = JSON.stringify(message)
-  // _sendMessageToCPP(text)ss
+  const text: string = JSON.stringify(message)
+  // Module.cwrap('sendMessageToCPP', 'void', ['string'])(text);
 }
+

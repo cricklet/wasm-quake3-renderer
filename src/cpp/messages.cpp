@@ -4,7 +4,7 @@ using namespace Messages;
 
 void Messages::sendMessageToWeb(const TestMessage& message) {
   EM_ASM({
-    console.log("value:", $0);
+    Window.handleMessageFromWeb($0);
   }, message.toJson().c_str());
 }
 
@@ -13,12 +13,14 @@ void Messages::handleMessageFromWeb(const TestMessage& message) {
 }
 
 extern "C" {
-  void EMSCRIPTEN_KEEPALIVE sendMessageToCPP(const void* value) {
-    json j = (string) (const char*) value;
+  void EMSCRIPTEN_KEEPALIVE sendMessageToCPP(const char* value) {
+    printf("EWOIFJEIOWJFOJEWIFJIOEWJF: %s\n", value);
+    json j = string {(const char*) value};
     if (j["type"] == "TestMessage") {
       TestMessage message = TestMessage::fromJson(j);
       Messages::handleMessageFromWeb(message);
     }
   }
 }
+
 

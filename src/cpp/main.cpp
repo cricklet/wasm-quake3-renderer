@@ -160,6 +160,8 @@ void mainLoop() {
 int main() {
   testJS();
 
+  Messages::sendMessageToWeb({ "This is a message from CPP" });
+
   glfwInit();
 
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);

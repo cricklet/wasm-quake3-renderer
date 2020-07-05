@@ -25,7 +25,7 @@ namespace Messages {
 }
 
 extern "C" {
-  void EMSCRIPTEN_KEEPALIVE sendMessageToCPP(const void* value);
+  void EMSCRIPTEN_KEEPALIVE sendMessageToCPP(const char* value);
 }
 
 #endif
