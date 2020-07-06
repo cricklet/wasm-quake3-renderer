@@ -26,16 +26,6 @@ extern "C" {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-struct MessageLogger : IMessageHandler {
-public:
-  MessageLogger() {}
-  ~MessageLogger() {}
-
-  void handleMessageFromWeb(const TestMessage& message) {
-    cout << "received test message w/ text: " << message.text << "\n";
-  }
-};
-
 shared_ptr<MessageLogger> messageLogger = make_shared<MessageLogger>();
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -54,7 +44,8 @@ int main() {
   MessageBindings::sendMessageToWeb(CPPLoaded{});
   MessageBindings::sendMessageToWeb(TestMessage{ "main() called in CPP" });
   
-  currentScenario = make_shared<TestScenario>();
+  // currentScenario = make_shared<TestScenario>();
+  currentScenario = make_shared<BSPScenario>();
   currentScenario->startLoading();
 
   glfwInit();
@@ -75,9 +66,16 @@ int main() {
     }
 
     static bool firstTime = true;
+    static bool quit = false;
     if (firstTime) {
       firstTime = false;
-      currentScenario->finishLoading();
+      if (!currentScenario->finishLoading()) {
+        quit = true;
+      }
+    }
+
+    if (quit) {
+      return;
     }
 
     currentScenario->think();

@@ -116,6 +116,15 @@ namespace MessageBindings {
   {% endfor %}
 };
 
+struct MessageLogger : IMessageHandler {
+public:
+  {% for (name, values) in messages %}
+  void handleMessageFromWeb(const {{ name }}& message) override {
+    cout << "TS => CPP w/ " << message.toJson() << "\\n";
+  }
+  {% endfor %}
+};
+
 
 #endif
 """)

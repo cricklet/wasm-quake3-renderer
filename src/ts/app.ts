@@ -83,13 +83,10 @@ function sendMessageFromWeb(message: Message) {
 window.MessageHandler = {
   handleMessageFromCPP: (json: string) => {
     const message = parseMessage(json)
+    console.log('CPP => TS w/', message)
     switch (message.type) {
       case 'CPPLoaded': {
         start()
-        break
-      }
-      case 'TestMessage': {
-        console.warn('received CPP => TS', message)
         break
       }
       case 'LoadResource': {

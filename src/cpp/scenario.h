@@ -7,7 +7,7 @@ struct IScenario {
 public:
   virtual ~IScenario() {}
   virtual void startLoading();
-  virtual void finishLoading();
+  virtual bool finishLoading();
   virtual void think();
   virtual void render();
 };
@@ -15,7 +15,7 @@ public:
 struct TestScenario : IScenario {
 public:
   void startLoading() override;
-  void finishLoading() override;
+  bool finishLoading() override;
   void think() override;
   void render() override;
 
@@ -36,6 +36,17 @@ private:
     0, 1, 2,
     2, 3, 0
   };
+};
+
+struct BSPScenario : IScenario {
+public:
+  void startLoading() override;
+  bool finishLoading() override;
+  void think() override;
+  void render() override;
+
+private:
+  static const int BSP_ID = 0;
 };
 
 #endif

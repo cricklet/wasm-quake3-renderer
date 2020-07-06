@@ -23,10 +23,10 @@ void TestScenario::startLoading() {
   });
 }
 
-void TestScenario::finishLoading() {
+bool TestScenario::finishLoading() {
   if (!ResourceManager::getInstance()->finishedLoading()) {
     cerr << "tried to load scenario before resources finished loading\n";
-    return;
+    return false;
   }
 
   ////////////////////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ void TestScenario::finishLoading() {
   optional<GLuint> shaderProgram = ResourceManager::getInstance()->getShaderProgram(SHADER_ID);
   if (!shaderProgram) {
     cerr << "failed to load shader program\n";
-    return;
+    return false;
   }
 
   // Use the program...
@@ -81,7 +81,11 @@ void TestScenario::finishLoading() {
   glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*) (2 * sizeof(float)));
   glEnableVertexAttribArray(texAttrib);
 
-  hasErrors();
+  if (hasErrors()) {
+    return false;
+  }
+
+  return true;
 }
 
 void TestScenario::think() {
@@ -96,4 +100,29 @@ void TestScenario::render() {
   glDrawElements(GL_TRIANGLES, sizeof(elements) / sizeof(elements[0]), GL_UNSIGNED_INT, 0);
 
   hasErrors();
+}
+
+void BSPScenario::startLoading() {
+  ResourceManager::getInstance()->loadResource({
+    "./data/aerowalk.bsp",
+    ResourceType::BSP_FILE,
+    BSP_ID
+  });
+}
+
+bool BSPScenario::finishLoading() {
+  if (!ResourceManager::getInstance()->finishedLoading()) {
+    cerr << "tried to load scenario before resources finished loading\n";
+    return false;
+  }
+
+  return true;
+}
+
+void BSPScenario::think() {
+
+}
+
+void BSPScenario::render() {
+
 }

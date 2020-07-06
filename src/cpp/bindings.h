@@ -159,4 +159,28 @@ namespace MessageBindings {
   void sendMessageToWeb(const LoadedImage& message);
   void sendMessageToWeb(const LoadedBSP& message);
 };
+struct MessageLogger : IMessageHandler {
+public:
+  void handleMessageFromWeb(const TestMessage& message) override {
+    cout << "TS => CPP w/ " << message.toJson() << "\n";
+  }
+  void handleMessageFromWeb(const CPPLoaded& message) override {
+    cout << "TS => CPP w/ " << message.toJson() << "\n";
+  }
+  void handleMessageFromWeb(const LoadResource& message) override {
+    cout << "TS => CPP w/ " << message.toJson() << "\n";
+  }
+  void handleMessageFromWeb(const LoadShaders& message) override {
+    cout << "TS => CPP w/ " << message.toJson() << "\n";
+  }
+  void handleMessageFromWeb(const LoadedShaders& message) override {
+    cout << "TS => CPP w/ " << message.toJson() << "\n";
+  }
+  void handleMessageFromWeb(const LoadedImage& message) override {
+    cout << "TS => CPP w/ " << message.toJson() << "\n";
+  }
+  void handleMessageFromWeb(const LoadedBSP& message) override {
+    cout << "TS => CPP w/ " << message.toJson() << "\n";
+  }
+};
 #endif
