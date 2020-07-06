@@ -3,13 +3,9 @@ Initial work
  - [x] Figure out how to call C++ from JS & visa versa
 
 Injesting a BSP
+(http://www.mralligator.com/q3/, http://graphics.cs.brown.edu/games/quake/quake3.html)
  - [x] Load a .bsp into JS memory
  - [x] Load that .bsp into C++
- - [ ] Start writing helpers which can traverse the .bsp format
- - [ ] https://www.slideshare.net/JasonCalvert9/quake3bsprendering (p. 13)
- - [ ] http://www.mralligator.com/q3/
- - [ ] http://hlbsp.sourceforge.net/index.php?content=bspdef
- - [ ] http://www.gamers.org/dEngine/quake/spec/quake-spec34/qkspec_4.htm
 
 Getting a WebGL pipeline started:
  - [x] Load a GLSL file
@@ -29,13 +25,15 @@ Ramping up WebGL:
  - [ ] Fly around the cube
 
 Generate C++ <=> TS bindings from a schema file
- - [ ] Reorganize directory structure
- - [ ] Setup Typescript
- - [ ] Setup schema.json
- - [ ] Setup generate_bindings.py
- - [ ] Generate a ".h" file and a ".ts" definitions file
+ - [x] Reorganize directory structure
+ - [x] Setup Typescript
+ - [x] Setup schema.json
+ - [x] Setup generate_bindings.py
+ - [x] Generate a ".h" file and a ".ts" definitions file
 
 Rendering faces
+ - [ ] Figure out how to load faces + vertices + edges into OpenGL
+ - [ ] Render just the edges (glPolygonMode(GL_FRONT_AND_BACK, GL_LINE))
 
 Rendering textures
 
