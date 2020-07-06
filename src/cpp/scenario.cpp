@@ -1,6 +1,7 @@
 #include "scenario.h"
 #include "resources.h"
 #include "gl_helpers.h"
+#include "bsp.h"
 
 
 void TestScenario::startLoading() {
@@ -115,6 +116,10 @@ bool BSPScenario::finishLoading() {
     cerr << "tried to load scenario before resources finished loading\n";
     return false;
   }
+
+  const BSPMap* map = ResourceManager::getInstance()->getMap();
+  map->print();
+  map->printVertices();
 
   return true;
 }

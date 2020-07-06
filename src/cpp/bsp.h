@@ -9,45 +9,6 @@ namespace BSP {
     int length;
   };
 
-  struct header_t {
-    char magic[4];
-    int version;
-    direntry_t direntries[17];
-
-    // Surface descriptions (assume these have been converted to OpenGL textures).
-    const direntry_t* textures() { return direntries + sizeof(struct direntry_t) * 1; }
-
-    // Planes	Planes used by map geometry.
-    const direntry_t* planes() { return direntries + sizeof(struct direntry_t) * 2; }
-
-    // Nodes	BSP tree nodes.
-    const direntry_t* nodes() { return direntries + sizeof(struct direntry_t) * 3; }
-
-    // Leaves	BSP tree leaves.
-    const direntry_t* leaves() { return direntries + sizeof(struct direntry_t) * 4; }
-
-    // Leaffaces	Lists of face indices, one list per leaf.
-    const direntry_t* leaffaces() { return direntries + sizeof(struct direntry_t) * 5; }
-
-    // Models	Descriptions of rigid world geometry in map (we only use model[0]).
-    const direntry_t* models() { return direntries + sizeof(struct direntry_t) * 7; }
-
-    // Vertexes	Vertices used to describe faces.
-    const direntry_t* vertexes() { return direntries + sizeof(struct direntry_t) * 10; }
-
-    // Meshverts	Lists of offsets, one list per mesh.
-    const direntry_t* meshverts() { return direntries + sizeof(struct direntry_t) * 11; }
-
-    // Faces	Surface geometry.
-    const direntry_t* faces() { return direntries + sizeof(struct direntry_t) * 13; }
-
-    // Lightmaps	Packed lightmap data (assume these have been converted to an OpenGL texture)
-    const direntry_t* lightmaps() { return direntries + sizeof(struct direntry_t) * 14; }
-
-    // Visdata	Cluster-cluster visibility data.
-    const direntry_t* visdata() { return direntries + sizeof(struct direntry_t) * 16; }
-  };
-
   struct vertex_t {
     float position[3];
     float texcoord[2][2]; //	Vertex texture coordinates. 0=surface, 1=lightmap.
@@ -60,7 +21,7 @@ namespace BSP {
     int effect; //	Index into lump 12 (Effects), or -1.
     int type; //	Face type. 1=polygon, 2=patch, 3=mesh, 4=billboard
     int vertex; //	Index of first vertex.
-    int n_vertexes; //	Number of vertices.
+    int n_vertices; //	Number of vertices.
     int meshvert; //	Index of first meshvert.
     int n_meshverts; //	Number of meshverts.
     int lm_index; //	Lightmap index.
@@ -72,7 +33,49 @@ namespace BSP {
     int size[2]; //	Patch dimensions.
   };
 
-  void debugString(const BSP::header_t* header);
+  struct header_t {
+    char magic[4];
+    int version;
+    direntry_t direntries[17];
+
+    // Surface descriptions (assume these have been converted to OpenGL textures).
+    const direntry_t* textures() const { return direntries + 1; }
+
+    // Planes	Planes used by map geometry.
+    const direntry_t* planes() const { return direntries + 2; }
+
+    // Nodes	BSP tree nodes.
+    const direntry_t* nodes() const { return direntries + 3; }
+
+    // Leaves	BSP tree leaves.
+    const direntry_t* leaves() const { return direntries + 4; }
+
+    // Leaffaces	Lists of face indices, one list per leaf.
+    const direntry_t* leaffaces() const { return direntries + 5; }
+
+    // Models	Descriptions of rigid world geometry in map (we only use model[0]).
+    const direntry_t* models() const { return direntries + 7; }
+
+    // Vertices	Vertices used to describe faces.
+    const direntry_t* vertices() const { return direntries + 10; }
+    int numVertices() const { return vertices()->length / sizeof(vertex_t); }
+    const vertex_t* getVertex(int i) const { return (const vertex_t*) ((char*) this + vertices()->offset + sizeof(vertex_t) * i); }
+
+    // Meshverts	Lists of offsets, one list per mesh.
+    const direntry_t* meshverts() const { return direntries + 11; }
+
+    // Faces	Surface geometry.
+    const direntry_t* faces() const { return direntries + 13; }
+
+    // Lightmaps	Packed lightmap data (assume these have been converted to an OpenGL texture)
+    const direntry_t* lightmaps() const { return direntries + 14; }
+
+    // Visdata	Cluster-cluster visibility data.
+    const direntry_t* visdata() const { return direntries + 16; }
+
+    void print() const;
+    void printVertices() const;
+  };
 };
 
 using BSPMap = BSP::header_t;

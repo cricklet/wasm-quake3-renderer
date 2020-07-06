@@ -46,8 +46,6 @@ void ResourceManager::handleMessageFromWeb(const LoadedBSP& message) {
   cout << "adding map for " << message.resourceID << "\n";
   _map = (const BSPMap*) message.pointer;
   _loadingResources.erase(message.resourceID);
-
-  BSP::debugString(_map);
 }
 
 void ResourceManager::handleMessageFromWeb(const LoadedShaders& message) {

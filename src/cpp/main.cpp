@@ -1,7 +1,5 @@
 
 #include "support.h"
-#include "bsp.h"
-#include "gl_helpers.h"
 #include "messages.h"
 #include "bindings.h"
 #include "resources.h"
