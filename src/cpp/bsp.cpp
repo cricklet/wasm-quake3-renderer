@@ -1,4 +1,5 @@
 #include "bsp.h"
+#include "pprint.hpp"
 
 using namespace BSP;
 
@@ -16,11 +17,10 @@ void header_t::printVertices() const {
   const direntry_t* verticesEntry = this->vertices();
 
   const auto printVertex = [](const vertex_t* v) {
-    cout << "  position: " << v->position[0] << ", " << v->position[1] << ", " << v->position[2] << "\n";
-    cout << "  texcoord: " << v->texcoord[0][0] << ", " << v->texcoord[0][1] << "\n";
-    cout << "            " << v->texcoord[1][0] << ", " << v->texcoord[1][1] << "\n";
-    cout << "  normal:   " << v->normal[0] << ", " << v->normal[1] << ", " << v->normal[1] << "\n";
-    cout << "  color:    " << (int) v->color[0] << ", " << (int) v->color[1] << ", " << (int) v->color[2] << ", " << (int) v->color[3] << "\n";
+    cout << "  position: " << v->position << "\n";
+    cout << "  texcoord: " << v->texcoord << "\n";
+    cout << "  normal: " << v->normal << "\n";
+    cout << "  color: " << v->color << "\n";
   };
 
   cout << "vertices {\n";
@@ -39,6 +39,48 @@ void header_t::printVertices() const {
   {
     const vertex_t* vertex = getVertex(numVertices() - 1);
     printVertex(vertex);
+  }
+
+  cout << "}\n";
+}
+
+
+void header_t::printFaces() const {
+  const direntry_t* facesEntry = this->faces();
+
+  const auto printFace = [](const face_t* f) {
+    cout << "  texture: " << f->texture << "\n";
+    cout << "  effect: " << f->effect << "\n";
+    cout << "  type: " << f->type << "\n";
+    cout << "  vertex: " << f->vertex << "\n";
+    cout << "  n_vertices: " << f->n_vertices << "\n";
+    cout << "  meshvert: " << f->meshvert << "\n";
+    cout << "  n_meshverts: " << f->n_meshverts << "\n";
+    cout << "  lm_index: " << f->lm_index << "\n";
+    cout << "  lm_start: " << f->lm_start << "\n";
+    cout << "  lm_size: " << f->lm_size << "\n";
+    cout << "  lm_origin: " << f->lm_origin << "\n";
+    cout << "  lm_vecs: " << f->lm_vecs << "\n";
+    cout << "  normal: " << f->normal << "\n";
+    cout << "  size: " << f->size << "\n";
+  };
+
+  cout << "faces {\n";
+
+  const int offset = facesEntry->offset;
+  const int length = facesEntry->length;
+  cout << "  offset: " << offset << " length: " << length << "\n";
+
+  cout << "  num: " << numFaces() << "\n";
+
+  {
+    const face_t* face = getFace(0);
+    printFace(face);
+  }
+
+  {
+    const face_t* face = getFace(numFaces() - 1);
+    printFace(face);
   }
 
   cout << "}\n";

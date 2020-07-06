@@ -61,7 +61,7 @@ h_template = Template("""
 #define BINDINGS_H
 
 #include "support.h"
-#include "json.h"
+#include "json.hpp"
 
 using namespace nlohmann;
 

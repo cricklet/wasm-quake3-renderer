@@ -1,7 +1,7 @@
 #ifndef BINDINGS_H
 #define BINDINGS_H
 #include "support.h"
-#include "json.h"
+#include "json.hpp"
 using namespace nlohmann;
 enum ResourceType {
   BSP_FILE,

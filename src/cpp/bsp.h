@@ -13,7 +13,7 @@ namespace BSP {
     float position[3];
     float texcoord[2][2]; //	Vertex texture coordinates. 0=surface, 1=lightmap.
     float normal[3]; //	Vertex normal.
-    char color[4]; //	Vertex color. RGBA.
+    int8_t color[4]; //	Vertex color. RGBA.
   };
 
   struct face_t {
@@ -66,6 +66,8 @@ namespace BSP {
 
     // Faces	Surface geometry.
     const direntry_t* faces() const { return direntries + 13; }
+    int numFaces() const { return faces()->length / sizeof(face_t); }
+    const face_t* getFace(int i) const { return (const face_t*) ((char*) this + faces()->offset + sizeof(face_t) * i); }
 
     // Lightmaps	Packed lightmap data (assume these have been converted to an OpenGL texture)
     const direntry_t* lightmaps() const { return direntries + 14; }
@@ -75,6 +77,7 @@ namespace BSP {
 
     void print() const;
     void printVertices() const;
+    void printFaces() const;
   };
 };
 

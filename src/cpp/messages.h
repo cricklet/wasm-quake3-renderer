@@ -2,7 +2,7 @@
 #define MESSAGES_H
 
 #include "support.h"
-#include "json.h"
+#include "json.hpp"
 
 using namespace nlohmann;
 
