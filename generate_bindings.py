@@ -175,14 +175,5 @@ def generate_ts_file(messages, enums):
   ts_file.write(ts_result)
   ts_file.close()
 
-messages = [
-  ( 'TestMessage', [
-      ('text', 'string')
-    ]
-  ),
-  ( 'CPPLoaded', []
-  )
-]
-
 generate_h_file(schema.messages, schema.enums)
 generate_ts_file(schema.messages, schema.enums)
