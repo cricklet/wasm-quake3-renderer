@@ -77,12 +77,16 @@ struct LoadedShaders {
   int resourceID;
   void* vertPointer;
   void* fragPointer;
+  int vertLength;
+  int fragLength;
   string toJson() const {
     json j;
     j["type"] = "LoadedShaders";
     j["resourceID"] =  resourceID;
     j["vertPointer"] = (unsigned long) vertPointer;
     j["fragPointer"] = (unsigned long) fragPointer;
+    j["vertLength"] =  vertLength;
+    j["fragLength"] =  fragLength;
     return j.dump();
   }
   static LoadedShaders fromJson(const json& j) {
@@ -90,6 +94,8 @@ struct LoadedShaders {
       j["resourceID"],
       (void*)(unsigned long)j["vertPointer"],
       (void*)(unsigned long)j["fragPointer"],
+      j["vertLength"],
+      j["fragLength"],
     };
   }
 };

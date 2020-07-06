@@ -138,19 +138,19 @@ int main() {
   MessageBindings::sendMessageToWeb(CPPLoaded{});
   MessageBindings::sendMessageToWeb(TestMessage{ "main() called in CPP" });
 
-  MessageBindings::sendMessageToWeb(LoadResource{
+  ResourceManager::getInstance()->loadResource({
     "./data/aerowalk.bsp",
     ResourceType::BSP_FILE,
     0
   });
 
-  MessageBindings::sendMessageToWeb(LoadResource{
+  ResourceManager::getInstance()->loadResource({
     "./data/poptart.jpg",
     ResourceType::IMAGE_FILE,
     1
   });
 
-  MessageBindings::sendMessageToWeb(LoadShaders{
+  ResourceManager::getInstance()->loadShaders({
     "./shader/test.vert",
     "./shader/test.frag",
     2

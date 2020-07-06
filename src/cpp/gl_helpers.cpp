@@ -33,9 +33,9 @@ bool _hasErrors(const char *filename, int line) {
   return errored;
 }
 
-optional<GLuint> GLHelpers::compileShader(const char *fileContents, GLenum shaderType) {
+optional<GLuint> GLHelpers::compileShader(const char *fileContents, int fileLength, GLenum shaderType) {
   GLuint shader = glCreateShader(shaderType);
-  glShaderSource(shader, 1, &fileContents, NULL);
+  glShaderSource(shader, 1, &fileContents, &fileLength);
   glCompileShader(shader);
 
   // Print shader compile errors.
@@ -53,9 +53,9 @@ optional<GLuint> GLHelpers::compileShader(const char *fileContents, GLenum shade
   return shader;
 }
 
-optional<GLuint> GLHelpers::compileShaderProgram(const char* vert, const char* frag) {
-  optional<GLuint> vertShader = compileShader(vert, GL_VERTEX_SHADER);
-  optional<GLuint> fragShader = compileShader(frag, GL_FRAGMENT_SHADER);
+optional<GLuint> GLHelpers::compileShaderProgram(const char* vert, int vertLength, const char* frag, int fragLength) {
+  optional<GLuint> vertShader = compileShader(vert, vertLength, GL_VERTEX_SHADER);
+  optional<GLuint> fragShader = compileShader(frag, fragLength, GL_FRAGMENT_SHADER);
 
   if (!vertShader) {
     return {};

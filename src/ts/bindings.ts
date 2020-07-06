@@ -27,6 +27,8 @@ export interface LoadedShaders {
   resourceID: number;
   vertPointer: number;
   fragPointer: number;
+  vertLength: number;
+  fragLength: number;
 }
 export interface LoadedImage {
   type: 'LoadedImage'

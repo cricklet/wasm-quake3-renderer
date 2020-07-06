@@ -26,6 +26,8 @@ messages = [
     ('resourceID', 'int'),
     ('vertPointer', 'void*'),
     ('fragPointer', 'void*'),
+    ('vertLength', 'int'),
+    ('fragLength', 'int'),
   ]),
 
   ('LoadedImage', [

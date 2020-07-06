@@ -8,7 +8,10 @@ async function loadFile(src: string) {
   const data = new Uint8ClampedArray(buffer)
   Module.HEAP8.set(data, pointer)
 
-  return pointer
+  return {
+    pointer,
+    length: blob.size
+  }
 }
 
 const imageCanvas = document.createElement('canvas');
@@ -36,7 +39,7 @@ async function loadImage(src: string) {
 async function loadResource(message: LoadResource) {
   switch (message.resourceType) {
     case ResourceType.BSP_FILE: {
-      const pointer = await loadFile(message.url)
+      const { pointer } = await loadFile(message.url)
       sendMessageFromWeb({
         type: 'LoadedBSP',
         resourceID: message.resourceID,
@@ -60,13 +63,15 @@ async function loadResource(message: LoadResource) {
 }
 
 async function loadShaders(message: LoadShaders) {
-  const vertPointer = await loadFile(message.vertUrl)
-  const fragPointer = await loadFile(message.fragUrl)
+  const vert = await loadFile(message.vertUrl)
+  const frag = await loadFile(message.fragUrl)
   sendMessageFromWeb({
     type: 'LoadedShaders',
     resourceID: message.resourceID,
-    vertPointer: vertPointer,
-    fragPointer: fragPointer
+    vertPointer: vert.pointer,
+    fragPointer: frag.pointer,
+    vertLength: vert.length,
+    fragLength: frag.length
   })
 }
 

@@ -45,10 +45,10 @@ void ResourceManager::handleMessageFromWeb(const LoadedBSP& message) {
 
 void ResourceManager::handleMessageFromWeb(const LoadedShaders& message) {
   cout << "starting to compile shaders for " << message.resourceID << "\n";
-  optional<GLuint> shaderProgram = GLHelpers::compileShaderProgram((const char*) message.vertPointer, (const char*) message.fragPointer);
+  optional<GLuint> shaderProgram = GLHelpers::compileShaderProgram((const char*) message.vertPointer, message.vertLength, (const char*) message.fragPointer, message.fragLength);
 
-  free(message.vertPointer);
-  free(message.fragPointer);
+  // free(message.vertPointer);
+  // free(message.fragPointer);
 
   if (shaderProgram) {
     cout << "adding shader program for " << message.resourceID << "\n";
