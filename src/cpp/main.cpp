@@ -6,15 +6,9 @@
 #include "bindings.h"
 #include "resources.h"
 
-const BSPMap* currentMap = nullptr;
-
-bool started = false;
-
-int TEST_SHADER = 0;
-unordered_map<int, GLuint> shaderPrograms = {};
-
-int CAT_TEXTURE = 0;
-unordered_map<int, GLuint> textures = {};
+int BSP_ID = 0;
+int SHADER_ID = 1;
+int TEXTURE_ID = 2;
 
 optional<std::function<void()>> currentRenderer;
 
@@ -60,26 +54,25 @@ optional<std::function<void()>> generateTestShader() {
 
   ////////////////////////////////////////////////////////////////////////////
   // Get the test shader program
-  if (shaderPrograms.count(TEST_SHADER) == 0) {
-    cout << "shader missing\n";
-    return {};
+  optional<GLuint> shaderProgram = ResourceManager::getInstance()->getShaderProgram(SHADER_ID);
+  if (!shaderProgram) {
+    return [](){};
   }
-  GLuint shaderProgram = shaderPrograms.at(TEST_SHADER);
 
   // Use the program...
-  glLinkProgram(shaderProgram);
-  glUseProgram(shaderProgram);
+  glLinkProgram(*shaderProgram);
+  glUseProgram(*shaderProgram);
 
   ////////////////////////////////////////////////////////////////////////////
   // Specify the inputs
 
   // For the vertices
-  GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
+  GLint posAttrib = glGetAttribLocation(*shaderProgram, "position");
   glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
   glEnableVertexAttribArray(posAttrib);
 
   // And colors
-  GLint texAttrib = glGetAttribLocation(shaderProgram, "texCoord");
+  GLint texAttrib = glGetAttribLocation(*shaderProgram, "texCoord");
   glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*) (2 * sizeof(float)));
   glEnableVertexAttribArray(texAttrib);
 
@@ -141,39 +134,42 @@ int main() {
   ResourceManager::getInstance()->loadResource({
     "./data/aerowalk.bsp",
     ResourceType::BSP_FILE,
-    0
+    BSP_ID
   });
 
   ResourceManager::getInstance()->loadResource({
     "./data/poptart.jpg",
     ResourceType::IMAGE_FILE,
-    1
+    TEXTURE_ID
   });
 
   ResourceManager::getInstance()->loadShaders({
     "./shader/test.vert",
     "./shader/test.frag",
-    2
+    SHADER_ID
   });
 
   glfwInit();
-
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
   GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL", nullptr, nullptr); // Windowed
-
   glfwMakeContextCurrent(window);
 
   printf("OpenGL version supported by this platform : %s\n", glGetString(GL_VERSION));
 
   loop = [&] {
-    if (!started) {
+    if (!ResourceManager::getInstance()->finishedLoading()) {
       return;
+    }
+
+    static bool firstTime = true;
+    if (firstTime) {
+      firstTime = false;
+      currentRenderer = generateTestShader();
     }
 
     if (currentRenderer) {

@@ -12,6 +12,10 @@ shared_ptr<ResourceManager> ResourceManager::getInstance() {
   return _instance;
 }
 
+bool ResourceManager::finishedLoading() const {
+  return _loadingResources.size() == 0 && _failedResources.size() == 0;
+}
+
 void ResourceManager::loadResource(const LoadResource& message) {
   MessageBindings::sendMessageToWeb(message);
   _loadingResources.insert(message.resourceID);
@@ -35,12 +39,15 @@ void ResourceManager::handleMessageFromWeb(const LoadedImage& message) {
     return;
   }
   cerr << "failed to load texture\n";
+  _failedResources.insert(message.resourceID);
 }
 
 void ResourceManager::handleMessageFromWeb(const LoadedBSP& message) {
   cout << "adding map for " << message.resourceID << "\n";
   _map = (const BSPMap*) message.pointer;
   _loadingResources.erase(message.resourceID);
+
+  BSP::debugString(_map);
 }
 
 void ResourceManager::handleMessageFromWeb(const LoadedShaders& message) {
@@ -57,6 +64,7 @@ void ResourceManager::handleMessageFromWeb(const LoadedShaders& message) {
     return;
   }
   cerr << "failed to create shader program\n";
+  _failedResources.insert(message.resourceID);
 }
 
 optional<GLuint> ResourceManager::getShaderProgram(int resourceID) {

@@ -14,6 +14,8 @@ struct ResourceManager : IMessageHandler {
 public:
   static shared_ptr<ResourceManager> getInstance();
 
+  bool finishedLoading() const;
+
   void loadResource(const LoadResource& message);
   void loadShaders(const LoadShaders& message);
 
@@ -29,6 +31,7 @@ public:
 
 private:
   unordered_set<int> _loadingResources = {};
+  unordered_set<int> _failedResources = {};
 
   unordered_map<int, GLuint> _shaderPrograms = {};
   unordered_map<int, GLuint> _textures = {};
