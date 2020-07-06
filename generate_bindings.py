@@ -1,15 +1,38 @@
 from jinja2 import Template
 
-from schema import messages
+import schema
 
 def convert_ts_type(t):
-  return t; # no conversions yet
+  if t == 'int':
+    return 'number'
+  if t == 'void*':
+    return 'number'
+  return t
+
+def cpp_to_json_cast(t):
+  if t == 'void*':
+    return '(unsigned long)'
+  return ''
+
+def json_to_cpp_cast(t):
+  if t == 'void*':
+    return '(void*)(unsigned long)'
+  return ''
 
 ts_template = Template("""
 
+{% for (enum_name, enum_prefix, values) in enums %}
+export enum {{ enum_name }} {
+  {% for value in values %}
+  {{ value }},
+  {% endfor %}
+  UNKNOWN
+};
+{% endfor %}
+
 {% for (name, values) in messages %}
 
-interface {{ name }} {
+export interface {{ name }} {
   type: '{{ name }}'
 
   {% for (property_name, property_type) in values %}
@@ -19,9 +42,9 @@ interface {{ name }} {
 
 {% endfor %}
 
-type Message = { type: 'Unknown' } {% for (name, values) in messages %} | {{ name }} {% endfor %}
+export type Message = { type: 'Unknown' } {% for (name, values) in messages %} | {{ name }} {% endfor %}
 
-function parseMessage(json: string): Message {
+export function parseMessage(json: string): Message {
   const val = JSON.parse(json)
   switch (val.type) {
     {% for (name, values) in messages %}
@@ -42,6 +65,15 @@ h_template = Template("""
 
 using namespace nlohmann;
 
+{% for (enum_name, enum_prefix, values) in enums %}
+enum {{ enum_name }} {
+  {% for value in values %}
+  {{ value }},
+  {% endfor %}
+  UNKNOWN
+};
+{% endfor %}
+
 {% for (name, values) in messages %}
 
 struct {{ name }} {
@@ -53,7 +85,7 @@ struct {{ name }} {
     json j;
     j["type"] = "{{ name }}";
     {% for (property_name, property_type) in values %}
-    j["{{ property_name }}"] = {{ property_name }};
+    j["{{ property_name }}"] = {{ cpp_to_json_cast(property_type) }} {{ property_name }};
     {% endfor %}
     return j.dump();
   }
@@ -61,7 +93,7 @@ struct {{ name }} {
   static {{ name }} fromJson(const json& j) {
     return {{ name }} {
       {% for (property_name, property_type) in values %}
-        j["{{ property_name }}"]
+      {{ json_to_cpp_cast(property_type) }}j["{{ property_name }}"],
       {% endfor %}
     };
   }
@@ -105,8 +137,8 @@ void MessageBindings::sendMessageToWeb(const {{ name }}& message) {
 {% endfor %}
 """)
 
-def generate_h_file(messages):
-  h_result = h_template.render(messages=messages)
+def generate_h_file(messages, enums):
+  h_result = h_template.render(messages=messages, enums=enums, cpp_to_json_cast=cpp_to_json_cast, json_to_cpp_cast=json_to_cpp_cast)
   h_result = '\n'.join([line for line in h_result.split('\n') if line.strip() != ''])
 
   h_file = open('src/cpp/bindings.h', 'w')
@@ -114,7 +146,7 @@ def generate_h_file(messages):
   h_file.write(h_result)
   h_file.close()
 
-  cpp_result = cpp_template.render(messages=messages)
+  cpp_result = cpp_template.render(messages=messages, enums=enums, cpp_to_json_cast=cpp_to_json_cast, json_to_cpp_cast=json_to_cpp_cast)
   cpp_result = '\n'.join([line for line in cpp_result.split('\n') if line.strip() != ''])
 
   cpp_file = open('src/cpp/bindings.cpp', 'w')
@@ -122,8 +154,8 @@ def generate_h_file(messages):
   cpp_file.write(cpp_result)
   cpp_file.close()
 
-def generate_ts_file(messages):
-  ts_result = ts_template.render(messages=messages, convert_ts_type=convert_ts_type)
+def generate_ts_file(messages, enums):
+  ts_result = ts_template.render(messages=messages, enums=enums, convert_ts_type=convert_ts_type)
   ts_result = '\n'.join([line for line in ts_result.split('\n') if line.strip() != ''])
 
   ts_file = open('src/ts/bindings.ts', 'w')
@@ -140,5 +172,5 @@ messages = [
   )
 ]
 
-generate_h_file(messages)
-generate_ts_file(messages)
+generate_h_file(schema.messages, schema.enums)
+generate_ts_file(schema.messages, schema.enums)

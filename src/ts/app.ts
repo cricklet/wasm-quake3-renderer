@@ -1,6 +1,4 @@
-import { TEST } from './helper'
-import { sendMessageToCPP } from './messages'
-console.warn(TEST)
+import { parseMessage, LoadResource, Message, ResourceType } from './bindings'
 
 async function loadFile(src: string) {
   const blob = await fetch(src).then(resp => resp.blob())
@@ -35,56 +33,61 @@ async function loadImage(src: string) {
   return { pointer, width: image.width, height: image.height }
 }
 
-async function loadAssets() {
-  // Load assets
-  const aerowalkPointer = await loadFile("./data/aerowalk.bsp")
-  _CPP_setCurrentMap(aerowalkPointer)
-
-  const catImage = await loadImage("./data/poptart.jpg")
-  if (!_CPP_createTexture(0, catImage.pointer, catImage.width, catImage.height)) {
-    console.error('failed to load pop tart')
-    return
-  }
-
-  const vertShader = await loadFile("./shader/test.vert")
-  const fragShader = await loadFile("./shader/test.frag")
-  if (!_CPP_createShaderProgram(0, vertShader, fragShader)) {
-    console.error('failed to create shader program')
-    return
-  }
-
-  _CPP_destroyBuffer(catImage.pointer)
-  _CPP_destroyBuffer(vertShader)
-  _CPP_destroyBuffer(fragShader)
-
-  Module.sendMessageToCPP(JSON.stringify({
-    type: "TestMessage",
-    text: "This is a message from web"
-  }))
-
-  _CPP_start()
-}
-
 async function start() {
-  loadAssets();
+  sendMessageFromWeb({
+    type: "TestMessage",
+    text: "start() called in TS"
+  })
 }
 
-(function () {
-  // Setup bindings
-  window.MessageHandler = {
-    handleMessageFromCPP: (json: string) => {
-      const message = parseMessage(json)
-      switch (message.type) {
-        case 'CPPLoaded': {
-          start()
-          break
-        }
-        case 'TestMessage': {
-          console.warn('received CPP => TS', JSON.parse(json))
-          break
-        }
+async function loadResource(message: LoadResource) {
+  switch (message.resourceType) {
+    case ResourceType.BSP_FILE: {
+      const pointer = await loadFile(message.url)
+      sendMessageFromWeb({
+        type: 'LoadedBSP',
+        resourceID: message.resourceID,
+        pointer: pointer
+      })
+
+      break
+    }
+    case ResourceType.IMAGE_FILE: {
+      const image = await loadImage(message.url)
+      sendMessageFromWeb({
+        type: 'LoadedImage',
+        resourceID: message.resourceID,
+        pointer: image.pointer,
+        width: image.width,
+        height: image.height
+      })
+      break
+    }    
+  }
+}
+
+function sendMessageFromWeb(message: Message) {
+  Module.sendMessageToCPP(JSON.stringify(message))
+}
+
+// Setup bindings
+window.MessageHandler = {
+  handleMessageFromCPP: (json: string) => {
+    const message = parseMessage(json)
+    switch (message.type) {
+      case 'CPPLoaded': {
+        start()
+        break
+      }
+      case 'TestMessage': {
+        console.warn('received CPP => TS', message)
+        break
+      }
+      case 'LoadResource': {
+        loadResource(message)
+        break
       }
     }
   }
-})();
+}
 

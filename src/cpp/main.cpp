@@ -145,13 +145,6 @@ extern "C" {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// => JS
-
-EM_JS(void, testJS, (), {
-  console.warn("JS from C++");
-});
-
-///////////////////////////////////////////////////////////////////////////////
 
 struct MessageLogger : IMessageHandler {
 public:
@@ -173,10 +166,27 @@ void mainLoop() {
 }
 
 int main() {
-  testJS();
   MessagesFromWeb::getInstance()->registerHandler(messageLogger);
   MessageBindings::sendMessageToWeb(CPPLoaded{});
-  MessageBindings::sendMessageToWeb(TestMessage{ "This is a message from CPP" });
+  MessageBindings::sendMessageToWeb(TestMessage{ "main() called in CPP" });
+
+  MessageBindings::sendMessageToWeb(LoadResource{
+    "./data/aerowalk.bsp",
+    ResourceType::BSP_FILE,
+    0
+  });
+
+  MessageBindings::sendMessageToWeb(LoadResource{
+    "./data/poptart.jpg",
+    ResourceType::IMAGE_FILE,
+    1
+  });
+
+  MessageBindings::sendMessageToWeb(LoadShaders{
+    "./shader/test.vert",
+    "./shader/test.frag",
+    2
+  });
 
   glfwInit();
 

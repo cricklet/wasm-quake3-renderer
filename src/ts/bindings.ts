@@ -1,16 +1,49 @@
-interface TestMessage {
+export enum ResourceType {
+  BSP_FILE,
+  IMAGE_FILE,
+  UNKNOWN
+};
+export interface TestMessage {
   type: 'TestMessage'
   text: string;
 }
-interface CPPLoaded {
+export interface CPPLoaded {
   type: 'CPPLoaded'
 }
-type Message = { type: 'Unknown' }  | TestMessage  | CPPLoaded 
-function parseMessage(json: string): Message {
+export interface LoadResource {
+  type: 'LoadResource'
+  url: string;
+  resourceType: ResourceType;
+  resourceID: number;
+}
+export interface LoadShaders {
+  type: 'LoadShaders'
+  vertUrl: string;
+  fragUrl: string;
+  resourceID: number;
+}
+export interface LoadedImage {
+  type: 'LoadedImage'
+  resourceID: number;
+  pointer: number;
+  width: number;
+  height: number;
+}
+export interface LoadedBSP {
+  type: 'LoadedBSP'
+  resourceID: number;
+  pointer: number;
+}
+export type Message = { type: 'Unknown' }  | TestMessage  | CPPLoaded  | LoadResource  | LoadShaders  | LoadedImage  | LoadedBSP 
+export function parseMessage(json: string): Message {
   const val = JSON.parse(json)
   switch (val.type) {
     case 'TestMessage': return val as TestMessage
     case 'CPPLoaded': return val as CPPLoaded
+    case 'LoadResource': return val as LoadResource
+    case 'LoadShaders': return val as LoadShaders
+    case 'LoadedImage': return val as LoadedImage
+    case 'LoadedBSP': return val as LoadedBSP
   }
   return { type: 'Unknown' }
 }

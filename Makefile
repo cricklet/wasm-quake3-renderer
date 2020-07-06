@@ -9,7 +9,7 @@ DEPENDS := $(patsubst %.bc,%.d, $(OBJ_FILES))
 
 TS_FILES := $(wildcard src/ts/*ts)
 
-all: src/cpp/bindings.h output/app.js output/index.js 
+all: src/cpp/bindings.h output/index.js output/app.js
 
 src/cpp/bindings.h: generate_bindings.py schema.py
 	python3 generate_bindings.py
