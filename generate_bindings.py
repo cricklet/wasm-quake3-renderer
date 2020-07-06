@@ -2,6 +2,37 @@ from jinja2 import Template
 
 from schema import messages
 
+def convert_ts_type(t):
+  return t; # no conversions yet
+
+ts_template = Template("""
+
+{% for (name, values) in messages %}
+
+interface {{ name }} {
+  type: '{{ name }}'
+
+  {% for (property_name, property_type) in values %}
+  {{ property_name }}: {{ convert_ts_type(property_type) }};
+  {% endfor %}
+}
+
+{% endfor %}
+
+type Message = { type: 'Unknown' } {% for (name, values) in messages %} | {{ name }} {% endfor %}
+
+function parseMessage(json: string): Message {
+  const val = JSON.parse(json)
+  switch (val.type) {
+    {% for (name, values) in messages %}
+    case '{{ name }}': return val as {{ name }}
+    {% endfor %}
+  }
+  return { type: 'Unknown' }
+}
+
+""")
+
 h_template = Template("""
 #ifndef BINDINGS_H
 #define BINDINGS_H
@@ -91,6 +122,15 @@ def generate_h_file(messages):
   cpp_file.write(cpp_result)
   cpp_file.close()
 
+def generate_ts_file(messages):
+  ts_result = ts_template.render(messages=messages, convert_ts_type=convert_ts_type)
+  ts_result = '\n'.join([line for line in ts_result.split('\n') if line.strip() != ''])
+
+  ts_file = open('src/ts/bindings.ts', 'w')
+  ts_file.truncate(0)
+  ts_file.write(ts_result)
+  ts_file.close()
+
 messages = [
   ( 'TestMessage', [
       ('text', 'string')
@@ -101,3 +141,4 @@ messages = [
 ]
 
 generate_h_file(messages)
+generate_ts_file(messages)

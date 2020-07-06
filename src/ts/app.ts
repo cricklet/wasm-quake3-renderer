@@ -73,9 +73,8 @@ async function start() {
   // Setup bindings
   window.MessageHandler = {
     handleMessageFromCPP: (json: string) => {
-      const val = JSON.parse(json)
-      console.warn(json)
-      switch (val.type) {
+      const message = parseMessage(json)
+      switch (message.type) {
         case 'CPPLoaded': {
           start()
           break
