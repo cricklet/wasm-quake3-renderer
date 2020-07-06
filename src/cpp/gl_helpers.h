@@ -10,6 +10,7 @@ namespace GLHelpers {
   optional<GLuint> compileShader(const char *fileContents, int fileLength, GLenum shaderType);
   optional<GLuint> compileShaderProgram(const char* vert, int vertLength, const char* frag, int fragLength);
   optional<GLuint> loadTexture(const void* image, int width, int height);
+  GLuint generateRandomColorsVBO(int num);
 }
 
 #endif

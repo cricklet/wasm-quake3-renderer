@@ -14,13 +14,13 @@ void header_t::print() const {
 }
 
 void header_t::printVertices() const {
-  const direntry_t* verticesEntry = this->vertices();
+  const direntry_t* verticesEntry = this->verticesEntry();
 
   const auto printVertex = [](const vertex_t* v) {
-    cout << "  position: " << v->position << "\n";
-    cout << "  texcoord: " << v->texcoord << "\n";
-    cout << "  normal: " << v->normal << "\n";
-    cout << "  color: " << v->color << "\n";
+    cout << "    position: " << v->position << "\n";
+    cout << "    texcoord: " << v->texcoord << "\n";
+    cout << "    normal: " << v->normal << "\n";
+    cout << "    color: " << v->color << "\n";
   };
 
   cout << "vertices {\n";
@@ -32,13 +32,17 @@ void header_t::printVertices() const {
   cout << "  num: " << numVertices() << "\n";
 
   {
-    const vertex_t* vertex = getVertex(0);
+    cout << "  first vertex: {\n";
+    const vertex_t* vertex = vertices();
     printVertex(vertex);
+    cout << "  }\n";
   }
 
   {
-    const vertex_t* vertex = getVertex(numVertices() - 1);
+    cout << "  last vertex: {\n";
+    const vertex_t* vertex = vertices() + numVertices() - 1;
     printVertex(vertex);
+    cout << "  }\n";
   }
 
   cout << "}\n";
@@ -46,23 +50,23 @@ void header_t::printVertices() const {
 
 
 void header_t::printFaces() const {
-  const direntry_t* facesEntry = this->faces();
+  const direntry_t* facesEntry = this->facesEntry();
 
   const auto printFace = [](const face_t* f) {
-    cout << "  texture: " << f->texture << "\n";
-    cout << "  effect: " << f->effect << "\n";
-    cout << "  type: " << f->type << "\n";
-    cout << "  vertex: " << f->vertex << "\n";
-    cout << "  n_vertices: " << f->n_vertices << "\n";
-    cout << "  meshvert: " << f->meshvert << "\n";
-    cout << "  n_meshverts: " << f->n_meshverts << "\n";
-    cout << "  lm_index: " << f->lm_index << "\n";
-    cout << "  lm_start: " << f->lm_start << "\n";
-    cout << "  lm_size: " << f->lm_size << "\n";
-    cout << "  lm_origin: " << f->lm_origin << "\n";
-    cout << "  lm_vecs: " << f->lm_vecs << "\n";
-    cout << "  normal: " << f->normal << "\n";
-    cout << "  size: " << f->size << "\n";
+    cout << "    texture: " << f->texture << "\n";
+    cout << "    effect: " << f->effect << "\n";
+    cout << "    type: " << f->type << "\n";
+    cout << "    vertex: " << f->vertex << "\n";
+    cout << "    n_vertices: " << f->n_vertices << "\n";
+    cout << "    meshvert: " << f->meshvert << "\n";
+    cout << "    n_meshverts: " << f->n_meshverts << "\n";
+    cout << "    lm_index: " << f->lm_index << "\n";
+    cout << "    lm_start: " << f->lm_start << "\n";
+    cout << "    lm_size: " << f->lm_size << "\n";
+    cout << "    lm_origin: " << f->lm_origin << "\n";
+    cout << "    lm_vecs: " << f->lm_vecs << "\n";
+    cout << "    normal: " << f->normal << "\n";
+    cout << "    size: " << f->size << "\n";
   };
 
   cout << "faces {\n";
@@ -74,13 +78,17 @@ void header_t::printFaces() const {
   cout << "  num: " << numFaces() << "\n";
 
   {
-    const face_t* face = getFace(0);
+    cout << "  first face: {\n";
+    const face_t* face = faces();
     printFace(face);
+    cout << "  }\n";
   }
 
   {
-    const face_t* face = getFace(numFaces() - 1);
+    cout << "  last face: {\n";
+    const face_t* face = faces() + numFaces() - 1;
     printFace(face);
+    cout << "  }\n";
   }
 
   cout << "}\n";

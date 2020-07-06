@@ -33,47 +33,65 @@ namespace BSP {
     int size[2]; //	Patch dimensions.
   };
 
+  struct meshvert_t {
+    int offset; // Vertex index offset, relative to first vertex of corresponding face.
+  };
+
   struct header_t {
     char magic[4];
     int version;
     direntry_t direntries[17];
 
     // Surface descriptions (assume these have been converted to OpenGL textures).
-    const direntry_t* textures() const { return direntries + 1; }
+    const direntry_t* texturesEntry() const { return direntries + 1; }
 
     // Planes	Planes used by map geometry.
-    const direntry_t* planes() const { return direntries + 2; }
+    const direntry_t* planesEntry() const { return direntries + 2; }
 
     // Nodes	BSP tree nodes.
-    const direntry_t* nodes() const { return direntries + 3; }
+    const direntry_t* nodesEntry() const { return direntries + 3; }
 
     // Leaves	BSP tree leaves.
-    const direntry_t* leaves() const { return direntries + 4; }
+    const direntry_t* leavesEntry() const { return direntries + 4; }
 
     // Leaffaces	Lists of face indices, one list per leaf.
-    const direntry_t* leaffaces() const { return direntries + 5; }
+    const direntry_t* leaffacesEntry() const { return direntries + 5; }
 
     // Models	Descriptions of rigid world geometry in map (we only use model[0]).
-    const direntry_t* models() const { return direntries + 7; }
+    const direntry_t* modelsEntry() const { return direntries + 7; }
 
     // Vertices	Vertices used to describe faces.
-    const direntry_t* vertices() const { return direntries + 10; }
-    int numVertices() const { return vertices()->length / sizeof(vertex_t); }
-    const vertex_t* getVertex(int i) const { return (const vertex_t*) ((char*) this + vertices()->offset + sizeof(vertex_t) * i); }
+    const direntry_t* verticesEntry() const { return direntries + 10; }
+    int numVertices() const {
+      return verticesEntry()->length / sizeof(vertex_t);
+    }
+    const vertex_t* vertices() const {
+      return (const vertex_t*) ((char*) this + verticesEntry()->offset);
+    }
 
     // Meshverts	Lists of offsets, one list per mesh.
-    const direntry_t* meshverts() const { return direntries + 11; }
+    const direntry_t* meshvertsEntry() const { return direntries + 11; }
+    int numMeshverts() const {
+      return meshvertsEntry()->length / sizeof(vertex_t);
+    }
+    const vertex_t* meshverts() const {
+      return (const vertex_t*) ((char*) this + meshvertsEntry()->offset);
+    }
 
     // Faces	Surface geometry.
-    const direntry_t* faces() const { return direntries + 13; }
-    int numFaces() const { return faces()->length / sizeof(face_t); }
-    const face_t* getFace(int i) const { return (const face_t*) ((char*) this + faces()->offset + sizeof(face_t) * i); }
+    const direntry_t* facesEntry() const { return direntries + 13; }
+    int numFaces() const {
+      return facesEntry()->length / sizeof(face_t);
+    }
+    const face_t* faces() const {
+      return (const face_t*) ((char*) this + facesEntry()->offset);
+    }
 
     // Lightmaps	Packed lightmap data (assume these have been converted to an OpenGL texture)
-    const direntry_t* lightmaps() const { return direntries + 14; }
+    const direntry_t* lightmapsEntry() const { return direntries + 14; }
 
     // Visdata	Cluster-cluster visibility data.
-    const direntry_t* visdata() const { return direntries + 16; }
+    const direntry_t* visdataEntry() const { return direntries + 16; }
 
     void print() const;
     void printVertices() const;

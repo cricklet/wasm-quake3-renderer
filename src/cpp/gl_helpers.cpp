@@ -103,3 +103,17 @@ optional<GLuint> GLHelpers::loadTexture(const void* image, int width, int height
 
   return tex;
 }
+
+GLuint GLHelpers::generateRandomColorsVBO(int num) {
+  float values[num * 3];
+  for (int i = 0; i < num * 3; i ++) {
+    values[i] = 0.5 + 0.5 * float(rand())/float(RAND_MAX);
+  }
+
+  GLuint vbo;
+  glGenBuffers(1, &vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(values), values, GL_STATIC_DRAW);
+
+  return vbo;
+}
