@@ -75,4 +75,6 @@ namespace BSP {
   void debugString(const BSP::header_t* header);
 };
 
+using BSPMap = BSP::header_t;
+
 #endif

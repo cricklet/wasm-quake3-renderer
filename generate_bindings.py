@@ -122,6 +122,7 @@ namespace MessageBindings {
 
 cpp_template = Template("""
 #include "bindings.h"
+#include "messages.h"
 #include <emscripten/val.h>
 
 {% for (name, values) in messages %}
@@ -135,6 +136,17 @@ void MessageBindings::sendMessageToWeb(const {{ name }}& message) {
   MessageHandler.call<void>("handleMessageFromCPP", emscripten::val(message.toJson()));
 }
 {% endfor %}
+
+void MessagesFromWeb::sendMessage(const json& j) {
+{% for (name, values) in messages %}
+  if (j["type"] == "{{ name }}") {
+    auto message = {{ name }}::fromJson(j);
+    for (const auto& handler : _handlers) {
+      handler->handleMessageFromWeb(message);
+    }
+  }
+{% endfor %}
+}
 """)
 
 def generate_h_file(messages, enums):

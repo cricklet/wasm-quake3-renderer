@@ -13,23 +13,14 @@ EMSCRIPTEN_BINDINGS(my_module) {
   emscripten::function("sendMessageToCPP", &MessageBindings::sendMessageToCPP);
 }
 
-MessagesFromWeb* MessagesFromWeb::_instance = nullptr;
+shared_ptr<MessagesFromWeb> MessagesFromWeb::_instance = nullptr;
 
-MessagesFromWeb* MessagesFromWeb::getInstance() {
+shared_ptr<MessagesFromWeb> MessagesFromWeb::getInstance() {
   if (!_instance) {
-    _instance = new MessagesFromWeb();
+    _instance = make_shared<MessagesFromWeb>();
   }
 
   return _instance;
-}
-
-void MessagesFromWeb::sendMessage(const json& j) {
-  if (j["type"] == "TestMessage") {
-    TestMessage message = TestMessage::fromJson(j);
-    for (const auto& handler : _handlers) {
-      handler->handleMessageFromWeb(message);
-    }
-  }
 }
 
 void MessagesFromWeb::registerHandler(shared_ptr<IMessageHandler> handler) {

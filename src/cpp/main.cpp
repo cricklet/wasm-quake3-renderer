@@ -4,8 +4,8 @@
 #include "gl_helpers.h"
 #include "messages.h"
 #include "bindings.h"
+#include "resources.h"
 
-using BSPMap = BSP::header_t;
 const BSPMap* currentMap = nullptr;
 
 bool started = false;
@@ -108,40 +108,6 @@ extern "C" {
   EMSCRIPTEN_KEEPALIVE void CPP_destroyBuffer(void* pointer) {
     free(pointer);
   }
-
-  EMSCRIPTEN_KEEPALIVE void CPP_setCurrentMap(void* pointer) {
-    currentMap = (const BSPMap*) pointer;
-  }
-
-  EMSCRIPTEN_KEEPALIVE bool CPP_createShaderProgram(int shaderID, const void* vert, const void* frag) {
-    cout << "starting to compile shaders for " << shaderID << "\n";
-    optional<GLuint> shaderProgram = GLHelpers::compileShaderProgram((const char*) vert, (const char*) frag);
-    if (shaderProgram) {
-      cout << "adding shader program for " << shaderID << "\n";
-      shaderPrograms[shaderID] = *shaderProgram;
-      return true;
-    }
-    cerr << "failed to create shader program\n";
-    return false;
-  }
-
-  EMSCRIPTEN_KEEPALIVE bool CPP_createTexture(int textureID, const void* image, int width, int height) {
-    optional<GLuint> tex = GLHelpers::loadTexture(image, width, height);
-    if (tex) {
-      textures[textureID] = *tex;
-      return true;
-    }
-
-    return false;
-  }
-
-  EMSCRIPTEN_KEEPALIVE void CPP_start() {
-    started = true;
-    BSP::debugString(currentMap);
-
-    // Setup shader!
-    currentRenderer = generateTestShader();
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -167,6 +133,8 @@ void mainLoop() {
 
 int main() {
   MessagesFromWeb::getInstance()->registerHandler(messageLogger);
+  MessagesFromWeb::getInstance()->registerHandler(ResourceManager::getInstance());
+
   MessageBindings::sendMessageToWeb(CPPLoaded{});
   MessageBindings::sendMessageToWeb(TestMessage{ "main() called in CPP" });
 

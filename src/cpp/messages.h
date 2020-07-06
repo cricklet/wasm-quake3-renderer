@@ -13,7 +13,7 @@ namespace MessageBindings {
 };
 
 struct MessagesFromWeb {
-  static MessagesFromWeb* getInstance();
+  static shared_ptr<MessagesFromWeb> getInstance();
 
   void registerHandler(shared_ptr<IMessageHandler> handler);
   void sendMessage(const json& value);
@@ -21,7 +21,7 @@ struct MessagesFromWeb {
 private:
   vector<shared_ptr<IMessageHandler>> _handlers;
 
-  static MessagesFromWeb* _instance;
+  static shared_ptr<MessagesFromWeb> _instance;
 };
 
 #endif

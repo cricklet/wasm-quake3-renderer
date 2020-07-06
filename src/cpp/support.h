@@ -19,6 +19,7 @@
 #include <functional>
 #include <optional>
 #include <unordered_map>
+#include <unordered_set>
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>

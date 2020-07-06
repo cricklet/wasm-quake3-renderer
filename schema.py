@@ -22,6 +22,12 @@ messages = [
     ('resourceID', 'int')
   ]),
 
+  ('LoadedShaders', [
+    ('resourceID', 'int'),
+    ('vertPointer', 'void*'),
+    ('fragPointer', 'void*'),
+  ]),
+
   ('LoadedImage', [
     ('resourceID', 'int'),
     ('pointer', 'void*'),

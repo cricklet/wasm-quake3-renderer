@@ -73,6 +73,26 @@ struct LoadShaders {
     };
   }
 };
+struct LoadedShaders {
+  int resourceID;
+  void* vertPointer;
+  void* fragPointer;
+  string toJson() const {
+    json j;
+    j["type"] = "LoadedShaders";
+    j["resourceID"] =  resourceID;
+    j["vertPointer"] = (unsigned long) vertPointer;
+    j["fragPointer"] = (unsigned long) fragPointer;
+    return j.dump();
+  }
+  static LoadedShaders fromJson(const json& j) {
+    return LoadedShaders {
+      j["resourceID"],
+      (void*)(unsigned long)j["vertPointer"],
+      (void*)(unsigned long)j["fragPointer"],
+    };
+  }
+};
 struct LoadedImage {
   int resourceID;
   void* pointer;
@@ -120,6 +140,7 @@ public:
   virtual void handleMessageFromWeb(const CPPLoaded& message) {}
   virtual void handleMessageFromWeb(const LoadResource& message) {}
   virtual void handleMessageFromWeb(const LoadShaders& message) {}
+  virtual void handleMessageFromWeb(const LoadedShaders& message) {}
   virtual void handleMessageFromWeb(const LoadedImage& message) {}
   virtual void handleMessageFromWeb(const LoadedBSP& message) {}
 };
@@ -128,6 +149,7 @@ namespace MessageBindings {
   void sendMessageToWeb(const CPPLoaded& message);
   void sendMessageToWeb(const LoadResource& message);
   void sendMessageToWeb(const LoadShaders& message);
+  void sendMessageToWeb(const LoadedShaders& message);
   void sendMessageToWeb(const LoadedImage& message);
   void sendMessageToWeb(const LoadedBSP& message);
 };

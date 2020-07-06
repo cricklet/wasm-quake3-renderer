@@ -1,4 +1,4 @@
-import { parseMessage, LoadResource, Message, ResourceType } from './bindings'
+import { parseMessage, LoadResource, Message, ResourceType, LoadShaders } from './bindings'
 
 async function loadFile(src: string) {
   const blob = await fetch(src).then(resp => resp.blob())
@@ -33,13 +33,6 @@ async function loadImage(src: string) {
   return { pointer, width: image.width, height: image.height }
 }
 
-async function start() {
-  sendMessageFromWeb({
-    type: "TestMessage",
-    text: "start() called in TS"
-  })
-}
-
 async function loadResource(message: LoadResource) {
   switch (message.resourceType) {
     case ResourceType.BSP_FILE: {
@@ -66,6 +59,17 @@ async function loadResource(message: LoadResource) {
   }
 }
 
+async function loadShaders(message: LoadShaders) {
+  const vertPointer = await loadFile(message.vertUrl)
+  const fragPointer = await loadFile(message.fragUrl)
+  sendMessageFromWeb({
+    type: 'LoadedShaders',
+    resourceID: message.resourceID,
+    vertPointer: vertPointer,
+    fragPointer: fragPointer
+  })
+}
+
 function sendMessageFromWeb(message: Message) {
   Module.sendMessageToCPP(JSON.stringify(message))
 }
@@ -87,7 +91,18 @@ window.MessageHandler = {
         loadResource(message)
         break
       }
+      case 'LoadShaders': {
+        loadShaders(message)
+        break
+      }
     }
   }
+}
+
+async function start() {
+  sendMessageFromWeb({
+    type: "TestMessage",
+    text: "start() called in TS"
+  })
 }
 

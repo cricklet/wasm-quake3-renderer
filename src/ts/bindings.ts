@@ -22,6 +22,12 @@ export interface LoadShaders {
   fragUrl: string;
   resourceID: number;
 }
+export interface LoadedShaders {
+  type: 'LoadedShaders'
+  resourceID: number;
+  vertPointer: number;
+  fragPointer: number;
+}
 export interface LoadedImage {
   type: 'LoadedImage'
   resourceID: number;
@@ -34,7 +40,7 @@ export interface LoadedBSP {
   resourceID: number;
   pointer: number;
 }
-export type Message = { type: 'Unknown' }  | TestMessage  | CPPLoaded  | LoadResource  | LoadShaders  | LoadedImage  | LoadedBSP 
+export type Message = { type: 'Unknown' }  | TestMessage  | CPPLoaded  | LoadResource  | LoadShaders  | LoadedShaders  | LoadedImage  | LoadedBSP 
 export function parseMessage(json: string): Message {
   const val = JSON.parse(json)
   switch (val.type) {
@@ -42,6 +48,7 @@ export function parseMessage(json: string): Message {
     case 'CPPLoaded': return val as CPPLoaded
     case 'LoadResource': return val as LoadResource
     case 'LoadShaders': return val as LoadShaders
+    case 'LoadedShaders': return val as LoadedShaders
     case 'LoadedImage': return val as LoadedImage
     case 'LoadedBSP': return val as LoadedBSP
   }
