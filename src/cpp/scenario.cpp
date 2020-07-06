@@ -183,7 +183,9 @@ void BSPScenario::think() {
 
 void BSPScenario::render() {
   glClearColor(0.6, 0.2, 0.6, 1.0);
-  glClear(GL_COLOR_BUFFER_BIT);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  glEnable(GL_DEPTH_TEST);
 
   // Update camera transform
   glm::mat4 cameraTransform = glm::lookAt(
@@ -197,7 +199,7 @@ void BSPScenario::render() {
   glUniformMatrix4fv(_unifCameraTransform, 1, GL_FALSE, glm::value_ptr(cameraTransform));
 
   // And projection transform
-  glm::mat4 projectionTransform = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.5f, 100.0f);
+  glm::mat4 projectionTransform = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.5f, 10000.0f);
   glUniformMatrix4fv(_unifProjTransform, 1, GL_FALSE, glm::value_ptr(projectionTransform));
 
   // Bind vertices
