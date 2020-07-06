@@ -2,6 +2,7 @@
 #include "resources.h"
 #include "gl_helpers.h"
 #include "bsp.h"
+#include "pprint.hpp"
 
 
 void TestScenario::startLoading() {
@@ -97,6 +98,11 @@ void TestScenario::render() {
   hasErrors();
 }
 
+std::ostream& operator<<(std::ostream& os, const BSPScenario::FaceBuffers& buffers) {
+  os << "{" << buffers.vertexBuffer << ", " << buffers.elementsBuffer << ", " << buffers.colorsBuffer << "}";
+  return os;
+}
+
 void BSPScenario::startLoading() {
   ResourceManager::getInstance()->loadResource({
     "./data/aerowalk.bsp",
@@ -121,36 +127,61 @@ bool BSPScenario::finishLoading() {
   map->print();
   map->printVertices();
   map->printFaces();
+  map->printMeshverts();
 
-  // const BSP::face_t* faces = map->faces();
-  // const int numFaces = map->numFaces();
-  // const BSP::vertex_t* vertices = map->vertices();
-  // const int numVertices = map->numVertices();
+  int buffersID = 0;
 
-  // for (int faceIndex = 0; faceIndex < numFaces; faceIndex ++) {
-  //   const BSP::face_t* face = faces + faceIndex;
-  //   const int firstVertex = face->vertex;
-  //   const int numVertices = face->n_vertices;
+  {
+    // Load the test vertices
+    glGenBuffers(1, &(_faceVBOs[buffersID].vertexBuffer));
+    glBindBuffer(GL_ARRAY_BUFFER, _faceVBOs[buffersID].vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(testVertices), testVertices, GL_STATIC_DRAW);
 
-  //   for (int j = 0; j < numVertices; j ++) {
-  //     const int vertexIndex = firstVertex + j;
-  //     const BSP::vertex_t* vertex = vertices + vertexIndex;
-      
-  //   }
-  // }
+    // Load the test elements
+    glGenBuffers(1, &(_faceVBOs[buffersID].elementsBuffer));
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _faceVBOs[buffersID].elementsBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(testMeshverts), testMeshverts, GL_STATIC_DRAW);
 
-  // Load the test vertices
-  glGenBuffers(1, &(_faceVBOs[TEST_FACE_ID].vertexBuffer));
-  glBindBuffer(GL_ARRAY_BUFFER, _faceVBOs[TEST_FACE_ID].vertexBuffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(testVertices), testVertices, GL_STATIC_DRAW);
+    // Load some random colors for the vertices
+    _faceVBOs[buffersID].colorsBuffer = GLHelpers::generateRandomColorsVBO(sizeof(testVertices) / sizeof(testVertices[0]));
+  }
 
-  // Load the test elements
-  glGenBuffers(1, &(_faceVBOs[TEST_FACE_ID].elementsBuffer));
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _faceVBOs[TEST_FACE_ID].elementsBuffer);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(testMeshverts), testMeshverts, GL_STATIC_DRAW);
+  buffersID ++;
 
-  // Load some random colors for the vertices
-  _faceVBOs[TEST_FACE_ID].colorsBuffer = GLHelpers::generateRandomColorsVBO(sizeof(testVertices) / sizeof(testVertices[0]));
+  {
+    const BSP::face_t* faces = map->faces();
+    const int numFaces = map->numFaces();
+
+    const BSP::vertex_t* vertices = map->vertices();
+    const int numVertices = map->numFaces();
+
+    const BSP::meshvert_t* meshverts = map->meshverts();
+    const int numMeshverts = map->numMeshverts();
+
+    // Load vertices
+    GLuint allVerticesBuffer;
+    glGenBuffers(1, &(_faceVBOs[buffersID].vertexBuffer));
+    glBindBuffer(GL_ARRAY_BUFFER, _faceVBOs[buffersID].vertexBuffer);
+    glBufferData(
+      GL_ARRAY_BUFFER,
+      sizeof(BSP::vertex_t) * numVertices,
+      vertices,
+      GL_STATIC_DRAW);
+
+
+    // Load elements
+    glGenBuffers(1, &(_faceVBOs[buffersID].elementsBuffer));
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _faceVBOs[buffersID].elementsBuffer);
+    glBufferData(
+      GL_ELEMENT_ARRAY_BUFFER,
+      sizeof(BSP::meshvert_t) * numMeshverts,
+      meshverts,
+      GL_STATIC_DRAW);
+
+    _faceVBOs[buffersID].colorsBuffer = GLHelpers::generateRandomColorsVBO(numVertices);
+  }
+
+  cout << "loaded buffers: " << _faceVBOs << "\n";
 
   // Load the shader
   GLuint shaderProgram = *ResourceManager::getInstance()->getShaderProgram(SHADER_ID);
@@ -189,7 +220,7 @@ void BSPScenario::render() {
 
   // Update camera transform
   glm::mat4 cameraTransform = glm::lookAt(
-    glm::vec3(5.0f, -20.0f, -5.0f),
+    glm::vec3(5.0f, -5.0f, -5.0f),
     glm::vec3(0.0f, 0.0f, 0.0f),
     glm::vec3(0.0f, 0.0f, -1.0f)
     // glm::vec3(20.0f, 20.0f, 20.0f),
@@ -202,19 +233,22 @@ void BSPScenario::render() {
   glm::mat4 projectionTransform = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.5f, 10000.0f);
   glUniformMatrix4fv(_unifProjTransform, 1, GL_FALSE, glm::value_ptr(projectionTransform));
 
-  // Bind vertices
-  glBindBuffer(GL_ARRAY_BUFFER, _faceVBOs[TEST_FACE_ID].vertexBuffer);
-  glVertexAttribPointer(_inPosition, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float) /* stride */, 0 /* offset */);
+  for (const auto& it : _faceVBOs) {
+    // Bind vertices
+    glBindBuffer(GL_ARRAY_BUFFER, it.second.vertexBuffer);
+    glVertexAttribPointer(_inPosition, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float) /* stride */, 0 /* offset */);
 
-  // Bind colors
-  glBindBuffer(GL_ARRAY_BUFFER, _faceVBOs[TEST_FACE_ID].colorsBuffer);
-  glVertexAttribPointer(_inColor, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float) /* stride */, 0 /* offset */);
+    // Bind colors
+    glBindBuffer(GL_ARRAY_BUFFER, it.second.colorsBuffer);
+    glVertexAttribPointer(_inColor, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float) /* stride */, 0 /* offset */);
 
-  // Draw elements
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _faceVBOs[TEST_FACE_ID].elementsBuffer);
-  int elementsSize;
-  glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &elementsSize);
-  glDrawElements(GL_TRIANGLES, elementsSize / sizeof(GLuint), GL_UNSIGNED_INT, 0);
+    // Draw elements
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, it.second.elementsBuffer);
+
+    int elementsSize;
+    glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &elementsSize);
+    glDrawElements(GL_TRIANGLES, elementsSize / sizeof(GLuint), GL_UNSIGNED_INT, 0);
+  }
 
   hasErrors();
 }

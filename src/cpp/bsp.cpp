@@ -93,3 +93,36 @@ void header_t::printFaces() const {
 
   cout << "}\n";
 }
+
+
+void header_t::printMeshverts() const {
+  const direntry_t* meshvertsEntry = this->meshvertsEntry();
+
+  const auto printMeshvert = [](const meshvert_t* mv) {
+    cout << "    offset: " << mv->offset << "\n";
+  };
+
+  cout << "meshverts {\n";
+
+  const int offset = meshvertsEntry->offset;
+  const int length = meshvertsEntry->length;
+  cout << "  offset: " << offset << " length: " << length << "\n";
+
+  cout << "  num: " << numMeshverts() << "\n";
+
+  {
+    cout << "  first meshvert: {\n";
+    const meshvert_t* meshvert = meshverts();
+    printMeshvert(meshvert);
+    cout << "  }\n";
+  }
+
+  {
+    cout << "  last meshvert: {\n";
+    const meshvert_t* meshvert = meshverts() + numMeshverts() - 1;
+    printMeshvert(meshvert);
+    cout << "  }\n";
+  }
+
+  cout << "}\n";
+}

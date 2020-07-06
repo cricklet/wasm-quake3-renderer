@@ -74,8 +74,8 @@ namespace BSP {
     int numMeshverts() const {
       return meshvertsEntry()->length / sizeof(vertex_t);
     }
-    const vertex_t* meshverts() const {
-      return (const vertex_t*) ((char*) this + meshvertsEntry()->offset);
+    const meshvert_t* meshverts() const {
+      return (const meshvert_t*) ((char*) this + meshvertsEntry()->offset);
     }
 
     // Faces	Surface geometry.
@@ -96,6 +96,7 @@ namespace BSP {
     void print() const;
     void printVertices() const;
     void printFaces() const;
+    void printMeshverts() const;
   };
 };
 

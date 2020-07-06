@@ -44,6 +44,12 @@ public:
   void think() override;
   void render() override;
 
+struct FaceBuffers {
+  GLuint vertexBuffer;
+  GLuint elementsBuffer;
+  GLuint colorsBuffer;
+};
+
 private:
   static const int BSP_ID = 0;
   static const int SHADER_ID = 1;
@@ -82,16 +88,8 @@ private:
 		6, 7, 3
   };
 
-  static const int TEST_FACE_ID = -1;
-
-  struct FaceBuffers {
-    GLuint vertexBuffer;
-    GLuint elementsBuffer;
-    GLuint colorsBuffer;
-  };
-
   // VBO holding vertices for each face (from face.vertex & .n_vertices)
-  unordered_map<int, FaceBuffers> _faceVBOs;
+  unordered_map<int, FaceBuffers> _faceVBOs = {};
 
   // When rendering:
   // > glBindBuffer(GL_ARRAY_BUFFER, _faceVBOs[idx].vertexBuffer);
