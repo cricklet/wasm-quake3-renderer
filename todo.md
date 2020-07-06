@@ -32,6 +32,7 @@ Generate C++ <=> TS bindings from a schema file
  - [x] Generate a ".h" file and a ".ts" definitions file
 
 Rendering faces
+ - [ ] Split up setup/rendering code into different scenarios (eg test scenario, bsp scenario)
  - [ ] Figure out how to load faces + vertices + edges into OpenGL
  - [ ] Render just the edges (glPolygonMode(GL_FRONT_AND_BACK, GL_LINE))
 
