@@ -56,6 +56,8 @@ int main() {
   GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL", nullptr, nullptr); // Windowed
   glfwMakeContextCurrent(window);
 
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
   printf("OpenGL version supported by this platform : %s\n", glGetString(GL_VERSION));
 
   loopCallback = [&] {
@@ -76,7 +78,40 @@ int main() {
       return;
     }
 
-    currentScenario->think();
+    glm::vec2 dir = {0, 0};
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+      dir += glm::vec2(0.0, 1.0);
+    } else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+      dir += glm::vec2(1.0, 0.0);
+    } else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+      dir += glm::vec2(-1.0, 0.0);
+    } else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+      dir += glm::vec2(0.0, -1.0);
+    }
+
+    if (glm::length(dir) > 0) {
+      dir = glm::normalize(dir);
+    }
+
+    static optional<double> oldX, oldY;
+    static double pitch = - 3.14159 * 0.5;
+    static double yaw = 0;
+
+    double x, y;
+    glfwGetCursorPos(window, &x, &y);
+
+    if (oldX && oldY) {
+      double dx = x - *oldX;
+      double dy = y - *oldY;
+      pitch += dy / 400.0f;
+      yaw +=  dx / 400.0f;
+      if(pitch > 89.0) pitch =  89.0;
+      if(pitch < -89.0) pitch = -89.0;
+    }
+    oldX = x;
+    oldY = y;
+
+    currentScenario->think(dir, pitch, yaw);
     currentScenario->render();
 
     glfwSwapBuffers(window);

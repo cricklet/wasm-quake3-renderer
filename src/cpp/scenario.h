@@ -2,13 +2,14 @@
 #define SCENARIO_H
 
 #include "support.h"
+#include "gl_helpers.h"
 
 struct IScenario {
 public:
   virtual ~IScenario() {}
   virtual void startLoading();
   virtual bool finishLoading();
-  virtual void think();
+  virtual void think(glm::vec2 dir, double pitch, double yaw);
   virtual void render();
 };
 
@@ -16,7 +17,7 @@ struct TestScenario : IScenario {
 public:
   void startLoading() override;
   bool finishLoading() override;
-  void think() override;
+  void think(glm::vec2 dir, double pitch, double yaw) override {}
   void render() override;
 
 private:
@@ -37,17 +38,28 @@ private:
   };
 };
 
+struct Camera {
+public:
+  glm::vec3 location;
+  double pitch;
+  double yaw;
+
+  glm::vec3 forward();
+  glm::vec3 right();
+  glm::vec3 upApproximate();
+};
+
 struct BSPScenario : IScenario {
 public:
   void startLoading() override;
   bool finishLoading() override;
-  void think() override;
+  void think(glm::vec2 dir, double pitch, double yaw) override;
   void render() override;
 
-struct FaceBuffers {
-  GLuint vertexBuffer;
-  GLuint elementsBuffer;
-  GLuint colorsBuffer;
+struct RenderableBuffers {
+  VBO vertex;
+  VBO colors;
+  EBO elements;
 };
 
 private:
@@ -89,10 +101,10 @@ private:
   };
 
   // VBO holding vertices for each face (from face.vertex & .n_vertices)
-  unordered_map<int, FaceBuffers> _faceVBOs = {};
+  unordered_map<int, RenderableBuffers> _allBuffers = {};
 
   // When rendering:
-  // > glBindBuffer(GL_ARRAY_BUFFER, _faceVBOs[idx].vertexBuffer);
+  // > glBindBuffer(GL_ARRAY_BUFFER, _allBuffers[idx].vertexBuffer);
   // > glVertexAttribPointer(vertexPosAttr, 3, GL_FLOAT, GL_FALSE, sizeof(BSP::vertex_t), (void*)(0));
   // > glDrawElements(GL_TRIANGLES, face.n_meshverts, GL_UNSIGNED_INT, map->meshVertices() + face.meshvert);
   
@@ -100,6 +112,10 @@ private:
   GLuint _inColor;
   GLuint _unifCameraTransform;
   GLuint _unifProjTransform;
+
+  Camera _camera;
 };
+
+std::ostream& operator<<(std::ostream& os, const BSPScenario::RenderableBuffers& buffers);
 
 #endif

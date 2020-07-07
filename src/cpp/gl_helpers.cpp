@@ -104,16 +104,29 @@ optional<GLuint> GLHelpers::loadTexture(const void* image, int width, int height
   return tex;
 }
 
-GLuint GLHelpers::generateRandomColorsVBO(int num) {
+VBO GLHelpers::generateRandomColorsVBO(int num) {
   float values[num * 3];
   for (int i = 0; i < num * 3; i ++) {
     values[i] = 0.5 + 0.5 * float(rand())/float(RAND_MAX);
   }
 
-  GLuint vbo;
-  glGenBuffers(1, &vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  VBO result;
+
+  glGenBuffers(1, &(result.buffer));
+  glBindBuffer(GL_ARRAY_BUFFER, result.buffer);
   glBufferData(GL_ARRAY_BUFFER, sizeof(values), values, GL_STATIC_DRAW);
 
-  return vbo;
+  result.stride = sizeof(float) * 3;
+
+  return result;
+}
+
+std::ostream& operator<<(std::ostream& os, const VBO& buffers) {
+  os << "{" << buffers.buffer << ", " << buffers.stride << "}";
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const EBO& buffers) {
+  os << "{" << buffers.buffer << "}";
+  return os;
 }

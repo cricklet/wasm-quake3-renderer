@@ -72,7 +72,7 @@ namespace BSP {
     // Meshverts	Lists of offsets, one list per mesh.
     const direntry_t* meshvertsEntry() const { return direntries + 11; }
     int numMeshverts() const {
-      return meshvertsEntry()->length / sizeof(vertex_t);
+      return meshvertsEntry()->length / sizeof(meshvert_t);
     }
     const meshvert_t* meshverts() const {
       return (const meshvert_t*) ((char*) this + meshvertsEntry()->offset);
@@ -99,6 +99,10 @@ namespace BSP {
     void printMeshverts() const;
   };
 };
+
+std::ostream& operator<<(std::ostream& os, const BSP::face_t& vertex);
+std::ostream& operator<<(std::ostream& os, const BSP::vertex_t& vertex);
+std::ostream& operator<<(std::ostream& os, const BSP::meshvert_t& meshvert);
 
 using BSPMap = BSP::header_t;
 
