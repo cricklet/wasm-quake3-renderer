@@ -60,8 +60,8 @@ private:
   static const int BSP_ID = 0;
   static const int SHADER_ID = 1;
 
-  VBO _allVertices;
-  VBO _allColors;
+  vector<VBO> _verticesPerFace;
+  vector<VBO> _colorsPerFace;
   
   GLuint _inPosition;
   GLuint _inColor;

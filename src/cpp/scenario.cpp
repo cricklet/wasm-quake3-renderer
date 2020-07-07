@@ -120,24 +120,35 @@ bool BSPScenario::finishLoading() {
   // map->printFaces();
   // map->printMeshverts();
 
-
   {
+    const BSP::face_t* faces = map->faces();
+    const int numFaces = map->numFaces();
+
     const BSP::vertex_t* vertices = map->vertices();
-    const int numVertices = map->numVertices();
 
-    // Load vertices
-    glGenBuffers(1, &(_allVertices.buffer));
-    glBindBuffer(GL_ARRAY_BUFFER, _allVertices.buffer);
-    glBufferData(
-      GL_ARRAY_BUFFER,
-      sizeof(BSP::vertex_t) * numVertices,
-      vertices->position,
-      GL_STATIC_DRAW);
+    _verticesPerFace.reserve(numFaces);
+    _colorsPerFace.reserve(numFaces);
 
-    _allVertices.stride = sizeof(BSP::vertex_t);
+    for (int faceIndex = 0; faceIndex < numFaces; faceIndex ++) {
+      const BSP::face_t* face = faces + faceIndex;
 
-    // Load colors
-    _allColors = GLHelpers::generateRandomColorsVBO(numVertices);
+      VBO& verticesVBO = _verticesPerFace[faceIndex];
+      VBO& colorsVBO = _colorsPerFace[faceIndex];
+
+      // Load vertices
+      glGenBuffers(1, &(verticesVBO.buffer));
+      glBindBuffer(GL_ARRAY_BUFFER, verticesVBO.buffer);
+      glBufferData(
+        GL_ARRAY_BUFFER,
+        sizeof(BSP::vertex_t) * face->n_vertices,
+        &((vertices + face->vertex)->position),
+        GL_STATIC_DRAW);
+
+      verticesVBO.stride = sizeof(BSP::vertex_t);
+
+      // Load colors
+      colorsVBO = GLHelpers::generateRandomColorsVBO(face->n_vertices);
+    }
   }
 
   // Load the shader
@@ -217,20 +228,24 @@ void BSPScenario::render() {
     for (int faceIndex = 0; faceIndex < numFaces; faceIndex ++) {
       const BSP::face_t* face = faces + faceIndex;
 
+      VBO& verticesVBO = _verticesPerFace[faceIndex];
+      VBO& colorsVBO = _colorsPerFace[faceIndex];
+
       // Bind vertices
-      glBindBuffer(GL_ARRAY_BUFFER, _allVertices.buffer);
+      glBindBuffer(GL_ARRAY_BUFFER, verticesVBO.buffer);
       glVertexAttribPointer(
         _inPosition, 3, GL_FLOAT, GL_FALSE,
-        _allVertices.stride /* stride */,
-        (void*) (_allVertices.stride * face->vertex) /* offset */);
+        verticesVBO.stride /* stride */,
+        (void*) 0 /* offset */);
 
       // Bind colors
-      glBindBuffer(GL_ARRAY_BUFFER, _allColors.buffer);
+      glBindBuffer(GL_ARRAY_BUFFER, colorsVBO.buffer);
       glVertexAttribPointer(
         _inColor, 3, GL_FLOAT, GL_FALSE,
-        _allColors.stride /* stride */,
-        (void*) (_allVertices.stride * face->vertex) /* offset */);
+        colorsVBO.stride /* stride */,
+        (void*) 0 /* offset */);
 
+      // Render elements
       glDrawElements(GL_TRIANGLES, face->n_meshverts, GL_UNSIGNED_INT, meshverts + face->meshvert);
     }
   }
