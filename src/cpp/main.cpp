@@ -53,7 +53,7 @@ int main() {
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-  GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL", nullptr, nullptr); // Windowed
+  GLFWwindow* window = glfwCreateWindow(1200, 800, "OpenGL", nullptr, nullptr); // Windowed
   glfwMakeContextCurrent(window);
 
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -79,15 +79,10 @@ int main() {
     }
 
     glm::vec2 dir = {0, 0};
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-      dir += glm::vec2(0.0, 1.0);
-    } else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-      dir += glm::vec2(1.0, 0.0);
-    } else if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-      dir += glm::vec2(-1.0, 0.0);
-    } else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-      dir += glm::vec2(0.0, -1.0);
-    }
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) { dir += glm::vec2(0.0, 1.0); }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) { dir += glm::vec2(1.0, 0.0); }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) { dir += glm::vec2(-1.0, 0.0); }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) { dir += glm::vec2(0.0, -1.0); }
 
     if (glm::length(dir) > 0) {
       dir = glm::normalize(dir);

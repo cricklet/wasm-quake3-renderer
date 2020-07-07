@@ -13,16 +13,13 @@ Getting a WebGL pipeline started:
  - [x] Try out GLFW
  - [x] Render a triangle
  - [x] Drawing polygons (open.gl)
- - [ ] Textures (open.gl)
- - [ ] Transformations (open.gl)
- - [ ] Depth and stencils (open.gl)
- - [ ] Framebuffers (open.gl)
+ - [x] Textures (open.gl)
 
 Ramping up WebGL:
- - [ ] Draw a cube w/ WebGL
- - [ ] Capture mouse input
- - [ ] Capture WASD
- - [ ] Fly around the cube
+ - [x] Draw a cube w/ WebGL
+ - [x] Capture mouse input
+ - [x] Capture WASD
+ - [x] Fly around the cube
 
 Generate C++ <=> TS bindings from a schema file
  - [x] Reorganize directory structure
@@ -32,13 +29,26 @@ Generate C++ <=> TS bindings from a schema file
  - [x] Generate a ".h" file and a ".ts" definitions file
 
 Rendering faces
- - [ ] Split up setup/rendering code into different scenarios (eg test scenario, bsp scenario)
- - [ ] Figure out how to load faces + vertices + edges into OpenGL
- - [ ] Render just the edges (glPolygonMode(GL_FRONT_AND_BACK, GL_LINE))
+ - [x] Split up setup/rendering code into different scenarios (eg test scenario, bsp scenario)
+ - [x] Figure out how to load faces + vertices + edges into OpenGL
+ - [x] Render faces with random colors
 
 Rendering textures
+ - [ ] During resource loading, find out what textures to download
+ - [ ] Load textures in the ResourceManager
+ - [ ] Bind textures to the GPU
+ - [ ] Add texture coordinates to GLSL
+ - [ ] Render textures
+
+Rendering patches
+ - [ ] Learn about how beziers work
+ - [ ] Tesselate patches
 
 Rendering lightmaps
+ - [ ] Load lightmaps in the ResourceManger
+ - [ ] Bind lightmap texture to the GPU
+ - [ ] Add lightmap coordinates to GLSL
+ - [ ] Render lightmaps
 
 Find out what leaf we're in...
 Render only visible leaves

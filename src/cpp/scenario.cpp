@@ -125,15 +125,18 @@ bool BSPScenario::finishLoading() {
     const int numFaces = map->numFaces();
 
     const BSP::vertex_t* vertices = map->vertices();
+    const BSP::meshvert_t* meshverts = map->meshverts();
 
     _verticesPerFace.reserve(numFaces);
     _colorsPerFace.reserve(numFaces);
+    _elementsPerFace.reserve(numFaces);
 
     for (int faceIndex = 0; faceIndex < numFaces; faceIndex ++) {
       const BSP::face_t* face = faces + faceIndex;
 
       VBO& verticesVBO = _verticesPerFace[faceIndex];
       VBO& colorsVBO = _colorsPerFace[faceIndex];
+      EBO& elementsEBO = _elementsPerFace[faceIndex];
 
       // Load vertices
       glGenBuffers(1, &(verticesVBO.buffer));
@@ -148,6 +151,14 @@ bool BSPScenario::finishLoading() {
 
       // Load colors
       colorsVBO = GLHelpers::generateRandomColorsVBO(face->n_vertices);
+
+      // Load EBO
+      glGenBuffers(1, &(elementsEBO.buffer));
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementsEBO.buffer);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+        sizeof(GLuint) * face->n_meshverts,
+        meshverts + face->meshvert,
+        GL_STATIC_DRAW);
     }
   }
 
@@ -216,7 +227,7 @@ void BSPScenario::render() {
   glUniformMatrix4fv(_unifCameraTransform, 1, GL_FALSE, glm::value_ptr(cameraTransform));
 
   // And projection transform
-  glm::mat4 projectionTransform = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.5f, 10000.0f);
+  glm::mat4 projectionTransform = glm::perspective(glm::radians(90.0f), 1200.0f / 800.0f, 0.5f, 10000.0f);
   glUniformMatrix4fv(_unifProjTransform, 1, GL_FALSE, glm::value_ptr(projectionTransform));
 
   {
@@ -230,6 +241,7 @@ void BSPScenario::render() {
 
       VBO& verticesVBO = _verticesPerFace[faceIndex];
       VBO& colorsVBO = _colorsPerFace[faceIndex];
+      EBO& elementsEBO = _elementsPerFace[faceIndex];
 
       // Bind vertices
       glBindBuffer(GL_ARRAY_BUFFER, verticesVBO.buffer);
@@ -246,7 +258,8 @@ void BSPScenario::render() {
         (void*) 0 /* offset */);
 
       // Render elements
-      glDrawElements(GL_TRIANGLES, face->n_meshverts, GL_UNSIGNED_INT, meshverts + face->meshvert);
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementsEBO.buffer);
+      glDrawElements(GL_TRIANGLES, face->n_meshverts, GL_UNSIGNED_INT, 0);
     }
   }
 

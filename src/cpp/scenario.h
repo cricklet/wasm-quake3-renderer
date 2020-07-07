@@ -62,6 +62,7 @@ private:
 
   vector<VBO> _verticesPerFace;
   vector<VBO> _colorsPerFace;
+  vector<EBO> _elementsPerFace;
   
   GLuint _inPosition;
   GLuint _inColor;
