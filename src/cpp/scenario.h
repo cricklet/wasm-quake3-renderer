@@ -56,57 +56,12 @@ public:
   void think(glm::vec2 dir, double pitch, double yaw) override;
   void render() override;
 
-struct RenderableBuffers {
-  VBO vertex;
-  VBO colors;
-  EBO elements;
-};
-
 private:
   static const int BSP_ID = 0;
   static const int SHADER_ID = 1;
 
-  static constexpr float testVertices[] = {
-    // front
-    -1.0, -1.0,  1.0,
-     1.0, -1.0,  1.0,
-     1.0,  1.0,  1.0,
-    -1.0,  1.0,  1.0,
-    // back
-    -1.0, -1.0, -1.0,
-     1.0, -1.0, -1.0,
-     1.0,  1.0, -1.0,
-    -1.0,  1.0, -1.0
-  };
-
-  static constexpr GLuint testMeshverts[] = {
-		// front
-		0, 1, 2,
-		2, 3, 0,
-		// right
-		1, 5, 6,
-		6, 2, 1,
-		// back
-		7, 6, 5,
-		5, 4, 7,
-		// left
-		4, 0, 3,
-		3, 7, 4,
-		// bottom
-		4, 5, 1,
-		1, 0, 4,
-		// top
-		3, 2, 6,
-		6, 7, 3
-  };
-
-  // VBO holding vertices for each face (from face.vertex & .n_vertices)
-  unordered_map<int, RenderableBuffers> _allBuffers = {};
-
-  // When rendering:
-  // > glBindBuffer(GL_ARRAY_BUFFER, _allBuffers[idx].vertexBuffer);
-  // > glVertexAttribPointer(vertexPosAttr, 3, GL_FLOAT, GL_FALSE, sizeof(BSP::vertex_t), (void*)(0));
-  // > glDrawElements(GL_TRIANGLES, face.n_meshverts, GL_UNSIGNED_INT, map->meshVertices() + face.meshvert);
+  VBO _allVertices;
+  VBO _allColors;
   
   GLuint _inPosition;
   GLuint _inColor;
@@ -115,7 +70,5 @@ private:
 
   Camera _camera;
 };
-
-std::ostream& operator<<(std::ostream& os, const BSPScenario::RenderableBuffers& buffers);
 
 #endif

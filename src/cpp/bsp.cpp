@@ -23,7 +23,7 @@ void header_t::printVertices() const {
   cout << "  offset: " << offset << " length: " << length << "\n";
   cout << "  num: " << numVertices() << "\n";
 
-  for (int i = 0; i < numVertices(); i ++) {
+  for (int i = 0; i < 5; i ++) {
     cout << "  " << *(vertices() + i) << "\n";
   }
 
@@ -41,7 +41,7 @@ void header_t::printFaces() const {
   cout << "  offset: " << offset << " length: " << length << "\n";
   cout << "  num: " << numFaces() << "\n";
 
-  for (int i = 0; i < numFaces(); i ++) {
+  for (int i = 0; i < 5; i ++) {
     cout << "  " << *(faces() + i) << "\n";
   }
 
@@ -59,7 +59,7 @@ void header_t::printMeshverts() const {
   cout << "  offset: " << offset << " length: " << length << "\n";
   cout << "  num: " << numMeshverts() << "\n";
 
-  for (int i = 0; i < numMeshverts(); i ++) {
+  for (int i = 0; i < 5; i ++) {
     cout << "  " << *(meshverts() + i) << "\n";
   }
 

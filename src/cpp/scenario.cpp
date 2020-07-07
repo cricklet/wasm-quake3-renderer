@@ -94,11 +94,6 @@ void TestScenario::render() {
   hasErrors();
 }
 
-std::ostream& operator<<(std::ostream& os, const BSPScenario::RenderableBuffers& buffers) {
-  os << "{" << buffers.vertex << ", " << buffers.colors << ", " << buffers.elements << "}";
-  return os;
-}
-
 void BSPScenario::startLoading() {
   ResourceManager::getInstance()->loadResource({
     "./data/aerowalk.bsp",
@@ -121,71 +116,29 @@ bool BSPScenario::finishLoading() {
 
   const BSPMap* map = ResourceManager::getInstance()->getMap();
   map->print();
-  map->printVertices();
-  map->printFaces();
-  map->printMeshverts();
+  // map->printVertices();
+  // map->printFaces();
+  // map->printMeshverts();
 
-  int buffersID = 0;
-
-  // {
-  //   RenderableBuffers& buffers = _allBuffers[buffersID];
-
-  //   // Load the test vertices
-  //   glGenBuffers(1, &(buffers.vertex.buffer));
-  //   glBindBuffer(GL_ARRAY_BUFFER, buffers.vertex.buffer);
-  //   glBufferData(GL_ARRAY_BUFFER, sizeof(testVertices), testVertices, GL_STATIC_DRAW);
-
-  //   buffers.vertex.stride = sizeof(float) * 3;
-
-  //   // Load the test elements
-  //   glGenBuffers(1, &(buffers.elements.buffer));
-  //   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.elements.buffer);
-  //   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(testMeshverts), testMeshverts, GL_STATIC_DRAW);
-
-  //   // Load some random colors for the vertices
-  //   buffers.colors = GLHelpers::generateRandomColorsVBO(sizeof(testVertices) / sizeof(testVertices[0]));
-  // }
-
-  buffersID ++;
 
   {
-    RenderableBuffers& buffers = _allBuffers[buffersID];
-
-    // const BSP::face_t* faces = map->faces();
-    // const int numFaces = map->numFaces();
-    // cout << "num faces: " << numFaces << "\n";
-
     const BSP::vertex_t* vertices = map->vertices();
     const int numVertices = map->numVertices();
 
-    const BSP::meshvert_t* meshverts = map->meshverts();
-    const int numMeshverts = map->numMeshverts();
-
     // Load vertices
-    GLuint allVerticesBuffer;
-    glGenBuffers(1, &(buffers.vertex.buffer));
-    glBindBuffer(GL_ARRAY_BUFFER, buffers.vertex.buffer);
+    glGenBuffers(1, &(_allVertices.buffer));
+    glBindBuffer(GL_ARRAY_BUFFER, _allVertices.buffer);
     glBufferData(
       GL_ARRAY_BUFFER,
       sizeof(BSP::vertex_t) * numVertices,
       vertices->position,
       GL_STATIC_DRAW);
 
-    buffers.vertex.stride = sizeof(BSP::vertex_t);
+    _allVertices.stride = sizeof(BSP::vertex_t);
 
-    // // Load elements
-    // glGenBuffers(1, &(buffers.elements.buffer));
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.elements.buffer);
-    // glBufferData(
-    //   GL_ELEMENT_ARRAY_BUFFER,
-    //   sizeof(GLuint) * numMeshverts,
-    //   meshverts,
-    //   GL_STATIC_DRAW);
-
-    buffers.colors = GLHelpers::generateRandomColorsVBO(numVertices);
+    // Load colors
+    _allColors = GLHelpers::generateRandomColorsVBO(numVertices);
   }
-
-  cout << "loaded buffers: " << _allBuffers << "\n";
 
   // Load the shader
   GLuint shaderProgram = *ResourceManager::getInstance()->getShaderProgram(SHADER_ID);
@@ -255,24 +208,31 @@ void BSPScenario::render() {
   glm::mat4 projectionTransform = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.5f, 10000.0f);
   glUniformMatrix4fv(_unifProjTransform, 1, GL_FALSE, glm::value_ptr(projectionTransform));
 
-  for (const auto& it : _allBuffers) {
-    // Bind vertices
-    glBindBuffer(GL_ARRAY_BUFFER, it.second.vertex.buffer);
-    glVertexAttribPointer(_inPosition, 3, GL_FLOAT, GL_FALSE, it.second.vertex.stride /* stride */, 0 /* offset */);
+  {
+    const BSP::face_t* faces = map->faces();
+    const int numFaces = map->numFaces();
 
-    // Bind colors
-    glBindBuffer(GL_ARRAY_BUFFER, it.second.colors.buffer);
-    glVertexAttribPointer(_inColor, 3, GL_FLOAT, GL_FALSE, it.second.colors.stride /* stride */, 0 /* offset */);
+    const BSP::meshvert_t* meshverts = map->meshverts();
 
-    // // Draw elements
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, it.second.elements.buffer);
+    for (int faceIndex = 0; faceIndex < numFaces; faceIndex ++) {
+      const BSP::face_t* face = faces + faceIndex;
 
-    // int elementsSize;
-    // glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &elementsSize);
-    // glDrawElements(GL_TRIANGLES, elementsSize / sizeof(GLuint), GL_UNSIGNED_INT, 0);
+      // Bind vertices
+      glBindBuffer(GL_ARRAY_BUFFER, _allVertices.buffer);
+      glVertexAttribPointer(
+        _inPosition, 3, GL_FLOAT, GL_FALSE,
+        _allVertices.stride /* stride */,
+        (void*) (_allVertices.stride * face->vertex) /* offset */);
 
-    glDrawElements(GL_TRIANGLES, map->numMeshverts(), GL_UNSIGNED_INT, map->meshverts());
+      // Bind colors
+      glBindBuffer(GL_ARRAY_BUFFER, _allColors.buffer);
+      glVertexAttribPointer(
+        _inColor, 3, GL_FLOAT, GL_FALSE,
+        _allColors.stride /* stride */,
+        (void*) (_allVertices.stride * face->vertex) /* offset */);
 
+      glDrawElements(GL_TRIANGLES, face->n_meshverts, GL_UNSIGNED_INT, meshverts + face->meshvert);
+    }
   }
 
   hasErrors();
