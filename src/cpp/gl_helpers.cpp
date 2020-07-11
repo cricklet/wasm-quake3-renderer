@@ -96,6 +96,8 @@ optional<GLuint> GLHelpers::loadTexture(const void* image, int width, int height
 
   glGenerateMipmap(GL_TEXTURE_2D);
 
+  cout << "loaded texture with dimensions " << width << ", " << height << " into " << tex << "\n";
+
   if (hasErrors()) {
     cout << "failed to load texture\n";
     return {};

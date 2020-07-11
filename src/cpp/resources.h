@@ -27,7 +27,7 @@ public:
   // TODO add a way to clear the resources after use
 
   optional<GLuint> getShaderProgram(int resourceID);
-  optional<GLuint> getTextures(int resourceID);
+  optional<GLuint> getTexture(int resourceID);
   const BSPMap* getMap();
 
 private:

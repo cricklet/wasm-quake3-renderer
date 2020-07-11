@@ -222,9 +222,13 @@ bool BSPScenario::finishLoading() {
   _inPosition = glGetAttribLocation(shaderProgram, "inPosition");
   glEnableVertexAttribArray(_inPosition);
 
+  _inTextureCoords = glGetAttribLocation(shaderProgram, "inTextureCoords");
+  glEnableVertexAttribArray(_inTextureCoords);
+
   _inColor = glGetAttribLocation(shaderProgram, "inColor");
   glEnableVertexAttribArray(_inColor);
 
+  _unifTexture = glGetUniformLocation(shaderProgram, "unifTexture");
   _unifCameraTransform = glGetUniformLocation(shaderProgram, "unifCameraTransform");
   _unifProjTransform = glGetUniformLocation(shaderProgram, "unifProjTransform");
 
@@ -283,6 +287,9 @@ void BSPScenario::render() {
     const BSP::face_t* faces = map->faces();
     const int numFaces = map->numFaces();
 
+    const BSP::texture_t* textures = map->textures();
+    const int numTextures = map->numTextures();
+
     const BSP::meshvert_t* meshverts = map->meshverts();
 
     for (int faceIndex = 0; faceIndex < numFaces; faceIndex ++) {
@@ -292,12 +299,31 @@ void BSPScenario::render() {
       VBO& colorsVBO = _colorsPerFace[faceIndex];
       EBO& elementsEBO = _elementsPerFace[faceIndex];
 
+      // Bind the texture
+      int textureOffset = face->texture;
+      if (textureOffset >= 0 && textureOffset < numTextures) {
+        const BSP::texture_t* texture = textures + textureOffset;
+        const int textureResourceId = _textureResourceIds[string(texture->name)];
+        optional<GLuint> textureId = ResourceManager::getInstance()->getTexture(textureResourceId);
+        if (textureId) {
+          glActiveTexture(GL_TEXTURE0);
+          glBindTexture(GL_TEXTURE_2D, *textureId);
+          glUniform1i(_unifTexture, 0);
+        }
+      }
+
       // Bind vertices
       glBindBuffer(GL_ARRAY_BUFFER, verticesVBO.buffer);
       glVertexAttribPointer(
         _inPosition, 3, GL_FLOAT, GL_FALSE,
         verticesVBO.stride /* stride */,
         (void*) 0 /* offset */);
+
+      // Bind texture coordinates
+      glVertexAttribPointer(
+        _inTextureCoords, 2, GL_FLOAT, GL_FALSE,
+        verticesVBO.stride /* stride */,
+        (void*) offsetof(BSP::vertex_t, texcoord) /* offset */);
 
       // Bind colors
       glBindBuffer(GL_ARRAY_BUFFER, colorsVBO.buffer);

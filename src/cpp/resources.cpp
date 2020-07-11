@@ -78,7 +78,7 @@ optional<GLuint> ResourceManager::getShaderProgram(int resourceID) {
   return {};
 }
 
-optional<GLuint> ResourceManager::getTextures(int resourceID) {
+optional<GLuint> ResourceManager::getTexture(int resourceID) {
   if (_textures.count(resourceID)) {
     return _textures.at(resourceID);
   }

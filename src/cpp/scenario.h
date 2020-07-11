@@ -71,6 +71,9 @@ private:
   
   GLuint _inPosition;
   GLuint _inColor;
+  GLuint _inTextureCoords;
+
+  GLuint _unifTexture;
   GLuint _unifCameraTransform;
   GLuint _unifProjTransform;
 
