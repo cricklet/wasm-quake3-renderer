@@ -41,7 +41,15 @@ void MessageBindings::sendMessageToWeb(const LoadedShaders& message) {
   }
   MessageHandler.call<void>("handleMessageFromCPP", emscripten::val(message.toJson()));
 }
-void MessageBindings::sendMessageToWeb(const LoadedImage& message) {
+void MessageBindings::sendMessageToWeb(const LoadedTexture& message) {
+  emscripten::val MessageHandler = emscripten::val::global("MessageHandler");
+  if (!MessageHandler.as<bool>()) {
+    cerr << "No global MessageHandler\n";
+    return;
+  }
+  MessageHandler.call<void>("handleMessageFromCPP", emscripten::val(message.toJson()));
+}
+void MessageBindings::sendMessageToWeb(const MissingTexture& message) {
   emscripten::val MessageHandler = emscripten::val::global("MessageHandler");
   if (!MessageHandler.as<bool>()) {
     cerr << "No global MessageHandler\n";
@@ -88,8 +96,14 @@ void MessagesFromWeb::sendMessage(const json& j) {
       handler->handleMessageFromWeb(message);
     }
   }
-  if (j["type"] == "LoadedImage") {
-    auto message = LoadedImage::fromJson(j);
+  if (j["type"] == "LoadedTexture") {
+    auto message = LoadedTexture::fromJson(j);
+    for (const auto& handler : _handlers) {
+      handler->handleMessageFromWeb(message);
+    }
+  }
+  if (j["type"] == "MissingTexture") {
+    auto message = MissingTexture::fromJson(j);
     for (const auto& handler : _handlers) {
       handler->handleMessageFromWeb(message);
     }

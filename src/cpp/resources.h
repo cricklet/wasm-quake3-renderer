@@ -19,7 +19,7 @@ public:
   void loadResource(const LoadResource& message);
   void loadShaders(const LoadShaders& message);
 
-  void handleMessageFromWeb(const LoadedImage& message);
+  void handleMessageFromWeb(const LoadedTexture& message);
   void handleMessageFromWeb(const LoadedBSP& message);
   void handleMessageFromWeb(const LoadedShaders& message);
 

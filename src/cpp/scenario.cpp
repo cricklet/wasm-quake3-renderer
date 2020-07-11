@@ -7,7 +7,7 @@
 
 void TestScenario::startLoading() {
   ResourceManager::getInstance()->loadResource({
-    "./data/poptart.jpg",
+    "./data/textures/poptart.jpg",
     ResourceType::IMAGE_FILE,
     TEXTURE_ID
   });
@@ -116,6 +116,7 @@ bool BSPScenario::finishLoading() {
 
   const BSPMap* map = ResourceManager::getInstance()->getMap();
   map->print();
+  map->printTextures();
   // map->printVertices();
   // map->printFaces();
   // map->printMeshverts();

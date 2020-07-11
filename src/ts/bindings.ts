@@ -30,19 +30,23 @@ export interface LoadedShaders {
   vertLength: number;
   fragLength: number;
 }
-export interface LoadedImage {
-  type: 'LoadedImage'
+export interface LoadedTexture {
+  type: 'LoadedTexture'
   resourceID: number;
   pointer: number;
   width: number;
   height: number;
+}
+export interface MissingTexture {
+  type: 'MissingTexture'
+  resourceID: number;
 }
 export interface LoadedBSP {
   type: 'LoadedBSP'
   resourceID: number;
   pointer: number;
 }
-export type Message = { type: 'Unknown' }  | TestMessage  | CPPLoaded  | LoadResource  | LoadShaders  | LoadedShaders  | LoadedImage  | LoadedBSP 
+export type Message = { type: 'Unknown' }  | TestMessage  | CPPLoaded  | LoadResource  | LoadShaders  | LoadedShaders  | LoadedTexture  | MissingTexture  | LoadedBSP 
 export function parseMessage(json: string): Message {
   const val = JSON.parse(json)
   switch (val.type) {
@@ -51,7 +55,8 @@ export function parseMessage(json: string): Message {
     case 'LoadResource': return val as LoadResource
     case 'LoadShaders': return val as LoadShaders
     case 'LoadedShaders': return val as LoadedShaders
-    case 'LoadedImage': return val as LoadedImage
+    case 'LoadedTexture': return val as LoadedTexture
+    case 'MissingTexture': return val as MissingTexture
     case 'LoadedBSP': return val as LoadedBSP
   }
   return { type: 'Unknown' }

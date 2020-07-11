@@ -99,26 +99,40 @@ struct LoadedShaders {
     };
   }
 };
-struct LoadedImage {
+struct LoadedTexture {
   int resourceID;
   void* pointer;
   int width;
   int height;
   string toJson() const {
     json j;
-    j["type"] = "LoadedImage";
+    j["type"] = "LoadedTexture";
     j["resourceID"] =  resourceID;
     j["pointer"] = (unsigned long) pointer;
     j["width"] =  width;
     j["height"] =  height;
     return j.dump();
   }
-  static LoadedImage fromJson(const json& j) {
-    return LoadedImage {
+  static LoadedTexture fromJson(const json& j) {
+    return LoadedTexture {
       j["resourceID"],
       (void*)(unsigned long)j["pointer"],
       j["width"],
       j["height"],
+    };
+  }
+};
+struct MissingTexture {
+  int resourceID;
+  string toJson() const {
+    json j;
+    j["type"] = "MissingTexture";
+    j["resourceID"] =  resourceID;
+    return j.dump();
+  }
+  static MissingTexture fromJson(const json& j) {
+    return MissingTexture {
+      j["resourceID"],
     };
   }
 };
@@ -147,7 +161,8 @@ public:
   virtual void handleMessageFromWeb(const LoadResource& message) {}
   virtual void handleMessageFromWeb(const LoadShaders& message) {}
   virtual void handleMessageFromWeb(const LoadedShaders& message) {}
-  virtual void handleMessageFromWeb(const LoadedImage& message) {}
+  virtual void handleMessageFromWeb(const LoadedTexture& message) {}
+  virtual void handleMessageFromWeb(const MissingTexture& message) {}
   virtual void handleMessageFromWeb(const LoadedBSP& message) {}
 };
 namespace MessageBindings {
@@ -156,7 +171,8 @@ namespace MessageBindings {
   void sendMessageToWeb(const LoadResource& message);
   void sendMessageToWeb(const LoadShaders& message);
   void sendMessageToWeb(const LoadedShaders& message);
-  void sendMessageToWeb(const LoadedImage& message);
+  void sendMessageToWeb(const LoadedTexture& message);
+  void sendMessageToWeb(const MissingTexture& message);
   void sendMessageToWeb(const LoadedBSP& message);
 };
 struct MessageLogger : IMessageHandler {
@@ -176,7 +192,10 @@ public:
   void handleMessageFromWeb(const LoadedShaders& message) override {
     cout << "TS => CPP w/ " << message.toJson() << "\n";
   }
-  void handleMessageFromWeb(const LoadedImage& message) override {
+  void handleMessageFromWeb(const LoadedTexture& message) override {
+    cout << "TS => CPP w/ " << message.toJson() << "\n";
+  }
+  void handleMessageFromWeb(const MissingTexture& message) override {
     cout << "TS => CPP w/ " << message.toJson() << "\n";
   }
   void handleMessageFromWeb(const LoadedBSP& message) override {

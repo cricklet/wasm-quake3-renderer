@@ -9,6 +9,12 @@ namespace BSP {
     int length;
   };
 
+  struct texture_t {
+    char name[64];
+    int flags; // Surface flags?
+    int contents; // Content flags?
+  };
+
   struct vertex_t {
     float position[3];
     float texcoord[2][2]; //	Vertex texture coordinates. 0=surface, 1=lightmap.
@@ -44,6 +50,12 @@ namespace BSP {
 
     // Surface descriptions (assume these have been converted to OpenGL textures).
     const direntry_t* texturesEntry() const { return direntries + 1; }
+    int numTextures() const {
+      return texturesEntry()->length / sizeof(texture_t);
+    }
+    const texture_t* textures() const {
+      return (const texture_t*) ((char*) this + texturesEntry()->offset);
+    }
 
     // Planes	Planes used by map geometry.
     const direntry_t* planesEntry() const { return direntries + 2; }
@@ -94,12 +106,14 @@ namespace BSP {
     const direntry_t* visdataEntry() const { return direntries + 16; }
 
     void print() const;
+    void printTextures() const;
     void printVertices() const;
     void printFaces() const;
     void printMeshverts() const;
   };
 };
 
+std::ostream& operator<<(std::ostream& os, const BSP::texture_t& texture);
 std::ostream& operator<<(std::ostream& os, const BSP::face_t& vertex);
 std::ostream& operator<<(std::ostream& os, const BSP::vertex_t& vertex);
 std::ostream& operator<<(std::ostream& os, const BSP::meshvert_t& meshvert);

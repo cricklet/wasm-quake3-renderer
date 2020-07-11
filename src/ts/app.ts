@@ -1,4 +1,5 @@
 import { parseMessage, LoadResource, Message, ResourceType, LoadShaders } from './bindings'
+import { isEmpty } from './helper'
 
 async function loadFile(src: string) {
   const blob = await fetch(src).then(resp => resp.blob())
@@ -36,6 +37,17 @@ async function loadImage(src: string) {
   return { pointer, width: image.width, height: image.height }
 }
 
+let _textureManifest: { [key: string]: boolean } = {}
+async function getTextureManifest() {
+  if (!isEmpty(_textureManifest)) {
+    return _textureManifest
+  }
+  _textureManifest = await fetch('./data/textures_manifest.json')
+    .then(resp => resp.json()) as { [key: string]: boolean }
+
+  return _textureManifest
+}
+
 async function loadResource(message: LoadResource) {
   switch (message.resourceType) {
     case ResourceType.BSP_FILE: {
@@ -49,14 +61,24 @@ async function loadResource(message: LoadResource) {
       break
     }
     case ResourceType.IMAGE_FILE: {
-      const image = await loadImage(message.url)
-      sendMessageFromWeb({
-        type: 'LoadedImage',
-        resourceID: message.resourceID,
-        pointer: image.pointer,
-        width: image.width,
-        height: image.height
-      })
+      const textureManifest = await getTextureManifest()
+      console.warn(textureManifest)
+      console.warn(message.url.replace(/^(\.\/)/,""))
+      if (message.url.replace(/^(\.\/)/,"") in textureManifest) {
+        const image = await loadImage(message.url)
+        sendMessageFromWeb({
+          type: 'LoadedTexture',
+          resourceID: message.resourceID,
+          pointer: image.pointer,
+          width: image.width,
+          height: image.height
+        })
+      } else {
+        sendMessageFromWeb({
+          type: 'MissingTexture',
+          resourceID: message.resourceID,
+        })
+      }
       break
     }    
   }

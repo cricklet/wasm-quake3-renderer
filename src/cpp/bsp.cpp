@@ -13,6 +13,24 @@ void header_t::print() const {
   printf("}\n");
 }
 
+
+void header_t::printTextures() const {
+  const direntry_t* texturesEntry = this->texturesEntry();
+
+  cout << "textures {\n";
+
+  const int offset = texturesEntry->offset;
+  const int length = texturesEntry->length;
+  cout << "  offset: " << offset << " length: " << length << "\n";
+  cout << "  num: " << numTextures() << "\n";
+
+  for (int i = 0; i < 40; i ++) {
+    cout << "  " << *(textures() + i) << "\n";
+  }
+
+  cout << "}\n";
+}
+
 void header_t::printVertices() const {
   const direntry_t* verticesEntry = this->verticesEntry();
 
@@ -64,6 +82,11 @@ void header_t::printMeshverts() const {
   }
 
   cout << "}\n";
+}
+
+std::ostream& operator<<(std::ostream& os, const BSP::texture_t& texture) {
+  os << "meshvert { name:" << texture.name << " }";
+  return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const BSP::face_t& face) {

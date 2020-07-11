@@ -30,11 +30,15 @@ messages = [
     ('fragLength', 'int'),
   ]),
 
-  ('LoadedImage', [
+  ('LoadedTexture', [
     ('resourceID', 'int'),
     ('pointer', 'void*'),
     ('width', 'int'),
     ('height', 'int')
+  ]),
+
+  ('MissingTexture', [
+    ('resourceID', 'int')
   ]),
 
   ('LoadedBSP', [

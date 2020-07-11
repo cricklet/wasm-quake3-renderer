@@ -27,7 +27,7 @@ void ResourceManager::loadShaders(const LoadShaders& message) {
 }
 
 
-void ResourceManager::handleMessageFromWeb(const LoadedImage& message) {
+void ResourceManager::handleMessageFromWeb(const LoadedTexture& message) {
   optional<GLuint> tex = GLHelpers::loadTexture(message.pointer, message.width, message.height);
 
   free(message.pointer);
