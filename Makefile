@@ -9,12 +9,12 @@ DEPENDS := $(patsubst %.bc,%.d, $(OBJ_FILES))
 
 TS_FILES := $(wildcard src/ts/*ts)
 
-all: data/textures.json src/cpp/bindings.h output/index.js output/app.js
+all: data/textures_manifest.json src/cpp/bindings.h output/index.js output/app.js
 
 src/cpp/bindings.h: generate_bindings.py schema.py
 	python3 generate_bindings.py
 
-data/textures.json:
+data/textures_manifest.json:
 	python3 generate_manifests.py
 
 output/app.js: $(TS_FILES)

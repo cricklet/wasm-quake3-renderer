@@ -42,8 +42,8 @@ int main() {
   MessageBindings::sendMessageToWeb(CPPLoaded{});
   MessageBindings::sendMessageToWeb(TestMessage{ "main() called in CPP" });
   
-  currentScenario = make_shared<TestScenario>();
-  // currentScenario = make_shared<BSPScenario>();
+  // currentScenario = make_shared<TestScenario>();
+  currentScenario = make_shared<BSPScenario>();
   currentScenario->startLoading();
 
   glfwInit();
@@ -62,6 +62,11 @@ int main() {
 
   loopCallback = [&] {
     if (!ResourceManager::getInstance()->finishedLoading()) {
+      return;
+    }
+
+    if (currentScenario->loadDependencies()) {
+      cout << "needs to continue loading secondary resources\n";
       return;
     }
 

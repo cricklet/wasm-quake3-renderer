@@ -20,6 +20,7 @@ public:
   void loadShaders(const LoadShaders& message);
 
   void handleMessageFromWeb(const LoadedTexture& message);
+  void handleMessageFromWeb(const MissingTexture& message);
   void handleMessageFromWeb(const LoadedBSP& message);
   void handleMessageFromWeb(const LoadedShaders& message);
 

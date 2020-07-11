@@ -19,6 +19,10 @@ void TestScenario::startLoading() {
   });
 }
 
+bool TestScenario::loadDependencies() {
+  return false;
+}
+
 bool TestScenario::finishLoading() {
   if (!ResourceManager::getInstance()->finishedLoading()) {
     cerr << "tried to load scenario before resources finished loading\n";
@@ -108,13 +112,57 @@ void BSPScenario::startLoading() {
   });
 }
 
+bool BSPScenario::loadDependencies() {
+  static bool loadingSecondaryResources = false;
+  if (loadingSecondaryResources) {
+    return false;
+  }
+
+  const BSPMap* map = ResourceManager::getInstance()->getMap();
+  if (!map) {
+    cerr << "map failed to load\n";
+    return false;
+  }
+
+  const BSP::texture_t* textures = map->textures();
+  const int numTextures = map->numTextures();
+
+  int textureResourceId = 100;
+
+  for (int textureIndex = 0; textureIndex < numTextures; textureIndex ++) {
+    const BSP::texture_t* texture = textures + textureIndex;
+    
+    _textureResourceIds[string(texture->name)] = textureResourceId;
+    ResourceManager::getInstance()->loadResource({
+      string("./data/") + string(texture->name),
+      ResourceType::IMAGE_FILE,
+      textureResourceId
+    });
+
+    textureResourceId ++;
+  }
+
+  loadingSecondaryResources = true;
+  return true;
+}
+
 bool BSPScenario::finishLoading() {
   if (!ResourceManager::getInstance()->finishedLoading()) {
     cerr << "tried to load scenario before resources finished loading\n";
     return false;
   }
 
+  if (loadDependencies()) {
+    cerr << "tried to finish loading when continue loading is still dirty\n";
+    return false;
+  }
+
   const BSPMap* map = ResourceManager::getInstance()->getMap();
+  if (!map) {
+    cerr << "map failed to load\n";
+    return false;
+  }
+
   map->print();
   map->printTextures();
   // map->printVertices();

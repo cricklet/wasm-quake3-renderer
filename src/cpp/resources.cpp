@@ -29,7 +29,6 @@ void ResourceManager::loadShaders(const LoadShaders& message) {
 
 void ResourceManager::handleMessageFromWeb(const LoadedTexture& message) {
   optional<GLuint> tex = GLHelpers::loadTexture(message.pointer, message.width, message.height);
-
   free(message.pointer);
 
   if (tex) {
@@ -38,8 +37,14 @@ void ResourceManager::handleMessageFromWeb(const LoadedTexture& message) {
     _loadingResources.erase(message.resourceID);
     return;
   }
-  cerr << "failed to load texture\n";
+
+  cerr << "error while loading texture\n";
   _failedResources.insert(message.resourceID);
+}
+
+void ResourceManager::handleMessageFromWeb(const MissingTexture& message) {
+    cout << "missing texture (not error) for " << message.resourceID << "\n";
+  _loadingResources.erase(message.resourceID);
 }
 
 void ResourceManager::handleMessageFromWeb(const LoadedBSP& message) {

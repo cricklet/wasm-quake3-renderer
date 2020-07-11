@@ -37,15 +37,33 @@ async function loadImage(src: string) {
   return { pointer, width: image.width, height: image.height }
 }
 
-let _textureManifest: { [key: string]: boolean } = {}
+type TextureManifest = { [key: string]: boolean }
+let _textureManifest: TextureManifest = {}
 async function getTextureManifest() {
   if (!isEmpty(_textureManifest)) {
     return _textureManifest
   }
   _textureManifest = await fetch('./data/textures_manifest.json')
-    .then(resp => resp.json()) as { [key: string]: boolean }
+    .then(resp => resp.json()) as TextureManifest
 
   return _textureManifest
+}
+
+function findTextureInManifest(url: string, manifest: TextureManifest) {
+  url = url.replace(/^(\.\/)/,"")
+  if (url in manifest) {
+    return url
+  }
+  
+  if ((url + '.jpg') in manifest) {
+    return url + '.jpg'
+  }
+  
+  if ((url + '.png') in manifest) {
+    return url + '.png'
+  }
+
+  return undefined
 }
 
 async function loadResource(message: LoadResource) {
@@ -62,10 +80,9 @@ async function loadResource(message: LoadResource) {
     }
     case ResourceType.IMAGE_FILE: {
       const textureManifest = await getTextureManifest()
-      console.warn(textureManifest)
-      console.warn(message.url.replace(/^(\.\/)/,""))
-      if (message.url.replace(/^(\.\/)/,"") in textureManifest) {
-        const image = await loadImage(message.url)
+      const textureUrl = findTextureInManifest(message.url, textureManifest)
+      if (textureUrl) {
+        const image = await loadImage(textureUrl)
         sendMessageFromWeb({
           type: 'LoadedTexture',
           resourceID: message.resourceID,

@@ -8,6 +8,7 @@ struct IScenario {
 public:
   virtual ~IScenario() {}
   virtual void startLoading();
+  virtual bool loadDependencies();
   virtual bool finishLoading();
   virtual void think(glm::vec2 dir, double pitch, double yaw);
   virtual void render();
@@ -16,6 +17,7 @@ public:
 struct TestScenario : IScenario {
 public:
   void startLoading() override;
+  bool loadDependencies() override;
   bool finishLoading() override;
   void think(glm::vec2 dir, double pitch, double yaw) override {}
   void render() override;
@@ -52,6 +54,7 @@ public:
 struct BSPScenario : IScenario {
 public:
   void startLoading() override;
+  bool loadDependencies() override;
   bool finishLoading() override;
   void think(glm::vec2 dir, double pitch, double yaw) override;
   void render() override;
@@ -59,6 +62,8 @@ public:
 private:
   static const int BSP_ID = 0;
   static const int SHADER_ID = 1;
+
+  unordered_map<string, int> _textureResourceIds;
 
   vector<VBO> _verticesPerFace;
   vector<VBO> _colorsPerFace;
