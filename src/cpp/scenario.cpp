@@ -13,8 +13,8 @@ void TestScenario::startLoading() {
   });
 
   ResourceManager::getInstance()->loadShaders({
-    "./shader/test.vert",
-    "./shader/test.frag",
+    "./src/glsl/test.vert",
+    "./src/glsl/test.frag",
     SHADER_ID
   });
 }
@@ -106,8 +106,8 @@ void BSPScenario::startLoading() {
   });
 
   ResourceManager::getInstance()->loadShaders({
-    "./shader/bsp.vert",
-    "./shader/bsp.frag",
+    "./src/glsl/bsp.vert",
+    "./src/glsl/bsp.frag",
     SHADER_ID
   });
 }
