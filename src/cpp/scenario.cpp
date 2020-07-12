@@ -166,8 +166,33 @@ bool BSPScenario::finishLoading() {
   map->print();
   map->printTextures();
   // map->printVertices();
-  // map->printFaces();
+  map->printFaces();
   // map->printMeshverts();
+
+  {
+    const BSP::lightmap_t* lightmaps = map->lightmaps();
+    const int numLightmaps = map->numLightmaps();
+    for (int i = 0; i < numLightmaps; i ++) {
+      const BSP::lightmap_t* lightmap = lightmaps + i;
+      optional<GLuint> textureId = GLHelpers::loadTexture(lightmap, 128, 128, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
+      if (textureId) {
+        _lightmapTextures[i] = *textureId;
+      } else {
+        cerr << "failed to load lightmap " << i << "\n";
+        return false;
+      }
+    }
+
+    unsigned char white[] = { 255, 255, 255, 255 };
+    optional<GLuint> textureId = GLHelpers::loadTexture(
+        &white[0], 1, 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE);
+    if (textureId) {
+      _fallbackLightmapTexture = *textureId;
+    } else {
+      cerr << "failed to create fallback lightmap\n";
+      return false;
+    }
+  }
 
   {
     const BSP::face_t* faces = map->faces();
@@ -225,10 +250,14 @@ bool BSPScenario::finishLoading() {
   _inTextureCoords = glGetAttribLocation(shaderProgram, "inTextureCoords");
   glEnableVertexAttribArray(_inTextureCoords);
 
+  _inLightmapCoords = glGetAttribLocation(shaderProgram, "inLightmapCoords");
+  glEnableVertexAttribArray(_inLightmapCoords);
+
   _inColor = glGetAttribLocation(shaderProgram, "inColor");
   glEnableVertexAttribArray(_inColor);
 
   _unifTexture = glGetUniformLocation(shaderProgram, "unifTexture");
+  _unifLightmapTexture = glGetUniformLocation(shaderProgram, "unifLightmapTexture");
   _unifCameraTransform = glGetUniformLocation(shaderProgram, "unifCameraTransform");
   _unifProjTransform = glGetUniformLocation(shaderProgram, "unifProjTransform");
 
@@ -312,6 +341,18 @@ void BSPScenario::render() {
         }
       }
 
+      // Bind the lightmap
+      int lightmapIndex = face->lm_index;
+      if (const GLuint* textureId = getValue(_lightmapTextures, lightmapIndex)) {
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, *textureId);
+        glUniform1i(_unifLightmapTexture, 1);
+      } else {
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, _fallbackLightmapTexture);
+        glUniform1i(_unifLightmapTexture, 1);
+      }
+
       // Bind vertices
       glBindBuffer(GL_ARRAY_BUFFER, verticesVBO.buffer);
       glVertexAttribPointer(
@@ -324,6 +365,12 @@ void BSPScenario::render() {
         _inTextureCoords, 2, GL_FLOAT, GL_FALSE,
         verticesVBO.stride /* stride */,
         (void*) offsetof(BSP::vertex_t, texcoord) /* offset */);
+
+      // Bind lightmap coordinates
+      glVertexAttribPointer(
+        _inLightmapCoords, 2, GL_FLOAT, GL_FALSE,
+        verticesVBO.stride /* stride */,
+        (void*) offsetof(BSP::vertex_t, lmcoord) /* offset */);
 
       // Bind colors
       glBindBuffer(GL_ARRAY_BUFFER, colorsVBO.buffer);

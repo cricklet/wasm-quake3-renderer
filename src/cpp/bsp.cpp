@@ -59,7 +59,7 @@ void header_t::printFaces() const {
   cout << "  offset: " << offset << " length: " << length << "\n";
   cout << "  num: " << numFaces() << "\n";
 
-  for (int i = 0; i < 5; i ++) {
+  for (int i = 0; i < 20; i ++) {
     cout << "  " << *(faces() + i) << "\n";
   }
 
@@ -90,7 +90,16 @@ std::ostream& operator<<(std::ostream& os, const BSP::texture_t& texture) {
 }
 
 std::ostream& operator<<(std::ostream& os, const BSP::face_t& face) {
-  os << "face { meshvert:" << face.meshvert << ", n_meshverts" << face.n_meshverts << " }";
+  os << "face { "
+     << "vertex: " << face.vertex
+     << ", n_vertices: " << face.n_vertices
+     << ", texture: " << face.texture
+     << ", meshvert: " << face.meshvert
+     << ", n_meshverts " << face.n_meshverts
+     << ", lm_index: " << face.lm_index
+     << ", lm_start" << face.lm_start
+     << ", lm_size: " << face.lm_size
+     << " }";
   return os;
 }
 

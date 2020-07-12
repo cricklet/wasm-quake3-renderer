@@ -64,6 +64,8 @@ private:
   static const int SHADER_ID = 1;
 
   unordered_map<string, int> _textureResourceIds;
+  unordered_map<int, GLuint> _lightmapTextures;
+  GLuint _fallbackLightmapTexture;
 
   vector<VBO> _verticesPerFace;
   vector<VBO> _colorsPerFace;
@@ -72,8 +74,10 @@ private:
   GLuint _inPosition;
   GLuint _inColor;
   GLuint _inTextureCoords;
+  GLuint _inLightmapCoords;
 
   GLuint _unifTexture;
+  GLuint _unifLightmapTexture;
   GLuint _unifCameraTransform;
   GLuint _unifProjTransform;
 

@@ -27,6 +27,16 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#define warn cout << string(__FILE__) << ":" << to_string(__LINE__) << " "
+
+template<typename K, typename V>
+const V* getValue(const std::unordered_map<K, V>& map, K key) {
+  if (map.count(key)) {
+    return &map.at(key);
+  }
+  return nullptr;
+}
+
 using namespace std;
 
 #endif

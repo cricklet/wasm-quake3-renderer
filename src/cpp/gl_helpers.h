@@ -21,7 +21,11 @@ std::ostream& operator<<(std::ostream& os, const EBO& buffers);
 namespace GLHelpers {
   optional<GLuint> compileShader(const char *fileContents, int fileLength, GLenum shaderType);
   optional<GLuint> compileShaderProgram(const char* vert, int vertLength, const char* frag, int fragLength);
-  optional<GLuint> loadTexture(const void* image, int width, int height);
+  optional<GLuint> loadTexture(
+    const void* image, int width, int height,
+    GLenum internalFormat = GL_RGBA,
+    GLenum format = GL_RGBA,
+    GLenum type = GL_UNSIGNED_BYTE);
   VBO generateRandomColorsVBO(int num);
 }
 

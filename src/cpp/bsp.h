@@ -17,7 +17,8 @@ namespace BSP {
 
   struct vertex_t {
     float position[3];
-    float texcoord[2][2]; //	Vertex texture coordinates. 0=surface, 1=lightmap.
+    float texcoord[2]; // Vertex texture coordinates.
+    float lmcoord[2]; // Lightmap texture coordinates.
     float normal[3]; //	Vertex normal.
     int8_t color[4]; //	Vertex color. RGBA.
   };
@@ -41,6 +42,10 @@ namespace BSP {
 
   struct meshvert_t {
     int offset; // Vertex index offset, relative to first vertex of corresponding face.
+  };
+
+  struct lightmap_t {
+    unsigned char map[128 * 128 * 3];
   };
 
   struct header_t {
@@ -101,7 +106,12 @@ namespace BSP {
 
     // Lightmaps	Packed lightmap data (assume these have been converted to an OpenGL texture)
     const direntry_t* lightmapsEntry() const { return direntries + 14; }
-
+    int numLightmaps() const {
+      return lightmapsEntry()->length / sizeof(lightmap_t);
+    }
+    const lightmap_t* lightmaps() const {
+      return (const lightmap_t*) ((char*) this + lightmapsEntry()->offset);
+    }
     // Visdata	Cluster-cluster visibility data.
     const direntry_t* visdataEntry() const { return direntries + 16; }
 
