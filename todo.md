@@ -34,21 +34,24 @@ Rendering faces
  - [x] Render faces with random colors
 
 Rendering textures
- - [ ] During resource loading, find out what textures to download
- - [ ] Load textures in the ResourceManager
- - [ ] Bind textures to the GPU
- - [ ] Add texture coordinates to GLSL
- - [ ] Render textures
-
-Rendering patches
- - [ ] Learn about how beziers work
- - [ ] Tesselate patches
+ - [x] During resource loading, find out what textures to download
+ - [x] Load textures in the ResourceManager
+ - [x] Bind textures to the GPU
+ - [x] Add texture coordinates to GLSL
+ - [x] Render textures
+ - [ ] Look into surface + content flags (???)
 
 Rendering lightmaps
- - [ ] Load lightmaps in the ResourceManger
- - [ ] Bind lightmap texture to the GPU
- - [ ] Add lightmap coordinates to GLSL
- - [ ] Render lightmaps
+ - [x] Load lightmaps in the ResourceManger
+ - [x] Bind lightmap texture to the GPU
+ - [x] Add lightmap coordinates to GLSL
+ - [x] Render lightmaps
+
+Rendering script textures (shaders)
+ - [ ] (???)
+
+Rendering patches
+ - [ ] (???)
 
 Find out what leaf we're in...
 Render only visible leaves
