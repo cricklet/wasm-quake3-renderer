@@ -142,7 +142,7 @@ bool BSPScenario::finishLoading() {
     return false;
   }
 
-  {
+  { // Finish loading the map. This generates textures, VBOs, & EBOs
     bool success = _renderableMap->finishLoading();
     if (!success) {
       return false;

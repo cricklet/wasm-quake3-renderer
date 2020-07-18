@@ -38,6 +38,49 @@ bool RenderableBSP::loadDependencies() {
   return true;
 }
 
+optional<RenderableFace> RenderableFace::generate(const BSPMap* map, int faceIndex) {
+  const BSP::face_t* faces = map->faces();
+  const BSP::vertex_t* vertices = map->vertices();
+  const BSP::meshvert_t* meshverts = map->meshverts();
+
+  const BSP::face_t* face = faces + faceIndex;
+
+  if (face->type == 2) {
+    return {};
+  }
+
+  RenderableFace result;
+  result.faceIndex = faceIndex;
+
+  VBO& verticesVBO = result.vertices;
+  VBO& colorsVBO = result.colors;
+  EBO& elementsEBO = result.elements;
+
+  // Load vertices
+  glGenBuffers(1, &(verticesVBO.buffer));
+  glBindBuffer(GL_ARRAY_BUFFER, verticesVBO.buffer);
+  glBufferData(
+    GL_ARRAY_BUFFER,
+    sizeof(BSP::vertex_t) * face->n_vertices,
+    &((vertices + face->vertex)->position),
+    GL_STATIC_DRAW);
+
+  verticesVBO.stride = sizeof(BSP::vertex_t);
+
+  // Load colors
+  colorsVBO = GLHelpers::generateRandomColorsVBO(face->n_vertices);
+
+  // Load EBO
+  glGenBuffers(1, &(elementsEBO.buffer));
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementsEBO.buffer);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+    sizeof(GLuint) * face->n_meshverts,
+    meshverts + face->meshvert,
+    GL_STATIC_DRAW);
+
+  return result;
+}
+
 bool RenderableBSP::finishLoading() {
   const BSPMap* map = _map.get();
   if (!map) {
@@ -77,47 +120,12 @@ bool RenderableBSP::finishLoading() {
   }
 
   {
-    const BSP::face_t* faces = map->faces();
     const int numFaces = map->numFaces();
-
-    const BSP::vertex_t* vertices = map->vertices();
-    const BSP::meshvert_t* meshverts = map->meshverts();
-
-    _verticesPerFace.reserve(numFaces);
-    _colorsPerFace.reserve(numFaces);
-    _elementsPerFace.reserve(numFaces);
-
     for (int faceIndex = 0; faceIndex < numFaces; faceIndex ++) {
-      const BSP::face_t* face = faces + faceIndex;
-      if (face->type == 2) {
-        continue;
+      optional<RenderableFace> face = RenderableFace::generate(map, faceIndex);
+      if (face) {
+        _renderableFaces.push_back(*face);
       }
-
-      VBO& verticesVBO = _verticesPerFace[faceIndex];
-      VBO& colorsVBO = _colorsPerFace[faceIndex];
-      EBO& elementsEBO = _elementsPerFace[faceIndex];
-
-      // Load vertices
-      glGenBuffers(1, &(verticesVBO.buffer));
-      glBindBuffer(GL_ARRAY_BUFFER, verticesVBO.buffer);
-      glBufferData(
-        GL_ARRAY_BUFFER,
-        sizeof(BSP::vertex_t) * face->n_vertices,
-        &((vertices + face->vertex)->position),
-        GL_STATIC_DRAW);
-
-      verticesVBO.stride = sizeof(BSP::vertex_t);
-
-      // Load colors
-      colorsVBO = GLHelpers::generateRandomColorsVBO(face->n_vertices);
-
-      // Load EBO
-      glGenBuffers(1, &(elementsEBO.buffer));
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementsEBO.buffer);
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-        sizeof(GLuint) * face->n_meshverts,
-        meshverts + face->meshvert,
-        GL_STATIC_DRAW);
     }
   }
 
@@ -139,16 +147,16 @@ void RenderableBSP::render(const ShaderParameters& inputs) {
 
   const BSP::meshvert_t* meshverts = map->meshverts();
 
-  for (int faceIndex = 0; faceIndex < numFaces; faceIndex ++) {
-    const BSP::face_t* face = faces + faceIndex;
+  for (const RenderableFace& renderableFace : _renderableFaces) {
+    const BSP::face_t* face = faces + renderableFace.faceIndex;
     if (face->type == 2) {
       // Only render mesh faces
       continue;
     }
 
-    VBO& verticesVBO = _verticesPerFace[faceIndex];
-    VBO& colorsVBO = _colorsPerFace[faceIndex];
-    EBO& elementsEBO = _elementsPerFace[faceIndex];
+    const VBO& verticesVBO = renderableFace.vertices;
+    const VBO& colorsVBO = renderableFace.colors;
+    const EBO& elementsEBO = renderableFace.elements;
 
     // Bind the texture
     int textureOffset = face->texture;

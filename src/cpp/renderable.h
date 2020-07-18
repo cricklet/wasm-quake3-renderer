@@ -2,13 +2,21 @@
 #define RENDERABLE_H
 
 #include "support.h"
+#include "gl_helpers.h"
 
-struct VBO;
-struct EBO;
 namespace BSP {
   struct header_t;
+  struct face_t;
 }
 using BSPMap = BSP::header_t;
+
+struct RenderableFace {
+  static optional<RenderableFace> generate(const BSPMap* map, int faceIndex);
+  int faceIndex; // auto* face = map->faces() + faceIndex
+  VBO vertices;
+  VBO colors;
+  EBO elements;
+};
 
 struct RenderableBSP {
   RenderableBSP(ResourcePtr<const BSPMap> map): _map(map) {}
@@ -34,9 +42,7 @@ private:
   unordered_map<int, GLuint> _lightmapTextures;
   GLuint _fallbackLightmapTexture;
 
-  vector<VBO> _verticesPerFace;
-  vector<VBO> _colorsPerFace;
-  vector<EBO> _elementsPerFace;
+  vector<RenderableFace> _renderableFaces;
 };
 
 #endif
