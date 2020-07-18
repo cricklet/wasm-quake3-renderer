@@ -1,5 +1,6 @@
 #include "scenario.h"
 #include "resources.h"
+#include "renderable.h"
 #include "gl_helpers.h"
 #include "bsp.h"
 #include "pprint.hpp"
@@ -113,37 +114,21 @@ void BSPScenario::startLoading() {
 }
 
 bool BSPScenario::loadDependencies() {
-  static bool loadingSecondaryResources = false;
-  if (loadingSecondaryResources) {
-    return false;
+  if (!_renderableMap) {
+    ResourcePtr<const BSPMap> mapResource = ResourceManager::getInstance()->getMap();
+    if (!mapResource.get()) {
+      cerr << "map failed to load\n";
+      return false;
+    }
+    _renderableMap = make_shared<RenderableBSP>(mapResource);
   }
 
-  const BSPMap* map = ResourceManager::getInstance()->getMap();
-  if (!map) {
-    cerr << "map failed to load\n";
-    return false;
+  if (_renderableMap) {
+    return _renderableMap->loadDependencies();
   }
 
-  const BSP::texture_t* textures = map->textures();
-  const int numTextures = map->numTextures();
-
-  int textureResourceId = 100;
-
-  for (int textureIndex = 0; textureIndex < numTextures; textureIndex ++) {
-    const BSP::texture_t* texture = textures + textureIndex;
-    
-    _textureResourceIds[string(texture->name)] = textureResourceId;
-    ResourceManager::getInstance()->loadResource({
-      string("./data/") + string(texture->name),
-      ResourceType::IMAGE_FILE,
-      textureResourceId
-    });
-
-    textureResourceId ++;
-  }
-
-  loadingSecondaryResources = true;
-  return true;
+  cerr << "failed to load dependencies\n";
+  return false;
 }
 
 bool BSPScenario::finishLoading() {
@@ -157,7 +142,8 @@ bool BSPScenario::finishLoading() {
     return false;
   }
 
-  const BSPMap* map = ResourceManager::getInstance()->getMap();
+  ResourcePtr<const BSPMap> mapResource = ResourceManager::getInstance()->getMap();
+  const BSPMap* map = mapResource.get();
   if (!map) {
     cerr << "map failed to load\n";
     return false;
@@ -169,7 +155,7 @@ bool BSPScenario::finishLoading() {
   map->printFaces();
   // map->printMeshverts();
 
-  {
+  { // Load lightmaps
     const BSP::lightmap_t* lightmaps = map->lightmaps();
     const int numLightmaps = map->numLightmaps();
     for (int i = 0; i < numLightmaps; i ++) {
@@ -207,6 +193,9 @@ bool BSPScenario::finishLoading() {
 
     for (int faceIndex = 0; faceIndex < numFaces; faceIndex ++) {
       const BSP::face_t* face = faces + faceIndex;
+      if (face->type == 2) {
+        continue;
+      }
 
       VBO& verticesVBO = _verticesPerFace[faceIndex];
       VBO& colorsVBO = _colorsPerFace[faceIndex];
@@ -292,7 +281,8 @@ void BSPScenario::think(glm::vec2 dir, double pitch, double yaw) {
 }
 
 void BSPScenario::render() {
-  const BSPMap* map = ResourceManager::getInstance()->getMap();
+  ResourcePtr<const BSPMap> mapResource = ResourceManager::getInstance()->getMap();
+  const BSPMap* map = mapResource.get();
 
   glClearColor(0.6, 0.2, 0.6, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -323,6 +313,10 @@ void BSPScenario::render() {
 
     for (int faceIndex = 0; faceIndex < numFaces; faceIndex ++) {
       const BSP::face_t* face = faces + faceIndex;
+      if (face->type == 2) {
+        // Only render mesh faces
+        continue;
+      }
 
       VBO& verticesVBO = _verticesPerFace[faceIndex];
       VBO& colorsVBO = _colorsPerFace[faceIndex];
@@ -332,7 +326,7 @@ void BSPScenario::render() {
       int textureOffset = face->texture;
       if (textureOffset >= 0 && textureOffset < numTextures) {
         const BSP::texture_t* texture = textures + textureOffset;
-        const int textureResourceId = _textureResourceIds[string(texture->name)];
+        const int textureResourceId = _renderableMap->_textureResourceIds[string(texture->name)];
         optional<GLuint> textureId = ResourceManager::getInstance()->getTexture(textureResourceId);
         if (textureId) {
           glActiveTexture(GL_TEXTURE0);

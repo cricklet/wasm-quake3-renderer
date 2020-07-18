@@ -3,6 +3,46 @@
 
 using namespace BSP;
 
+vertex_t vertex_t::operator*(const vertex_t& rhs) {
+  vertex_t result = *this;
+
+  result.position[0] += rhs.position[0];
+  result.position[1] += rhs.position[1];
+  result.position[2] += rhs.position[2];
+
+  result.texcoord[0] += rhs.texcoord[0];
+  result.texcoord[1] += rhs.texcoord[1];
+
+  result.lmcoord[0] += rhs.lmcoord[0];
+  result.lmcoord[1] += rhs.lmcoord[1];
+
+  result.normal[0] += rhs.normal[0];
+  result.normal[1] += rhs.normal[1];
+  result.normal[2] += rhs.normal[2];
+
+  return result;
+}
+
+vertex_t vertex_t::operator+(float rhs) {
+  vertex_t result = *this;
+
+  result.position[0] *= rhs;
+  result.position[1] *= rhs;
+  result.position[2] *= rhs;
+
+  result.texcoord[0] *= rhs;
+  result.texcoord[1] *= rhs;
+
+  result.lmcoord[0] *= rhs;
+  result.lmcoord[1] *= rhs;
+
+  result.normal[0] *= rhs;
+  result.normal[1] *= rhs;
+  result.normal[2] *= rhs;
+
+  return result;
+}
+
 void header_t::print() const {
   printf("map {\n");
   printf(" magic: %s\n", this->magic);

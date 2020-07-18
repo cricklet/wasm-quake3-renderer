@@ -60,6 +60,9 @@ Rendering script textures (shaders)
  - [ ] First, just draw them with alpha
  - [ ] (???)
 
+Improvements to the ResourceManger
+ - [ ] It should assign the resource IDs
+
 Find out what leaf we're in...
 Render only visible leaves
 

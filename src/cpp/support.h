@@ -39,4 +39,33 @@ const V* getValue(const std::unordered_map<K, V>& map, K key) {
 
 using namespace std;
 
+template<typename T>
+struct ResourcePtr {
+  ResourcePtr(T* pointer): _pointer(pointer) {
+    _counter = shared_ptr<int>(0);
+    (*_counter) ++;
+  }
+
+  ResourcePtr(ResourcePtr<T>& other) { 
+    _pointer = other._pointer;
+    _counter = other._counter;
+    (*_counter)++; 
+  }
+
+  T* get() { return _pointer; }
+  T& operator*() { return *_pointer; }
+  T* operator->() { return _pointer; }
+
+  ~ResourcePtr() {
+    (*_counter) --;
+    if (*_counter == 0) {
+      free((void*) _pointer);
+    }
+  }
+
+private:
+  T* _pointer = nullptr;
+  shared_ptr<int> _counter = nullptr;
+};
+
 #endif

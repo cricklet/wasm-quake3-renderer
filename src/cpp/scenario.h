@@ -51,6 +51,8 @@ public:
   glm::vec3 upApproximate();
 };
 
+struct RenderableBSP;
+
 struct BSPScenario : IScenario {
 public:
   void startLoading() override;
@@ -63,14 +65,15 @@ private:
   static const int BSP_ID = 0;
   static const int SHADER_ID = 1;
 
-  unordered_map<string, int> _textureResourceIds;
+  shared_ptr<RenderableBSP> _renderableMap = nullptr;
+
   unordered_map<int, GLuint> _lightmapTextures;
   GLuint _fallbackLightmapTexture;
 
   vector<VBO> _verticesPerFace;
   vector<VBO> _colorsPerFace;
   vector<EBO> _elementsPerFace;
-  
+
   GLuint _inPosition;
   GLuint _inColor;
   GLuint _inTextureCoords;
@@ -78,6 +81,7 @@ private:
 
   GLuint _unifTexture;
   GLuint _unifLightmapTexture;
+
   GLuint _unifCameraTransform;
   GLuint _unifProjTransform;
 

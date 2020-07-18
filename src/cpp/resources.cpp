@@ -86,6 +86,6 @@ optional<GLuint> ResourceManager::getTexture(int resourceID) {
   return {};
 }
 
-const BSPMap* ResourceManager::getMap() {
+ResourcePtr<const BSPMap> ResourceManager::getMap() {
   return _map;
 }

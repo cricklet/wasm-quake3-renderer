@@ -21,6 +21,9 @@ namespace BSP {
     float lmcoord[2]; // Lightmap texture coordinates.
     float normal[3]; //	Vertex normal.
     int8_t color[4]; //	Vertex color. RGBA.
+
+    vertex_t operator*(const vertex_t& rhs);
+    vertex_t operator+(float rhs);
   };
 
   struct face_t {

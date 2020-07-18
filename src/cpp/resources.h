@@ -28,7 +28,7 @@ public:
 
   optional<GLuint> getShaderProgram(int resourceID);
   optional<GLuint> getTexture(int resourceID);
-  const BSPMap* getMap();
+  ResourcePtr<const BSPMap> getMap();
 
 private:
   unordered_set<int> _loadingResources = {};
@@ -37,7 +37,7 @@ private:
   unordered_map<int, GLuint> _shaderPrograms = {};
   unordered_map<int, GLuint> _textures = {};
 
-  const BSPMap* _map = nullptr;
+  ResourcePtr<const BSPMap> _map = nullptr;
 
   static shared_ptr<ResourceManager> _instance;
 };
