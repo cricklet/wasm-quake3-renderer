@@ -62,6 +62,7 @@ Rendering script textures (shaders)
 
 Improvements to the ResourceManger
  - [ ] It should assign the resource IDs
+ - [ ] Have multiple loading states
 
 Find out what leaf we're in...
 Render only visible leaves
