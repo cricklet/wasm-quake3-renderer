@@ -67,6 +67,7 @@ Improvements to the ResourceManger
 Improvements to the development environment
  - [ ] Use Catch.h to run tests
  - [ ] Add an OSX compilation target
+ - [ ] Add flags which can be controlled via checkboxes in index.html
 
 Find out what leaf we're in...
 Render only visible leaves
@@ -100,6 +101,3 @@ Sounds (weapons, footsteps)
 Spatial sound engine
 
 Game scripting (lua?)
-
-Docs to read
- - [ ] https://fabiensanglard.net/quake3/
