@@ -3,6 +3,8 @@
 #include "bsp.h"
 #include "gl_helpers.h"
 #include "resources.h"
+#include "pprint.hpp"
+#include "assert.h"
 
 bool RenderableBSP::loadDependencies() {
   static bool loadingSecondaryResources = false;
@@ -38,47 +40,250 @@ bool RenderableBSP::loadDependencies() {
   return true;
 }
 
-optional<RenderableFace> RenderableFace::generate(const BSPMap* map, int faceIndex) {
-  const BSP::face_t* faces = map->faces();
-  const BSP::vertex_t* vertices = map->vertices();
-  const BSP::meshvert_t* meshverts = map->meshverts();
+struct TesselatedPatch {
+  vector<BSP::vertex_t> vertices;
+  vector<int> indices;
+};
 
-  const BSP::face_t* face = faces + faceIndex;
+static TesselatedPatch tesselatePatch(int L, const vector<BSP::vertex_t>& controls) {
+  // The body of this method is borrowed from: http://graphics.cs.brown.edu/games/quake/quake3.html#RenderingFaces
+  // Thank you, Morgan McGuire!
 
-  if (face->type == 2) {
-    return {};
+  TesselatedPatch result;
+
+  // The number of vertices along a side is 1 + num edges
+  const int L1 = L + 1;
+  result.vertices.resize(L1 * L1);
+
+  // Compute the vertices
+  int i;
+
+  for (i = 0; i <= L; ++i) {
+    double a = (double)i / L;
+    double b = 1 - a;
+
+    result.vertices[i] =
+        controls[0] * (b * b) + 
+        controls[3] * (2 * b * a) +
+        controls[6] * (a * a);
   }
 
-  RenderableFace result;
-  result.faceIndex = faceIndex;
+  for (i = 1; i <= L; ++i) {
+    double a = (double)i / L;
+    double b = 1.0 - a;
 
-  VBO& verticesVBO = result.vertices;
-  VBO& colorsVBO = result.colors;
-  EBO& elementsEBO = result.elements;
+    BSP::vertex_t temp[3];
 
-  // Load vertices
-  glGenBuffers(1, &(verticesVBO.buffer));
-  glBindBuffer(GL_ARRAY_BUFFER, verticesVBO.buffer);
-  glBufferData(
-    GL_ARRAY_BUFFER,
-    sizeof(BSP::vertex_t) * face->n_vertices,
-    &((vertices + face->vertex)->position),
-    GL_STATIC_DRAW);
+    int j;
+    for (j = 0; j < 3; ++j) {
+      int k = 3 * j;
+      temp[j] =
+          controls[k + 0] * (b * b) + 
+          controls[k + 1] * (2 * b * a) +
+          controls[k + 2] * (a * a);
+    }
 
-  verticesVBO.stride = sizeof(BSP::vertex_t);
+    for(j = 0; j <= L; ++j) {
+      double a = (double)j / L;
+      double b = 1.0 - a;
 
-  // Load colors
-  colorsVBO = GLHelpers::generateRandomColorsVBO(face->n_vertices);
+      result.vertices[i * L1 + j]=
+          temp[0] * (b * b) + 
+          temp[1] * (2 * b * a) +
+          temp[2] * (a * a);
+    }
+  }
 
-  // Load EBO
-  glGenBuffers(1, &(elementsEBO.buffer));
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementsEBO.buffer);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-    sizeof(GLuint) * face->n_meshverts,
-    meshverts + face->meshvert,
-    GL_STATIC_DRAW);
+  // Compute the indices
+  int row;
+  result.indices.resize(L * (L + 1) * 2);
+
+  for (row = 0; row < L; ++row) {
+    for(int col = 0; col <= L; ++col)	{
+      result.indices[(row * (L + 1) + col) * 2 + 1] = row       * L1 + col;
+      result.indices[(row * (L + 1) + col) * 2]     = (row + 1) * L1 + col;
+    }
+  }
 
   return result;
+}
+
+static TesselatedPatch untesselatedPatch(const vector<BSP::vertex_t>& controlPoints) {
+  // 0 1 2
+  // 3 4 5
+  // 6 7 8
+  cout << controlPoints << "\n";
+  assert(controlPoints.size() == 9);
+
+  TesselatedPatch untesselated;
+  untesselated.vertices.insert(untesselated.vertices.end(), begin(controlPoints), end(controlPoints));
+
+  untesselated.indices.push_back(0);
+  untesselated.indices.push_back(1);
+  untesselated.indices.push_back(3);
+
+  untesselated.indices.push_back(1);
+  untesselated.indices.push_back(3);
+  untesselated.indices.push_back(4);
+
+  untesselated.indices.push_back(1);
+  untesselated.indices.push_back(2);
+  untesselated.indices.push_back(4);
+
+  untesselated.indices.push_back(2);
+  untesselated.indices.push_back(4);
+  untesselated.indices.push_back(5);
+
+  untesselated.indices.push_back(3 + 0);
+  untesselated.indices.push_back(3 + 1);
+  untesselated.indices.push_back(3 + 3);
+
+  untesselated.indices.push_back(3 + 1);
+  untesselated.indices.push_back(3 + 3);
+  untesselated.indices.push_back(3 + 4);
+
+  untesselated.indices.push_back(3 + 1);
+  untesselated.indices.push_back(3 + 2);
+  untesselated.indices.push_back(3 + 4);
+
+  untesselated.indices.push_back(3 + 2);
+  untesselated.indices.push_back(3 + 4);
+  untesselated.indices.push_back(3 + 5);
+
+  return untesselated;
+}
+
+static TesselatedPatch tesselateFace(const BSPMap* map, const BSP::face_t* face) {
+  assert(face->type == (int) BSP::FaceType::PATCH);
+
+  const BSP::vertex_t* faceVertices = map->vertices() + face->vertex;
+
+  int numVerticesWidth = face->size[0];
+  int numVerticesHeight = face->size[1];
+
+  assert(numVerticesWidth * numVerticesHeight == face->n_vertices);
+
+  int numRows = (numVerticesHeight - 1) / 2;
+  int numCols  = (numVerticesWidth - 1) / 2;
+
+  int tesselationLevel = 7;
+
+  vector<TesselatedPatch> allPatches;
+
+  for (int row = 0; row < numRows; row ++) {
+    for (int col = 0; col < numCols; col ++) {
+      const BSP::vertex_t* patchVertices = faceVertices + row * 2 * numVerticesWidth + col * 2;
+
+      vector<BSP::vertex_t> controlPoints; // this seems readable to me!
+      controlPoints.resize(9);
+      controlPoints[0] = patchVertices[0 * numVerticesWidth + 0];
+      controlPoints[1] = patchVertices[0 * numVerticesWidth + 1];
+      controlPoints[2] = patchVertices[0 * numVerticesWidth + 2];
+      controlPoints[3] = patchVertices[1 * numVerticesWidth + 0];
+      controlPoints[4] = patchVertices[1 * numVerticesWidth + 1];
+      controlPoints[5] = patchVertices[1 * numVerticesWidth + 2];
+      controlPoints[6] = patchVertices[2 * numVerticesWidth + 0];
+      controlPoints[7] = patchVertices[2 * numVerticesWidth + 1];
+      controlPoints[8] = patchVertices[2 * numVerticesWidth + 2];
+
+      allPatches.push_back(untesselatedPatch(controlPoints));
+      // allPatches.push_back(tesselatedPatch(tesselationLevel, controlPoints));
+    }
+  }
+
+  TesselatedPatch result;
+
+  for (const TesselatedPatch& patch : allPatches) {
+    int startingVertexIndex = result.vertices.size();
+    result.vertices.insert(result.vertices.end(), patch.vertices.begin(), patch.vertices.end());
+    for (int index : patch.indices) {
+      result.indices.push_back(startingVertexIndex + index);
+    }
+  }
+
+  return result;
+}
+
+optional<RenderableFace> RenderableFace::generate(const BSPMap* map, int faceIndex) {
+  const BSP::face_t* faces = map->faces();
+  const BSP::face_t* face = faces + faceIndex;
+
+  if (face->type == (int) BSP::FaceType::POLYGON || face->type == (int) BSP::FaceType::MESH) {
+    const BSP::vertex_t* vertices = map->vertices();
+    const BSP::meshvert_t* meshverts = map->meshverts();
+
+    RenderableFace result;
+    result.faceIndex = faceIndex;
+
+    VBO& verticesVBO = result.vertices;
+    VBO& colorsVBO = result.colors;
+    EBO& elementsEBO = result.elements;
+
+    // Load vertices
+    glGenBuffers(1, &(verticesVBO.buffer));
+    glBindBuffer(GL_ARRAY_BUFFER, verticesVBO.buffer);
+    glBufferData(
+      GL_ARRAY_BUFFER,
+      sizeof(BSP::vertex_t) * face->n_vertices,
+      &((vertices + face->vertex)->position),
+      GL_STATIC_DRAW);
+
+    verticesVBO.stride = sizeof(BSP::vertex_t);
+
+    // Load colors
+    colorsVBO = GLHelpers::generateRandomColorsVBO(face->n_vertices);
+
+    // Load EBO
+    glGenBuffers(1, &(elementsEBO.buffer));
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementsEBO.buffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+      sizeof(GLuint) * face->n_meshverts,
+      meshverts + face->meshvert,
+      GL_STATIC_DRAW);
+    elementsEBO.count = face->n_meshverts;
+
+    return result;
+  }
+
+  if (face->type == (int) BSP::FaceType::PATCH) {
+    RenderableFace result;
+    result.faceIndex = faceIndex;
+
+    VBO& verticesVBO = result.vertices;
+    VBO& colorsVBO = result.colors;
+    EBO& elementsEBO = result.elements;
+
+    TesselatedPatch tesselation = tesselateFace(map, face);
+
+    cout << "num vertices " << tesselation.vertices.size() << " num elements " << tesselation.indices.size() << "\n";
+
+    // Load vertices
+    glGenBuffers(1, &(verticesVBO.buffer));
+    glBindBuffer(GL_ARRAY_BUFFER, verticesVBO.buffer);
+    glBufferData(
+      GL_ARRAY_BUFFER,
+      sizeof(BSP::vertex_t) * tesselation.vertices.size(),
+      &(tesselation.vertices.data()->position),
+      GL_STATIC_DRAW);
+
+    verticesVBO.stride = sizeof(BSP::vertex_t);
+
+    // Load colors
+    colorsVBO = GLHelpers::generateRandomColorsVBO(tesselation.vertices.size());
+
+    // Load EBO
+    glGenBuffers(1, &(elementsEBO.buffer));
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementsEBO.buffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+      sizeof(GLuint) * tesselation.indices.size(),
+      tesselation.indices.data(),
+      GL_STATIC_DRAW);
+    elementsEBO.count = tesselation.indices.size();
+
+    return result;
+  }
+
+  return {};
 }
 
 bool RenderableBSP::finishLoading() {
@@ -145,14 +350,11 @@ void RenderableBSP::render(const ShaderParameters& inputs) {
   const BSP::texture_t* textures = map->textures();
   const int numTextures = map->numTextures();
 
-  const BSP::meshvert_t* meshverts = map->meshverts();
-
   for (const RenderableFace& renderableFace : _renderableFaces) {
     const BSP::face_t* face = faces + renderableFace.faceIndex;
-    if (face->type == 2) {
-      // Only render mesh faces
-      continue;
-    }
+    // if (face->type != (int) BSP::FaceType::PATCH) {
+    //   continue;
+    // }
 
     const VBO& verticesVBO = renderableFace.vertices;
     const VBO& colorsVBO = renderableFace.colors;
@@ -211,6 +413,6 @@ void RenderableBSP::render(const ShaderParameters& inputs) {
 
     // Render elements
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementsEBO.buffer);
-    glDrawElements(GL_TRIANGLES, face->n_meshverts, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, elementsEBO.count, GL_UNSIGNED_INT, 0);
   }
 }

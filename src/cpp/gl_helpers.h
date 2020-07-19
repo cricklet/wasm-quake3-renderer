@@ -8,6 +8,7 @@ bool _hasErrors(const char *filename, int line);
 
 struct EBO {
   GLuint buffer;
+  int count;
 };
 
 struct VBO {

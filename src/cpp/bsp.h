@@ -4,6 +4,13 @@
 #include "support.h"
 
 namespace BSP {
+  enum class FaceType : int {
+    POLYGON = 1,
+    PATCH = 2,
+    MESH = 3,
+    BILLBOARD = 4
+  };
+
   struct direntry_t {
     int offset;
     int length;
@@ -22,8 +29,8 @@ namespace BSP {
     float normal[3]; //	Vertex normal.
     int8_t color[4]; //	Vertex color. RGBA.
 
-    vertex_t operator*(const vertex_t& rhs);
-    vertex_t operator+(float rhs);
+    vertex_t operator+(const vertex_t& rhs) const;
+    vertex_t operator*(double rhs) const;
   };
 
   struct face_t {

@@ -238,7 +238,4 @@ void BSPScenario::render() {
     };
     _renderableMap->render(shaderInputs);
   }
-
-  // Block to check for errors
-  hasErrors();
 }

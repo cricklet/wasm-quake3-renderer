@@ -12,7 +12,7 @@ out lowp vec4 outColor;
 void main() {
   lowp vec4 light = texture(unifLightmapTexture, intermLightmapCoords);
   lowp vec4 color = texture(unifTexture, intermTextureCoords);
-  outColor = color * light * 4.0;
-  // outColor = color * light * 2.0;
-  // * vec4(intermColor, 1.0);
+  outColor = vec4(0.2, 0.2, 0.2, 0.2) + color * light * 4.0;
+  // outColor = vec4(intermColor, 1.0);
+  // outColor = vec4(1.0, 1.0, 1.0, 1.0);
 }

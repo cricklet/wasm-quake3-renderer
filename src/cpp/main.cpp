@@ -53,7 +53,7 @@ int main() {
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-  GLFWwindow* window = glfwCreateWindow(1200, 800, "OpenGL", nullptr, nullptr); // Windowed
+  GLFWwindow* window = glfwCreateWindow(640, 480, "OpenGL", nullptr, nullptr); // Windowed
   glfwMakeContextCurrent(window);
 
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -61,6 +61,12 @@ int main() {
   printf("OpenGL version supported by this platform : %s\n", glGetString(GL_VERSION));
 
   loopCallback = [&] {
+    static bool error = false;
+    if (hasErrors() || error) {
+      error = true;
+      return;
+    }
+
     if (!ResourceManager::getInstance()->finishedLoading()) {
       return;
     }

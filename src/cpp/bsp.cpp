@@ -3,7 +3,7 @@
 
 using namespace BSP;
 
-vertex_t vertex_t::operator*(const vertex_t& rhs) {
+vertex_t vertex_t::operator+(const vertex_t& rhs) const {
   vertex_t result = *this;
 
   result.position[0] += rhs.position[0];
@@ -23,7 +23,7 @@ vertex_t vertex_t::operator*(const vertex_t& rhs) {
   return result;
 }
 
-vertex_t vertex_t::operator+(float rhs) {
+vertex_t vertex_t::operator*(double rhs) const {
   vertex_t result = *this;
 
   result.position[0] *= rhs;
@@ -131,7 +131,8 @@ std::ostream& operator<<(std::ostream& os, const BSP::texture_t& texture) {
 
 std::ostream& operator<<(std::ostream& os, const BSP::face_t& face) {
   os << "face { "
-     << "vertex: " << face.vertex
+     << "type: " << face.type
+     << ", vertex: " << face.vertex
      << ", n_vertices: " << face.n_vertices
      << ", texture: " << face.texture
      << ", meshvert: " << face.meshvert
@@ -139,6 +140,7 @@ std::ostream& operator<<(std::ostream& os, const BSP::face_t& face) {
      << ", lm_index: " << face.lm_index
      << ", lm_start" << face.lm_start
      << ", lm_size: " << face.lm_size
+     << ", size: " << face.size
      << " }";
   return os;
 }
