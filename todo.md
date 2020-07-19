@@ -64,6 +64,10 @@ Improvements to the ResourceManger
  - [ ] It should assign the resource IDs
  - [ ] Have multiple loading states
 
+Improvements to the development environment
+ - [ ] Use Catch.h to run tests
+ - [ ] Add an OSX compilation target
+
 Find out what leaf we're in...
 Render only visible leaves
 

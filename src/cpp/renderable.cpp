@@ -45,7 +45,7 @@ struct TesselatedPatch {
   vector<int> indices;
 };
 
-static TesselatedPatch tesselatePatch(int L, const vector<BSP::vertex_t>& controls) {
+static TesselatedPatch tesselatedPatch(int L, const vector<BSP::vertex_t>& controls) {
   // The body of this method is borrowed from: http://graphics.cs.brown.edu/games/quake/quake3.html#RenderingFaces
   // Thank you, Morgan McGuire!
 
@@ -55,21 +55,22 @@ static TesselatedPatch tesselatePatch(int L, const vector<BSP::vertex_t>& contro
   const int L1 = L + 1;
   result.vertices.resize(L1 * L1);
 
-  // Compute the vertices
-  int i;
+  // 0 1 2
+  // 3 4 5
+  // 6 7 8
 
-  for (i = 0; i <= L; ++i) {
-    double a = (double)i / L;
+  for (int col = 0; col <= L; ++col) { // Fill in the first row
+    double a = (double)col / L;
     double b = 1 - a;
 
-    result.vertices[i] =
+    result.vertices[col] =
         controls[0] * (b * b) + 
         controls[3] * (2 * b * a) +
         controls[6] * (a * a);
   }
 
-  for (i = 1; i <= L; ++i) {
-    double a = (double)i / L;
+  for (int row = 1; row <= L; ++row) { // Fill in each next row
+    double a = (double)row / L;
     double b = 1.0 - a;
 
     BSP::vertex_t temp[3];
@@ -83,11 +84,11 @@ static TesselatedPatch tesselatePatch(int L, const vector<BSP::vertex_t>& contro
           controls[k + 2] * (a * a);
     }
 
-    for(j = 0; j <= L; ++j) {
-      double a = (double)j / L;
+    for(int col = 0; col <= L; ++col) {
+      double a = (double)col / L;
       double b = 1.0 - a;
 
-      result.vertices[i * L1 + j]=
+      result.vertices[row * L1 + col]=
           temp[0] * (b * b) + 
           temp[1] * (2 * b * a) +
           temp[2] * (a * a);
@@ -95,13 +96,15 @@ static TesselatedPatch tesselatePatch(int L, const vector<BSP::vertex_t>& contro
   }
 
   // Compute the indices
-  int row;
-  result.indices.resize(L * (L + 1) * 2);
+  for (int row = 0; row < L; ++row) {
+    for(int col = 0; col < L; ++col)	{
+      result.indices.push_back((row + 0) * L1 + (col + 0));
+      result.indices.push_back((row + 1) * L1 + (col + 0));
+      result.indices.push_back((row + 1) * L1 + (col + 1));
 
-  for (row = 0; row < L; ++row) {
-    for(int col = 0; col <= L; ++col)	{
-      result.indices[(row * (L + 1) + col) * 2 + 1] = row       * L1 + col;
-      result.indices[(row * (L + 1) + col) * 2]     = (row + 1) * L1 + col;
+      result.indices.push_back((row + 0) * L1 + (col + 0));
+      result.indices.push_back((row + 1) * L1 + (col + 1));
+      result.indices.push_back((row + 0) * L1 + (col + 1));
     }
   }
 
@@ -153,7 +156,7 @@ static TesselatedPatch untesselatedPatch(const vector<BSP::vertex_t>& controlPoi
   return untesselated;
 }
 
-static TesselatedPatch tesselateFace(const BSPMap* map, const BSP::face_t* face) {
+static TesselatedPatch tesselatedFace(const BSPMap* map, const BSP::face_t* face) {
   assert(face->type == (int) BSP::FaceType::PATCH);
 
   const BSP::vertex_t* faceVertices = map->vertices() + face->vertex;
@@ -186,8 +189,8 @@ static TesselatedPatch tesselateFace(const BSPMap* map, const BSP::face_t* face)
       controlPoints[7] = patchVertices[2 * numVerticesWidth + 1];
       controlPoints[8] = patchVertices[2 * numVerticesWidth + 2];
 
-      allPatches.push_back(untesselatedPatch(controlPoints));
-      // allPatches.push_back(tesselatedPatch(tesselationLevel, controlPoints));
+      // allPatches.push_back(untesselatedPatch(controlPoints));
+      allPatches.push_back(tesselatedPatch(tesselationLevel, controlPoints));
     }
   }
 
@@ -253,7 +256,7 @@ optional<RenderableFace> RenderableFace::generate(const BSPMap* map, int faceInd
     VBO& colorsVBO = result.colors;
     EBO& elementsEBO = result.elements;
 
-    TesselatedPatch tesselation = tesselateFace(map, face);
+    TesselatedPatch tesselation = tesselatedFace(map, face);
 
     cout << "num vertices " << tesselation.vertices.size() << " num elements " << tesselation.indices.size() << "\n";
 
