@@ -74,15 +74,15 @@ static TesselatedPatch tesselatedPatch(int L, const vector<BSP::vertex_t>& contr
     double b = 1.0 - a;
 
     BSP::vertex_t temp[3];
-
-    int j;
-    for (j = 0; j < 3; ++j) {
-      int k = 3 * j;
-      temp[j] =
-          controls[k + 0] * (b * b) + 
-          controls[k + 1] * (2 * b * a) +
-          controls[k + 2] * (a * a);
-    }
+    const auto helper = [&controls, a, b](int controlRow) {
+      return
+        controls[controlRow * 3 + 0] * (b * b) + 
+        controls[controlRow * 3 + 1] * (2 * b * a) +
+        controls[controlRow * 3 + 2] * (a * a);
+    };
+    temp[0] = helper(0);
+    temp[1] = helper(1);
+    temp[2] = helper(2);
 
     for(int col = 0; col <= L; ++col) {
       double a = (double)col / L;
@@ -115,7 +115,7 @@ static TesselatedPatch untesselatedPatch(const vector<BSP::vertex_t>& controlPoi
   // 0 1 2
   // 3 4 5
   // 6 7 8
-  cout << controlPoints << "\n";
+
   assert(controlPoints.size() == 9);
 
   TesselatedPatch untesselated;
