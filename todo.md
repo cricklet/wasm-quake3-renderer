@@ -48,13 +48,13 @@ Rendering lightmaps
  - [x] Render lightmaps
 
 Rendering patches
- - [ ] Implement operator* & + for vertex_t
- - [ ] For each face, loop over the contained patches
- - [ ] For each patch, get the control points
- - [ ] Tesselate the patch based on the control points
- - [ ] Bind the tesselated vertices to the GPU
- - [ ] Bind the tesselated lightmap/texture coordinates
- - [ ] They should render!
+ - [x] Implement operator* & + for vertex_t
+ - [x] For each face, loop over the contained patches
+ - [x] For each patch, get the control points
+ - [x] Tesselate the patch based on the control points
+ - [x] Bind the tesselated vertices to the GPU
+ - [x] Bind the tesselated lightmap/texture coordinates
+ - [x] They should render!
 
 Rendering script textures (shaders)
  - [ ] First, just draw them with alpha
