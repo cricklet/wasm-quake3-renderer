@@ -50,6 +50,12 @@ namespace BSP {
     int size[2]; //	Patch dimensions.
   };
 
+  struct effect_t {
+    char name[64];
+    int brush;
+    int unknown; // always 5?
+  };
+
   struct meshvert_t {
     int offset; // Vertex index offset, relative to first vertex of corresponding face.
   };
@@ -105,6 +111,15 @@ namespace BSP {
       return (const meshvert_t*) ((char*) this + meshvertsEntry()->offset);
     }
 
+    // Shaders per face
+    const direntry_t* effectsEntry() const { return direntries + 12; }
+    int numEffects() const {
+      return effectsEntry()->length / sizeof(effect_t);
+    }
+    const effect_t* effects() const {
+      return (const effect_t*) ((char*) this + effectsEntry()->offset);
+    }
+
     // Faces	Surface geometry.
     const direntry_t* facesEntry() const { return direntries + 13; }
     int numFaces() const {
@@ -122,10 +137,14 @@ namespace BSP {
     const lightmap_t* lightmaps() const {
       return (const lightmap_t*) ((char*) this + lightmapsEntry()->offset);
     }
+
+    const direntry_t* lightvolsEntry() const { return direntries + 15; }
+
     // Visdata	Cluster-cluster visibility data.
     const direntry_t* visdataEntry() const { return direntries + 16; }
 
     void print() const;
+    void printEffects() const;
     void printTextures() const;
     void printVertices() const;
     void printFaces() const;
@@ -137,6 +156,7 @@ std::ostream& operator<<(std::ostream& os, const BSP::texture_t& texture);
 std::ostream& operator<<(std::ostream& os, const BSP::face_t& vertex);
 std::ostream& operator<<(std::ostream& os, const BSP::vertex_t& vertex);
 std::ostream& operator<<(std::ostream& os, const BSP::meshvert_t& meshvert);
+std::ostream& operator<<(std::ostream& os, const BSP::effect_t& effect);
 
 using BSPMap = BSP::header_t;
 

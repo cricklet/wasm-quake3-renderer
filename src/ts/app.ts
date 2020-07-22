@@ -37,10 +37,10 @@ async function loadImage(src: string) {
   return { pointer, width: image.width, height: image.height }
 }
 
-type TextureManifest = { [key: string]: boolean }
-let _textureManifest: TextureManifest = {}
+type TextureManifest = { textures: {[key: string]: boolean}, shaders: {[key: string]: Array<string[]>} }
+let _textureManifest: TextureManifest = { textures: {}, shaders: {} }
 async function getTextureManifest() {
-  if (!isEmpty(_textureManifest)) {
+  if (!isEmpty(_textureManifest.textures)) {
     return _textureManifest
   }
   _textureManifest = await fetch('./data/textures_manifest.json')
@@ -51,16 +51,35 @@ async function getTextureManifest() {
 
 function findTextureInManifest(url: string, manifest: TextureManifest) {
   url = url.replace(/^(\.\/)/,"")
-  if (url in manifest) {
+  if (url in manifest.textures) {
     return url
   }
   
-  if ((url + '.jpg') in manifest) {
+  if ((url + '.jpg') in manifest.textures) {
     return url + '.jpg'
   }
   
-  if ((url + '.png') in manifest) {
+  if ((url + '.png') in manifest.textures) {
     return url + '.png'
+  }
+
+  return undefined
+}
+
+function findTextureShader(url: string, manifest: TextureManifest) {
+  url = url.replace(/^.*data\//,"")
+  url = url.replace(/\.[A-z]+$/,"")
+
+  if (url in manifest.shaders) {
+    return manifest.shaders[url]
+  }
+  
+  if ((url + '.jpg') in manifest.shaders) {
+    return manifest.shaders[(url + '.jpg')]
+  }
+  
+  if ((url + '.png') in manifest.shaders) {
+    return manifest.shaders[(url + '.png')]
   }
 
   return undefined
@@ -82,6 +101,11 @@ async function loadResource(message: LoadResource) {
       const textureManifest = await getTextureManifest()
       const textureUrl = findTextureInManifest(message.url, textureManifest)
       if (textureUrl) {
+        const shaderForTexture = findTextureShader(textureUrl, textureManifest)
+        if (shaderForTexture) {
+          console.warn('shader for', textureUrl, '=>', shaderForTexture)
+        }
+
         const image = await loadImage(textureUrl)
         sendMessageFromWeb({
           type: 'LoadedTexture',

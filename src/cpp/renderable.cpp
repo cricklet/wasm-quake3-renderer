@@ -296,10 +296,11 @@ bool RenderableBSP::finishLoading() {
     return false;
   }
 
-  map->print();
-  map->printTextures();
+  // map->print();
+  // map->printEffects();
+  // map->printTextures();
   // map->printVertices();
-  map->printFaces();
+  // map->printFaces();
   // map->printMeshverts();
 
   { // Load lightmaps

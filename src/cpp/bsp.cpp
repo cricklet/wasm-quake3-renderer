@@ -106,6 +106,23 @@ void header_t::printFaces() const {
   cout << "}\n";
 }
 
+void header_t::printEffects() const {
+  const direntry_t* effectsEntry = this->effectsEntry();
+
+  cout << "effects {\n";
+
+  const int offset = effectsEntry->offset;
+  const int length = effectsEntry->length;
+  cout << "  offset: " << offset << " length: " << length << "\n";
+  cout << "  num: " << numEffects() << "\n";
+
+  for (int i = 0; i < numEffects(); i ++) {
+    cout << "  " << *(effects() + i) << "\n";
+  }
+
+  cout << "}\n";
+}
+
 
 void header_t::printMeshverts() const {
   const direntry_t* meshvertsEntry = this->meshvertsEntry();
@@ -141,6 +158,15 @@ std::ostream& operator<<(std::ostream& os, const BSP::face_t& face) {
      << ", lm_start" << face.lm_start
      << ", lm_size: " << face.lm_size
      << ", size: " << face.size
+     << " }";
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const BSP::effect_t& effect) {
+  os << "effect { "
+     << "name: " << effect.name
+     << ", brush: " << effect.brush
+     << ", unknown: " << effect.unknown
      << " }";
   return os;
 }

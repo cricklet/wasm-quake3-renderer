@@ -18,3 +18,5 @@ Fabien Sanglard docs
 Reflex
  - [ ] http://wiki.reflexfiles.com/index.php?title=Netcode
 
+Drawing dynamic objects?
+ - [ ] https://litasa.github.io/blog/2017/09/04/OpenGL-MultiDrawIndirect-with-Individual-Textures
