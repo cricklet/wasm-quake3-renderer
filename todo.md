@@ -56,23 +56,15 @@
  - [x] Bind the tesselated lightmap/texture coordinates
  - [x] They should render!
 
-# Make it possible to work on the rendering pipeline in TS (?)
-
-C++ owns the state of the world. It loads that state into the GPU via VBOs/EBOs per-face.
-Maybe it would work to pass those buffer uints into TS and then have TS own the entire
-rendering pipeline -- this way the somewhat texture-shader pipeline can be written entirely
-in TS.
-
-For dynamic values, maybe C++ would still 
-probably own setting dynamic state like camera-transform & (eventually) the transforms for
-player models.
-
- - [ ] Pass GLuint buffers into TS?
- - [ ] 
-
 ## Rendering script textures (shaders)
- - [ ] Load the script definitions into textures_manifest.json
+ - [x] Load the script definitions into textures_manifest.json
  - [ ] Load the script definition into TS
+ - [ ] Add basic texture commands to schema
+ - [ ] Add an alpha setting to the texture commands!
+ - [ ] Pass texture commands from TS => C++ per texture
+ - [ ] Read texture commands when rendering faces, starting with alpha.
+ - [ ] Extend texture commands to include extra passes (eg blendfunc add?)
+ - [ ] Organize faces into which faces need to be drawn in which pass
  - [ ] textures/proto2/beam_blue -- uses alpha & add blend function
  - [ ] data/textures/sfx/beam.jpg -- uses scroll mod
  - [ ] data/textures/skies/meth_clouds_blue.jpg -- uses scale & scroll mod

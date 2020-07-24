@@ -18,5 +18,15 @@ Fabien Sanglard docs
 Reflex
  - [ ] http://wiki.reflexfiles.com/index.php?title=Netcode
 
-Drawing dynamic objects?
+Transparency
+ > Just thinking from first principles... I should be able to render the opaque scene first -- and
+ > store both the z-index of each pixel and the RGBA. Then, I should be able to render the
+ > translucent elements in the scene, blending the result with the original RGBA if the translucent
+ > elements are in front of the opaque elemnets or ignoring them otherwise. This won't allow blending
+ > multiple translucent elements at a time, but should work for individual translucent elements.
+ - [ ] http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-10-transparency/
+ - [ ] https://learnopengl.com/Advanced-OpenGL/Blending
+
+Future things to read about OpenGL features
  - [ ] https://litasa.github.io/blog/2017/09/04/OpenGL-MultiDrawIndirect-with-Individual-Textures
+ - [ ] https://learnopengl.com/Advanced-OpenGL/Instancing
