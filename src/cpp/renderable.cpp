@@ -374,9 +374,10 @@ void RenderableBSP::render(const ShaderParameters& inputs) {
     const int textureResourceId = _textureResourceIds[string(texture->name)];
 
     optional<RenderableTextureOptions> textureOptions = ResourceManager::getInstance()->getTextureOptions(textureResourceId);
-    bool hasAlpha = textureOptions && textureOptions->transparency < 1;
-    if (inputs.mode == RenderMode::SOLID && hasAlpha) {
-      // Skip this texture!
+    float transparency = textureOptions ? textureOptions->transparency : 1;
+    if (inputs.mode == RenderMode::SOLID && transparency < 0.99) {
+      continue;
+    } else if (inputs.mode == RenderMode::TRANSPARENCY && transparency >= 0.99) {
       continue;
     }
 
