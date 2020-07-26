@@ -5,6 +5,8 @@ import schema
 def convert_ts_type(t):
   if t == 'int':
     return 'number'
+  if t == 'float':
+    return 'number'
   if t == 'void*':
     return 'number'
   return t

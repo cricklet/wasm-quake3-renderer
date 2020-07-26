@@ -37,7 +37,22 @@ async function loadImage(src: string) {
   return { pointer, width: image.width, height: image.height }
 }
 
-type TextureManifest = { textures: {[key: string]: boolean}, shaders: {[key: string]: Array<string[]>} }
+// Looks like: [
+//   ["qer_editorimage", "textures/proto2/beam_blue.tga"],
+//   ["surfaceparm", "trans"],
+//   ["surfaceparm", "nomarks"],
+//   ["surfaceparm", "nonsolid"],
+//   ["surfaceparm", "nolightmap"],
+//   ["qer_trans", ".6"],
+//   ["cull", "none"],
+//   [
+//     ["map", "textures/proto2/beam_blue.tga"],
+//     ["blendfunc", "add"]
+//   ]
+// ]
+type RawTextureOptions = Array<any>
+
+type TextureManifest = { textures: {[key: string]: boolean}, shaders: {[key: string]: RawTextureOptions} }
 let _textureManifest: TextureManifest = { textures: {}, shaders: {} }
 async function getTextureManifest() {
   if (!isEmpty(_textureManifest.textures)) {
@@ -49,7 +64,7 @@ async function getTextureManifest() {
   return _textureManifest
 }
 
-function findTextureInManifest(url: string, manifest: TextureManifest) {
+function findTextureInManifest(url: string, manifest: TextureManifest): string | undefined {
   url = url.replace(/^(\.\/)/,"")
   if (url in manifest.textures) {
     return url
@@ -66,23 +81,39 @@ function findTextureInManifest(url: string, manifest: TextureManifest) {
   return undefined
 }
 
-function findTextureShader(url: string, manifest: TextureManifest) {
+type TextureOptions = {
+  qer_trans?: number
+}
+
+function findTextureOptions(url: string, manifest: TextureManifest) : TextureOptions | undefined {
   url = url.replace(/^.*data\//,"")
   url = url.replace(/\.[A-z]+$/,"")
 
+  let rawShader
   if (url in manifest.shaders) {
-    return manifest.shaders[url]
+    rawShader = manifest.shaders[url]
   }
   
   if ((url + '.jpg') in manifest.shaders) {
-    return manifest.shaders[(url + '.jpg')]
+    rawShader = manifest.shaders[(url + '.jpg')]
   }
   
   if ((url + '.png') in manifest.shaders) {
-    return manifest.shaders[(url + '.png')]
+    rawShader = manifest.shaders[(url + '.png')]
   }
 
-  return undefined
+  if (!rawShader) {
+    return undefined
+  }
+
+  const result: TextureOptions = {}
+  for (const line of rawShader) {
+    if (line[0] === 'qer_trans') {
+      result['qer_trans'] = parseFloat(line[1])
+    }
+  }
+
+  return result;
 }
 
 async function loadResource(message: LoadResource) {
@@ -101,11 +132,6 @@ async function loadResource(message: LoadResource) {
       const textureManifest = await getTextureManifest()
       const textureUrl = findTextureInManifest(message.url, textureManifest)
       if (textureUrl) {
-        const shaderForTexture = findTextureShader(textureUrl, textureManifest)
-        if (shaderForTexture) {
-          console.warn('shader for', textureUrl, '=>', shaderForTexture)
-        }
-
         const image = await loadImage(textureUrl)
         sendMessageFromWeb({
           type: 'LoadedTexture',
@@ -114,6 +140,16 @@ async function loadResource(message: LoadResource) {
           width: image.width,
           height: image.height
         })
+        const shaderForTexture = findTextureOptions(textureUrl, textureManifest)
+        if (shaderForTexture) {
+          console.warn('shader for', textureUrl, '=>', shaderForTexture)
+          sendMessageFromWeb({
+            type: 'LoadedTextureOptions',
+            resourceID: message.resourceID,
+            transparency: shaderForTexture.qer_trans === undefined ? 1 : shaderForTexture.qer_trans
+          })
+        }
+
       } else {
         sendMessageFromWeb({
           type: 'MissingTexture',

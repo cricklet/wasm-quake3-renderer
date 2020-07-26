@@ -18,21 +18,29 @@ struct RenderableFace {
   EBO elements;
 };
 
+enum class RenderMode {
+  SOLID,
+  TRANSPARENCY
+};
+
+struct ShaderParameters {
+  GLuint inPosition;
+  GLuint inColor;
+  GLuint inTextureCoords;
+  GLuint inLightmapCoords;
+
+  GLuint unifTexture;
+  GLuint unifLightmapTexture;
+
+  RenderMode mode;
+};
+
 struct RenderableBSP {
   RenderableBSP(ResourcePtr<const BSPMap> map): _map(map) {}
 
   bool loadDependencies();
   bool finishLoading();
 
-  struct ShaderParameters {
-    GLuint inPosition;
-    GLuint inColor;
-    GLuint inTextureCoords;
-    GLuint inLightmapCoords;
-
-    GLuint unifTexture;
-    GLuint unifLightmapTexture;
-  };
   void render(const ShaderParameters& inputs);
 
 private:

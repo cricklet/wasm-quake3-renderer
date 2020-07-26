@@ -46,7 +46,12 @@ export interface LoadedBSP {
   resourceID: number;
   pointer: number;
 }
-export type Message = { type: 'Unknown' }  | TestMessage  | CPPLoaded  | LoadResource  | LoadShaders  | LoadedShaders  | LoadedTexture  | MissingTexture  | LoadedBSP 
+export interface LoadedTextureOptions {
+  type: 'LoadedTextureOptions'
+  resourceID: number;
+  transparency: number;
+}
+export type Message = { type: 'Unknown' }  | TestMessage  | CPPLoaded  | LoadResource  | LoadShaders  | LoadedShaders  | LoadedTexture  | MissingTexture  | LoadedBSP  | LoadedTextureOptions 
 export function parseMessage(json: string): Message {
   const val = JSON.parse(json)
   switch (val.type) {
@@ -58,6 +63,7 @@ export function parseMessage(json: string): Message {
     case 'LoadedTexture': return val as LoadedTexture
     case 'MissingTexture': return val as MissingTexture
     case 'LoadedBSP': return val as LoadedBSP
+    case 'LoadedTextureOptions': return val as LoadedTextureOptions
   }
   return { type: 'Unknown' }
 }

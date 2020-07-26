@@ -63,27 +63,28 @@ public:
 
 private:
   static const int BSP_ID = 0;
-  static const int SHADER_ID = 1;
+  static const int SCENE_SHADER_ID = 1;
+  static const int BLEND_SHADER_ID = 2;
 
   shared_ptr<RenderableBSP> _renderableMap = nullptr;
 
   unordered_map<int, GLuint> _lightmapTextures;
   GLuint _fallbackLightmapTexture;
 
+  // For rendering with the scene shader
   vector<VBO> _verticesPerFace;
   vector<VBO> _colorsPerFace;
   vector<EBO> _elementsPerFace;
 
-  GLuint _inPosition;
-  GLuint _inColor;
-  GLuint _inTextureCoords;
-  GLuint _inLightmapCoords;
+  // For rendering the blend shader
 
-  GLuint _unifTexture;
-  GLuint _unifLightmapTexture;
+  // For non-transparent parts of the scene.
+  GLuint _sceneFBO;
+  GLuint _sceneTexture;
 
-  GLuint _unifCameraTransform;
-  GLuint _unifProjTransform;
+  // For transparent parts of the scene.
+  GLuint _effectsFBO;
+  GLuint _effectsTexture;
 
   Camera _camera;
 };

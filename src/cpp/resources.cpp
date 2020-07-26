@@ -70,6 +70,10 @@ void ResourceManager::handleMessageFromWeb(const LoadedShaders& message) {
   _failedResources.insert(message.resourceID);
 }
 
+void ResourceManager::handleMessageFromWeb(const LoadedTextureOptions& message) {
+  _textureOptions[message.resourceID] = { message.transparency };
+}
+
 optional<GLuint> ResourceManager::getShaderProgram(int resourceID) {
   if (_shaderPrograms.count(resourceID)) {
     return _shaderPrograms.at(resourceID);
@@ -81,6 +85,14 @@ optional<GLuint> ResourceManager::getShaderProgram(int resourceID) {
 optional<GLuint> ResourceManager::getTexture(int resourceID) {
   if (_textures.count(resourceID)) {
     return _textures.at(resourceID);
+  }
+
+  return {};
+}
+
+optional<RenderableTextureOptions> ResourceManager::getTextureOptions(int resourceID) {
+  if (_textureOptions.count(resourceID)) {
+    return _textureOptions.at(resourceID);
   }
 
   return {};

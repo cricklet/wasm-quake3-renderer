@@ -65,6 +65,14 @@ void MessageBindings::sendMessageToWeb(const LoadedBSP& message) {
   }
   MessageHandler.call<void>("handleMessageFromCPP", emscripten::val(message.toJson()));
 }
+void MessageBindings::sendMessageToWeb(const LoadedTextureOptions& message) {
+  emscripten::val MessageHandler = emscripten::val::global("MessageHandler");
+  if (!MessageHandler.as<bool>()) {
+    cerr << "No global MessageHandler\n";
+    return;
+  }
+  MessageHandler.call<void>("handleMessageFromCPP", emscripten::val(message.toJson()));
+}
 void MessagesFromWeb::sendMessage(const json& j) {
   if (j["type"] == "TestMessage") {
     auto message = TestMessage::fromJson(j);
@@ -110,6 +118,12 @@ void MessagesFromWeb::sendMessage(const json& j) {
   }
   if (j["type"] == "LoadedBSP") {
     auto message = LoadedBSP::fromJson(j);
+    for (const auto& handler : _handlers) {
+      handler->handleMessageFromWeb(message);
+    }
+  }
+  if (j["type"] == "LoadedTextureOptions") {
+    auto message = LoadedTextureOptions::fromJson(j);
     for (const auto& handler : _handlers) {
       handler->handleMessageFromWeb(message);
     }

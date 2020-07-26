@@ -3,12 +3,15 @@
 
 #include "support.h"
 #include "bindings.h"
+#include "texture.h"
 
 namespace BSP {
   struct header_t;
 };
 
 using BSPMap = BSP::header_t;
+
+struct RenderableTextureOptions;
 
 struct ResourceManager : IMessageHandler {
 public:
@@ -23,11 +26,13 @@ public:
   void handleMessageFromWeb(const MissingTexture& message);
   void handleMessageFromWeb(const LoadedBSP& message);
   void handleMessageFromWeb(const LoadedShaders& message);
+  void handleMessageFromWeb(const LoadedTextureOptions& message);
 
   // TODO add a way to clear the resources after use
 
   optional<GLuint> getShaderProgram(int resourceID);
   optional<GLuint> getTexture(int resourceID);
+  optional<RenderableTextureOptions> getTextureOptions(int resourceID);
   ResourcePtr<const BSPMap> getMap();
 
 private:
@@ -36,6 +41,10 @@ private:
 
   unordered_map<int, GLuint> _shaderPrograms = {};
   unordered_map<int, GLuint> _textures = {};
+
+  // Also called "texture shaders" -- these are loaded from the `data/scripts` directory
+  // and include information about how to render individual textures.
+  unordered_map<int, RenderableTextureOptions> _textureOptions = {};
 
   ResourcePtr<const BSPMap> _map = nullptr;
 

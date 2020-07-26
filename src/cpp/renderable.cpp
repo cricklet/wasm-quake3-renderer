@@ -258,7 +258,7 @@ optional<RenderableFace> RenderableFace::generate(const BSPMap* map, int faceInd
 
     TesselatedPatch tesselation = tesselatedFace(map, face);
 
-    cout << "num vertices " << tesselation.vertices.size() << " num elements " << tesselation.indices.size() << "\n";
+    // cout << "num vertices " << tesselation.vertices.size() << " num elements " << tesselation.indices.size() << "\n";
 
     // Load vertices
     glGenBuffers(1, &(verticesVBO.buffer));
@@ -296,7 +296,7 @@ bool RenderableBSP::finishLoading() {
     return false;
   }
 
-  // map->print();
+  map->print();
   // map->printEffects();
   // map->printTextures();
   // map->printVertices();
@@ -366,15 +366,25 @@ void RenderableBSP::render(const ShaderParameters& inputs) {
 
     // Bind the texture
     int textureOffset = face->texture;
-    if (textureOffset >= 0 && textureOffset < numTextures) {
-      const BSP::texture_t* texture = textures + textureOffset;
-      const int textureResourceId = _textureResourceIds[string(texture->name)];
-      optional<GLuint> textureId = ResourceManager::getInstance()->getTexture(textureResourceId);
-      if (textureId) {
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, *textureId);
-        glUniform1i(inputs.unifTexture, 0);
-      }
+    if (textureOffset < 0 || textureOffset >= numTextures) {
+      continue;
+    }
+
+    const BSP::texture_t* texture = textures + textureOffset;
+    const int textureResourceId = _textureResourceIds[string(texture->name)];
+
+    optional<RenderableTextureOptions> textureOptions = ResourceManager::getInstance()->getTextureOptions(textureResourceId);
+    bool hasAlpha = textureOptions && textureOptions->transparency < 1;
+    if (inputs.mode == RenderMode::SOLID && hasAlpha) {
+      // Skip this texture!
+      continue;
+    }
+
+    optional<GLuint> textureId = ResourceManager::getInstance()->getTexture(textureResourceId);
+    if (textureId) {
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, *textureId);
+      glUniform1i(inputs.unifTexture, 0);
     }
 
     // Bind the lightmap

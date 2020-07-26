@@ -44,5 +44,10 @@ messages = [
   ('LoadedBSP', [
     ('resourceID', 'int'),
     ('pointer', 'void*')
+  ]),
+
+  ('LoadedTextureOptions', [
+    ('resourceID', 'int'),
+    ('transparency', 'float')
   ])
 ]

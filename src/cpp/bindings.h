@@ -153,6 +153,23 @@ struct LoadedBSP {
     };
   }
 };
+struct LoadedTextureOptions {
+  int resourceID;
+  float transparency;
+  string toJson() const {
+    json j;
+    j["type"] = "LoadedTextureOptions";
+    j["resourceID"] =  resourceID;
+    j["transparency"] =  transparency;
+    return j.dump();
+  }
+  static LoadedTextureOptions fromJson(const json& j) {
+    return LoadedTextureOptions {
+      j["resourceID"],
+      j["transparency"],
+    };
+  }
+};
 class IMessageHandler {
 public:
   virtual ~IMessageHandler() {}
@@ -164,6 +181,7 @@ public:
   virtual void handleMessageFromWeb(const LoadedTexture& message) {}
   virtual void handleMessageFromWeb(const MissingTexture& message) {}
   virtual void handleMessageFromWeb(const LoadedBSP& message) {}
+  virtual void handleMessageFromWeb(const LoadedTextureOptions& message) {}
 };
 namespace MessageBindings {
   void sendMessageToWeb(const TestMessage& message);
@@ -174,6 +192,7 @@ namespace MessageBindings {
   void sendMessageToWeb(const LoadedTexture& message);
   void sendMessageToWeb(const MissingTexture& message);
   void sendMessageToWeb(const LoadedBSP& message);
+  void sendMessageToWeb(const LoadedTextureOptions& message);
 };
 struct MessageLogger : IMessageHandler {
 public:
@@ -199,6 +218,9 @@ public:
     cout << "TS => CPP w/ " << message.toJson() << "\n";
   }
   void handleMessageFromWeb(const LoadedBSP& message) override {
+    cout << "TS => CPP w/ " << message.toJson() << "\n";
+  }
+  void handleMessageFromWeb(const LoadedTextureOptions& message) override {
     cout << "TS => CPP w/ " << message.toJson() << "\n";
   }
 };
