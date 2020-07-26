@@ -71,20 +71,27 @@ private:
   unordered_map<int, GLuint> _lightmapTextures;
   GLuint _fallbackLightmapTexture;
 
+  GLuint _sceneShader;
+
+  GLuint _inPosition;
+  GLuint _inColor;
+  GLuint _inTextureCoords;
+  GLuint _inLightmapCoords;
+
+  GLuint _unifTexture;
+  GLuint _unifLightmapTexture;
+
+  GLuint _unifCameraTransform;
+  GLuint _unifProjTransform;
+
   // For rendering with the scene shader
   vector<VBO> _verticesPerFace;
   vector<VBO> _colorsPerFace;
   vector<EBO> _elementsPerFace;
 
-  // For rendering the blend shader
-
   // For non-transparent parts of the scene.
   GLuint _sceneFBO;
   GLuint _sceneTexture;
-
-  // For transparent parts of the scene.
-  GLuint _effectsFBO;
-  GLuint _effectsTexture;
 
   Camera _camera;
 };

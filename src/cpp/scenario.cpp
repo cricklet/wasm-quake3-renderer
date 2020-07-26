@@ -111,12 +111,6 @@ void BSPScenario::startLoading() {
     "./src/glsl/render_scene.frag",
     SCENE_SHADER_ID
   });
-
-  ResourceManager::getInstance()->loadShaders({
-    "./src/glsl/blend.vert",
-    "./src/glsl/blend.frag",
-    BLEND_SHADER_ID
-  });
 }
 
 bool BSPScenario::loadDependencies() {
@@ -162,29 +156,29 @@ bool BSPScenario::finishLoading() {
   int screenHeight = viewportSize[3];
 
   // Load the shader
-  GLuint sceneShaderProgram = *ResourceManager::getInstance()->getShaderProgram(SCENE_SHADER_ID);
+  _sceneShader = *ResourceManager::getInstance()->getShaderProgram(SCENE_SHADER_ID);
 
   // Use the program...
-  glLinkProgram(sceneShaderProgram);
-  glUseProgram(sceneShaderProgram);
+  glLinkProgram(_sceneShader);
+  glUseProgram(_sceneShader);
 
   // Bind the inputs
-  _inPosition = glGetAttribLocation(sceneShaderProgram, "inPosition");
+  _inPosition = glGetAttribLocation(_sceneShader, "inPosition");
   glEnableVertexAttribArray(_inPosition);
 
-  _inTextureCoords = glGetAttribLocation(sceneShaderProgram, "inTextureCoords");
+  _inTextureCoords = glGetAttribLocation(_sceneShader, "inTextureCoords");
   glEnableVertexAttribArray(_inTextureCoords);
 
-  _inLightmapCoords = glGetAttribLocation(sceneShaderProgram, "inLightmapCoords");
+  _inLightmapCoords = glGetAttribLocation(_sceneShader, "inLightmapCoords");
   glEnableVertexAttribArray(_inLightmapCoords);
 
-  _inColor = glGetAttribLocation(sceneShaderProgram, "inColor");
+  _inColor = glGetAttribLocation(_sceneShader, "inColor");
   glEnableVertexAttribArray(_inColor);
 
-  _unifTexture = glGetUniformLocation(sceneShaderProgram, "unifTexture");
-  _unifLightmapTexture = glGetUniformLocation(sceneShaderProgram, "unifLightmapTexture");
-  _unifCameraTransform = glGetUniformLocation(sceneShaderProgram, "unifCameraTransform");
-  _unifProjTransform = glGetUniformLocation(sceneShaderProgram, "unifProjTransform");
+  _unifTexture = glGetUniformLocation(_sceneShader, "unifTexture");
+  _unifLightmapTexture = glGetUniformLocation(_sceneShader, "unifLightmapTexture");
+  _unifCameraTransform = glGetUniformLocation(_sceneShader, "unifCameraTransform");
+  _unifProjTransform = glGetUniformLocation(_sceneShader, "unifProjTransform");
 
   // Create an FBO for non-transparent elements
   glGenFramebuffers(1, &_sceneFBO);
@@ -193,21 +187,6 @@ bool BSPScenario::finishLoading() {
     // Create a color texture for the FBO
     glGenTextures(1, &_sceneTexture);
     glBindTexture(GL_TEXTURE_2D, _sceneTexture);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, screenWidth, screenHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _sceneTexture, 0);
-  }
-
-  // Create an FBO for translucent elements
-  glGenFramebuffers(1, &_effectsFBO);
-  glBindFramebuffer(GL_FRAMEBUFFER, _effectsFBO);
-  {
-    // Create a color texture for the FBO
-    glGenTextures(1, &_effectsTexture);
-    glBindTexture(GL_TEXTURE_2D, _effectsTexture);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, screenWidth, screenHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -259,8 +238,7 @@ void BSPScenario::render() {
   }
 
   // Use the program...
-  glLinkProgram(*sceneShaderID);
-  glUseProgram(*sceneShaderID);
+  glUseProgram(_sceneShader);
 
   glClearColor(0.6, 0.2, 0.6, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
