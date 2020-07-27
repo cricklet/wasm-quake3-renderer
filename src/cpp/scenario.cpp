@@ -180,21 +180,6 @@ bool BSPScenario::finishLoading() {
   _unifCameraTransform = glGetUniformLocation(_sceneShader, "unifCameraTransform");
   _unifProjTransform = glGetUniformLocation(_sceneShader, "unifProjTransform");
 
-  // Create an FBO for non-transparent elements
-  glGenFramebuffers(1, &_sceneFBO);
-  glBindFramebuffer(GL_FRAMEBUFFER, _sceneFBO);
-  {
-    // Create a color texture for the FBO
-    glGenTextures(1, &_sceneTexture);
-    glBindTexture(GL_TEXTURE_2D, _sceneTexture);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, screenWidth, screenHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _sceneTexture, 0);
-  }
-
   if (hasErrors()) {
     return false;
   }
@@ -237,6 +222,11 @@ void BSPScenario::render() {
     return;
   }
 
+  if (!_renderableMap) {
+    cerr << "failed to load map\n";
+    return;
+  }
+
   // Use the program...
   glUseProgram(_sceneShader);
 
@@ -244,6 +234,8 @@ void BSPScenario::render() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glEnable(GL_DEPTH_TEST);
+  glDepthMask(GL_TRUE);
+  glDisable(GL_BLEND);
 
   // Update camera transform
   glm::mat4 cameraTransform = glm::lookAt(
@@ -258,12 +250,8 @@ void BSPScenario::render() {
   glm::mat4 projectionTransform = glm::perspective(glm::radians(90.0f), 1200.0f / 800.0f, 0.5f, 10000.0f);
   glUniformMatrix4fv(_unifProjTransform, 1, GL_FALSE, glm::value_ptr(projectionTransform));
 
-  // First, we render to _sceneFBO
-  // glBindFramebuffer(GL_FRAMEBUFFER, _sceneFBO);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-  // Render the map
-  if (_renderableMap) {
+  // Render all the solid geometry in the map
+  {
     ShaderParameters shaderInputs {
       _inPosition,
       _inColor,
@@ -276,6 +264,21 @@ void BSPScenario::render() {
     _renderableMap->render(shaderInputs);
   }
 
-  //////////////////////////////////////////////////////////////////////////////
+  // Render all the transparent geometry on top of the existing geometry
+  glDepthMask(GL_FALSE);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+  {
+    ShaderParameters shaderInputs {
+      _inPosition,
+      _inColor,
+      _inTextureCoords,
+      _inLightmapCoords,
+      _unifTexture,
+      _unifLightmapTexture,
+      RenderMode::TRANSPARENCY
+    };
+    _renderableMap->render(shaderInputs);
+  }
 }

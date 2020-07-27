@@ -89,10 +89,6 @@ private:
   vector<VBO> _colorsPerFace;
   vector<EBO> _elementsPerFace;
 
-  // For non-transparent parts of the scene.
-  GLuint _sceneFBO;
-  GLuint _sceneTexture;
-
   Camera _camera;
 };
 
