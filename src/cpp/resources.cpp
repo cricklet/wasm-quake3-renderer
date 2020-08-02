@@ -26,7 +26,7 @@ int ResourceManager::nextID() {
 }
 
 void ResourceManager::addResourceLoader(IHasResources* loader) {
-  _resourceLoaders.insert(loader);
+  _resourceLoaders[loader] = HasResourcesFinished::NO;
 }
 
 void ResourceManager::removeResourceLoader(IHasResources* loader) {
@@ -38,42 +38,57 @@ bool ResourceManager::hasOutstandingResources() const {
 }
 
 LoadingState ResourceManager::think() {
-  if (hasOutstandingResources()) {
-    return LoadingState::LOADING;
+  unordered_set<IHasResources*> incompleteLoaders;
+  for (const auto& it : _loadingResources) {
+    incompleteLoaders.insert(it.second);
   }
 
-  for (auto& loader : _resourceLoaders) {
-    loader->load();
-  }
-
-  if (hasOutstandingResources()) {
-    return LoadingState::LOADING;
-  }
-
-  for (auto& loader : _resourceLoaders) {
-    switch (loader->loadingState()) {
-      case HasResourcesState::NOT_STARTED:
-      case HasResourcesState::STILL_REQUESTING:
-        return LoadingState::LOADING;
-      case HasResourcesState::FAILED:
-        return LoadingState::FAILED;
-      case HasResourcesState::ALL_RESOURCES_REQUESTED:
-        break;
+  for (auto& loaderAndResult : _resourceLoaders) {
+    if (incompleteLoaders.count(loaderAndResult.first)) {
+      // Still loading... let's wait
+      assert(loaderAndResult.second != HasResourcesFinished::YES);
+      continue;
     }
+    if (loaderAndResult.second != HasResourcesFinished::NO) {
+      // Done -- either failed or finished
+      continue;
+    }
+
+    bool success = loaderAndResult.first->finishLoading();
+    loaderAndResult.second = success ? HasResourcesFinished::YES : HasResourcesFinished::FAILED;
+  }
+
+  for (auto& it : _resourceLoaders) {
+    if (it.second == HasResourcesFinished::NO) {
+      // At least one loader is still loading
+      return LoadingState::LOADING;
+    }
+    if (it.second == HasResourcesFinished::FAILED) {
+      // At least one loader failed
+      return LoadingState::FAILED;
+    }
+  }
+
+  if (hasOutstandingResources()) {
+    return LoadingState::LOADING;
+  }
+
+  if (_failedResources.size()) {
+    return LoadingState::FAILED;
   }
 
   return LoadingState::DONE;
 }
 
 
-void ResourceManager::loadResource(const LoadResource& message) {
+void ResourceManager::loadResource(IHasResources* loader, const LoadResource& message) {
   MessageBindings::sendMessageToWeb(message);
-  _loadingResources.insert(message.resourceID);
+  _loadingResources[message.resourceID] = loader;
 }
 
-void ResourceManager::loadShaders(const LoadShaders& message) {
+void ResourceManager::loadShaders(IHasResources* loader, const LoadShaders& message) {
   MessageBindings::sendMessageToWeb(message);
-  _loadingResources.insert(message.resourceID);
+  _loadingResources[message.resourceID] = loader;
 }
 
 

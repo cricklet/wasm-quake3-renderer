@@ -52,6 +52,7 @@ struct ResourcePtr {
     (*_counter)++; 
   }
 
+  operator bool() const { return !!_pointer; }
   T* get() { return _pointer; }
   T& operator*() { return *_pointer; }
   T* operator->() { return _pointer; }

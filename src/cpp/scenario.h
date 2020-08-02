@@ -22,9 +22,7 @@ struct TextureRenderer : IHasResources {
   void render(vector<GLuint> textureIDs);
 
 private:
-  void load() override;
-  HasResourcesState loadingState() const override { return _loadingState; }
-  HasResourcesState _loadingState = HasResourcesState::NOT_STARTED;
+  bool finishLoading() override;
 
   int _shaderResourceID;
 
@@ -52,16 +50,15 @@ private:
 
 struct TestScenario : IScenario {
 public:
+  TestScenario();
   void think(glm::vec2 dir, double pitch, double yaw) override {}
   void render() override;
 
 private:
-  void load() override;
-  HasResourcesState loadingState() const override { return _loadingState; }
-  HasResourcesState _loadingState = HasResourcesState::NOT_STARTED;
+  bool finishLoading() override;
 
   int _textureResourceID;
-  shared_ptr<TextureRenderer> _renderer;
+  shared_ptr<TextureRenderer> _renderer = nullptr;
 };
 
 struct Camera {
@@ -79,13 +76,12 @@ struct RenderableBSP;
 
 struct BSPScenario : IScenario {
 public:
+  BSPScenario();
   void think(glm::vec2 dir, double pitch, double yaw) override;
   void render() override;
 
 private:
-  void load() override;
-  HasResourcesState loadingState() const override { return _loadingState; }
-  HasResourcesState _loadingState = HasResourcesState::NOT_STARTED;
+  bool finishLoading() override;
 
   bool generateBuffers();
 
@@ -93,7 +89,6 @@ private:
   int _sceneShaderResourceID;
 
   shared_ptr<TextureRenderer> _compositingRenderer = nullptr;
-
   shared_ptr<RenderableBSP> _renderableMap = nullptr;
 
   unordered_map<int, GLuint> _lightmapTextures;

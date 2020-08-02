@@ -6,45 +6,79 @@
 #include "pprint.hpp"
 #include "assert.h"
 
-void RenderableBSP::load() {
-  switch (_loadingState) {
-    case HasResourcesState::NOT_STARTED: {
-      const BSPMap* map = _map.get();
-      if (!map) {
-        cerr << "map failed to load\n";
-        _loadingState = HasResourcesState::FAILED;
-        return;
-      }
+RenderableBSP::RenderableBSP(ResourcePtr<const BSPMap> mapPtr): _map(mapPtr) {
+  assert(_map);
 
-      const BSP::texture_t* textures = map->textures();
-      const int numTextures = map->numTextures();
+  const BSP::texture_t* textures = _map->textures();
+  const int numTextures = _map->numTextures();
 
-      int textureResourceId = 100;
+  int textureResourceId = 100;
 
-      for (int textureIndex = 0; textureIndex < numTextures; textureIndex ++) {
-        const BSP::texture_t* texture = textures + textureIndex;
-        
-        _textureResourceIds[string(texture->name)] = textureResourceId;
-        ResourceManager::getInstance()->loadResource({
-          string("./data/") + string(texture->name),
-          ResourceType::IMAGE_FILE,
-          textureResourceId
-        });
+  for (int textureIndex = 0; textureIndex < numTextures; textureIndex ++) {
+    const BSP::texture_t* texture = textures + textureIndex;
+    
+    _textureResourceIds[string(texture->name)] = textureResourceId;
+    ResourceManager::getInstance()->loadResource(this, {
+      string("./data/") + string(texture->name),
+      ResourceType::IMAGE_FILE,
+      textureResourceId
+    });
 
-        textureResourceId ++;
-      }
-
-      _loadingState = HasResourcesState::STILL_REQUESTING;
-      return;
-    }
-    case HasResourcesState::STILL_REQUESTING: {
-      generateBuffers();
-      _loadingState = HasResourcesState::ALL_RESOURCES_REQUESTED;
-      return;
-    }
-    default:
-      return;
+    textureResourceId ++;
   }
+}
+
+
+bool RenderableBSP::finishLoading() {
+  const BSPMap* map = _map.get();
+  if (!map) {
+    cerr << "map failed to load\n";
+    return false;
+  }
+
+  map->print();
+  // map->printEffects();
+  // map->printTextures();
+  // map->printVertices();
+  // map->printFaces();
+  // map->printMeshverts();
+
+  { // Load lightmaps
+    const BSP::lightmap_t* lightmaps = map->lightmaps();
+    const int numLightmaps = map->numLightmaps();
+    for (int i = 0; i < numLightmaps; i ++) {
+      const BSP::lightmap_t* lightmap = lightmaps + i;
+      optional<GLuint> textureId = GLHelpers::loadTexture(lightmap, 128, 128, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
+      if (textureId) {
+        _lightmapTextures[i] = *textureId;
+      } else {
+        cerr << "failed to load lightmap " << i << "\n";
+        return false;
+      }
+    }
+
+    unsigned char white[] = { 255, 255, 255, 255 };
+    optional<GLuint> textureId = GLHelpers::loadTexture(
+        &white[0], 1, 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE);
+    if (textureId) {
+      _fallbackLightmapTexture = *textureId;
+    } else {
+      cerr << "failed to create fallback lightmap\n";
+      return false;
+    }
+  }
+
+  {
+    const int numFaces = map->numFaces();
+    for (int faceIndex = 0; faceIndex < numFaces; faceIndex ++) {
+      optional<RenderableFace> face = RenderableFace::generate(map, faceIndex);
+      if (face) {
+        _renderableFaces.push_back(*face);
+      }
+    }
+  }
+
+  return true;
 }
 
 struct TesselatedPatch {
@@ -294,58 +328,6 @@ optional<RenderableFace> RenderableFace::generate(const BSPMap* map, int faceInd
   }
 
   return {};
-}
-
-bool RenderableBSP::generateBuffers() {
-  const BSPMap* map = _map.get();
-  if (!map) {
-    cerr << "map failed to load\n";
-    return false;
-  }
-
-  map->print();
-  // map->printEffects();
-  // map->printTextures();
-  // map->printVertices();
-  // map->printFaces();
-  // map->printMeshverts();
-
-  { // Load lightmaps
-    const BSP::lightmap_t* lightmaps = map->lightmaps();
-    const int numLightmaps = map->numLightmaps();
-    for (int i = 0; i < numLightmaps; i ++) {
-      const BSP::lightmap_t* lightmap = lightmaps + i;
-      optional<GLuint> textureId = GLHelpers::loadTexture(lightmap, 128, 128, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
-      if (textureId) {
-        _lightmapTextures[i] = *textureId;
-      } else {
-        cerr << "failed to load lightmap " << i << "\n";
-        return false;
-      }
-    }
-
-    unsigned char white[] = { 255, 255, 255, 255 };
-    optional<GLuint> textureId = GLHelpers::loadTexture(
-        &white[0], 1, 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE);
-    if (textureId) {
-      _fallbackLightmapTexture = *textureId;
-    } else {
-      cerr << "failed to create fallback lightmap\n";
-      return false;
-    }
-  }
-
-  {
-    const int numFaces = map->numFaces();
-    for (int faceIndex = 0; faceIndex < numFaces; faceIndex ++) {
-      optional<RenderableFace> face = RenderableFace::generate(map, faceIndex);
-      if (face) {
-        _renderableFaces.push_back(*face);
-      }
-    }
-  }
-
-  return true;
 }
 
 void RenderableBSP::render(const ShaderParameters& inputs) {

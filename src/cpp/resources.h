@@ -14,21 +14,13 @@ using BSPMap = BSP::header_t;
 struct RenderableTextureOptions;
 struct ResourceManager;
 
-enum class HasResourcesState {
-  NOT_STARTED,
-  STILL_REQUESTING,
-  ALL_RESOURCES_REQUESTED,
-  FAILED
-};
-
 struct IHasResources {
   IHasResources();
   virtual ~IHasResources();
 
 private:
   friend ResourceManager;
-  virtual void load() = 0;
-  virtual HasResourcesState loadingState() const = 0;
+  virtual bool finishLoading() = 0;
 };
 
 enum class LoadingState {
@@ -49,8 +41,8 @@ public:
 
   bool hasOutstandingResources() const;
 
-  void loadResource(const LoadResource& message);
-  void loadShaders(const LoadShaders& message);
+  void loadResource(IHasResources* loader, const LoadResource& message);
+  void loadShaders(IHasResources* loader, const LoadShaders& message);
 
   void handleMessageFromWeb(const LoadedTexture& message);
   void handleMessageFromWeb(const MissingTexture& message);
@@ -66,9 +58,6 @@ public:
   ResourcePtr<const BSPMap> getMap();
 
 private:
-  unordered_set<int> _loadingResources = {};
-  unordered_set<int> _failedResources = {};
-
   unordered_map<int, GLuint> _shaderPrograms = {};
   unordered_map<int, GLuint> _textures = {};
 
@@ -78,7 +67,10 @@ private:
 
   ResourcePtr<const BSPMap> _map = nullptr;
 
-  unordered_set<IHasResources*> _resourceLoaders;
+  enum class HasResourcesFinished { NO, YES, FAILED };
+  unordered_map<IHasResources*, HasResourcesFinished> _resourceLoaders;
+  unordered_map<int, IHasResources*> _loadingResources = {};
+  unordered_set<int> _failedResources = {};
 
   static shared_ptr<ResourceManager> _instance;
 };
