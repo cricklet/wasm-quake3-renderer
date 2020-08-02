@@ -3,6 +3,7 @@
 
 #include "support.h"
 #include "gl_helpers.h"
+#include "resources.h"
 
 namespace BSP {
   struct header_t;
@@ -36,15 +37,18 @@ struct ShaderParameters {
   RenderMode mode;
 };
 
-struct RenderableBSP {
+struct RenderableBSP : IHasResources {
   RenderableBSP(ResourcePtr<const BSPMap> map): _map(map) {}
 
-  bool loadDependencies();
-  bool finishLoading();
+  HasResourcesState load() override;
 
   void render(const ShaderParameters& inputs);
 
 private:
+  bool generateBuffers();
+
+  HasResourcesState _loadingState = HasResourcesState::NOT_STARTED;
+
   ResourcePtr<const BSPMap> _map;
   unordered_map<string, int> _textureResourceIds;
 

@@ -16,7 +16,6 @@ struct RenderableTextureOptions;
 enum class HasResourcesState {
   NOT_STARTED,
   LOADING,
-  LOADING_SECONDARY, // not always used
   DONE,
   FAILED
 };

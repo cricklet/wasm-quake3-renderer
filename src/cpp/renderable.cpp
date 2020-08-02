@@ -6,38 +6,44 @@
 #include "pprint.hpp"
 #include "assert.h"
 
-bool RenderableBSP::loadDependencies() {
-  static bool loadingSecondaryResources = false;
-  if (loadingSecondaryResources) {
-    return false;
+HasResourcesState RenderableBSP::load() {
+  if (_loadingState == HasResourcesState::NOT_STARTED) {
+    const BSPMap* map = _map.get();
+    if (!map) {
+      cerr << "map failed to load\n";
+      _loadingState = HasResourcesState::FAILED;
+      return _loadingState;
+    }
+
+    const BSP::texture_t* textures = map->textures();
+    const int numTextures = map->numTextures();
+
+    int textureResourceId = 100;
+
+    for (int textureIndex = 0; textureIndex < numTextures; textureIndex ++) {
+      const BSP::texture_t* texture = textures + textureIndex;
+      
+      _textureResourceIds[string(texture->name)] = textureResourceId;
+      ResourceManager::getInstance()->loadResource({
+        string("./data/") + string(texture->name),
+        ResourceType::IMAGE_FILE,
+        textureResourceId
+      });
+
+      textureResourceId ++;
+    }
+
+    _loadingState = HasResourcesState::LOADING;
+    return _loadingState;
   }
 
-  const BSPMap* map = _map.get();
-  if (!map) {
-    cerr << "map failed to load\n";
-    return false;
+  if (_loadingState == HasResourcesState::LOADING) {
+    generateBuffers();
+    _loadingState = HasResourcesState::DONE;
+    return _loadingState;
   }
 
-  const BSP::texture_t* textures = map->textures();
-  const int numTextures = map->numTextures();
-
-  int textureResourceId = 100;
-
-  for (int textureIndex = 0; textureIndex < numTextures; textureIndex ++) {
-    const BSP::texture_t* texture = textures + textureIndex;
-    
-    _textureResourceIds[string(texture->name)] = textureResourceId;
-    ResourceManager::getInstance()->loadResource({
-      string("./data/") + string(texture->name),
-      ResourceType::IMAGE_FILE,
-      textureResourceId
-    });
-
-    textureResourceId ++;
-  }
-
-  loadingSecondaryResources = true;
-  return true;
+  return _loadingState;
 }
 
 struct TesselatedPatch {
@@ -289,7 +295,7 @@ optional<RenderableFace> RenderableFace::generate(const BSPMap* map, int faceInd
   return {};
 }
 
-bool RenderableBSP::finishLoading() {
+bool RenderableBSP::generateBuffers() {
   const BSPMap* map = _map.get();
   if (!map) {
     cerr << "map failed to load\n";

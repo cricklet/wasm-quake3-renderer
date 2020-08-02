@@ -44,7 +44,7 @@ int main() {
   
   // currentScenario = make_shared<TestScenario>();
   currentScenario = make_shared<BSPScenario>();
-  currentScenario->startLoading();
+  currentScenario->load();
 
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -71,22 +71,19 @@ int main() {
       return;
     }
 
-    if (currentScenario->loadDependencies()) {
-      cout << "needs to continue loading secondary resources\n";
-      return;
-    }
-
-    static bool firstTime = true;
-    static bool quit = false;
-    if (firstTime) {
-      firstTime = false;
-      if (!currentScenario->finishLoading()) {
-        quit = true;
+    static bool ready = false;
+    if (!ready) {
+      HasResourcesState loadingState = currentScenario->load();
+      if (loadingState == HasResourcesState::FAILED) {
+        error = true;
+        return;
       }
-    }
 
-    if (quit) {
-      return;
+      if (loadingState == HasResourcesState::DONE) {
+        ready = true;
+      } else {
+        return;
+      }
     }
 
     glm::vec2 dir = {0, 0};

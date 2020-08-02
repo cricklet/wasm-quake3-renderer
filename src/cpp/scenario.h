@@ -8,9 +8,6 @@
 struct IScenario : IHasResources {
 public:
   virtual ~IScenario() {}
-  virtual void startLoading();
-  virtual bool loadDependencies();
-  virtual bool finishLoading();
   virtual void think(glm::vec2 dir, double pitch, double yaw);
   virtual void render();
 };
@@ -54,15 +51,15 @@ private:
 
 struct TestScenario : IScenario {
 public:
-  void startLoading() override;
-  bool loadDependencies() override;
-  bool finishLoading() override;
+  HasResourcesState load() override;
+
   void think(glm::vec2 dir, double pitch, double yaw) override {}
   void render() override;
 
 private:
-  int _textureResourceID;
+  HasResourcesState _loadingState = HasResourcesState::NOT_STARTED;
 
+  int _textureResourceID;
   TextureRenderer _renderer;
 };
 
@@ -81,13 +78,15 @@ struct RenderableBSP;
 
 struct BSPScenario : IScenario {
 public:
-  void startLoading() override;
-  bool loadDependencies() override;
-  bool finishLoading() override;
+  HasResourcesState load() override;
+
   void think(glm::vec2 dir, double pitch, double yaw) override;
   void render() override;
 
 private:
+  HasResourcesState _loadingState = HasResourcesState::NOT_STARTED;
+  bool generateBuffers();
+
   int _bspResourceID;
   int _sceneShaderResourceID;
 

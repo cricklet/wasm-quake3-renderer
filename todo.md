@@ -75,8 +75,8 @@
  - [ ] data/textures/skies/meth_clouds_blue.jpg -- uses scale & scroll mod
 
 ## Improve ResourceManager
- - [ ] Add a interface HasResources interface
- - [ ] Refactor the scenarios etc to use it
+ - [x] Add a interface HasResources interface
+ - [x] Refactor the scenarios etc to use it
 
 ## Hitscan, for debugging
  - [ ] Draw a crosshair on the screen

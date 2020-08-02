@@ -108,32 +108,18 @@ void TextureRenderer::render(vector<GLuint> textureIDs) {
   hasErrors();
 }
 
-void TestScenario::startLoading() {
-  _textureResourceID = ResourceManager::nextID();
-  ResourceManager::getInstance()->loadResource({
-    "./data/textures/poptart.jpg",
-    ResourceType::IMAGE_FILE,
-    _textureResourceID
-  });
-
-  _renderer.load();
-}
-
-bool TestScenario::loadDependencies() {
-  return false;
-}
-
-bool TestScenario::finishLoading() {
-  if (!ResourceManager::getInstance()->finishedLoading()) {
-    cerr << "tried to load scenario before resources finished loading\n";
-    return false;
+HasResourcesState TestScenario::load() {
+  if (_loadingState == HasResourcesState::NOT_STARTED) {
+    _textureResourceID = ResourceManager::nextID();
+    ResourceManager::getInstance()->loadResource({
+      "./data/textures/poptart.jpg",
+      ResourceType::IMAGE_FILE,
+      _textureResourceID
+    });
   }
 
-  if (_renderer.load() == HasResourcesState::DONE) {
-    return true;
-  }
-
-  return false;
+  _loadingState = _renderer.load();
+  return _loadingState;
 }
 
 void TestScenario::render() {
@@ -143,67 +129,65 @@ void TestScenario::render() {
   }
 }
 
-void BSPScenario::startLoading() {
-  _bspResourceID = ResourceManager::nextID();
-  ResourceManager::getInstance()->loadResource({
-    "./data/aerowalk.bsp",
-    ResourceType::BSP_FILE,
-    _bspResourceID
-  });
+HasResourcesState BSPScenario::load() {
+  if (_loadingState == HasResourcesState::DONE || _loadingState == HasResourcesState::FAILED) {
+    return _loadingState;
+  }
 
-  _sceneShaderResourceID = ResourceManager::nextID();
-  ResourceManager::getInstance()->loadShaders({
-    "./src/glsl/render_scene.vert",
-    "./src/glsl/render_scene.frag",
-    _sceneShaderResourceID
-  });
+  if (_loadingState == HasResourcesState::NOT_STARTED) {
+    _bspResourceID = ResourceManager::nextID();
+    ResourceManager::getInstance()->loadResource({
+      "./data/aerowalk.bsp",
+      ResourceType::BSP_FILE,
+      _bspResourceID
+    });
 
-  _compositingRenderer.load();
+    _sceneShaderResourceID = ResourceManager::nextID();
+    ResourceManager::getInstance()->loadShaders({
+      "./src/glsl/render_scene.vert",
+      "./src/glsl/render_scene.frag",
+      _sceneShaderResourceID
+    });
+
+    _compositingRenderer.load();
+
+    _loadingState = HasResourcesState::LOADING;
+    return _loadingState;
+  }
+
+  if (_loadingState == HasResourcesState::LOADING) {
+    if (!_renderableMap) {
+      ResourcePtr<const BSPMap> mapResource = ResourceManager::getInstance()->getMap();
+      if (!mapResource.get()) {
+        cerr << "map failed to load\n";
+        return HasResourcesState::FAILED;
+      }
+      _renderableMap = make_shared<RenderableBSP>(mapResource);
+    }
+
+
+    auto compositingLoading = _compositingRenderer.load();
+
+    auto renderMapLoading = _renderableMap->load();
+
+    if (compositingLoading == HasResourcesState::DONE && renderMapLoading == HasResourcesState::DONE) {
+      generateBuffers();
+      _loadingState = HasResourcesState::DONE;
+      return _loadingState;
+    }
+
+    if (compositingLoading == HasResourcesState::FAILED && renderMapLoading == HasResourcesState::FAILED) {
+      _loadingState = HasResourcesState::FAILED;
+      return _loadingState;
+    }
+
+    return _loadingState;
+  }
+
+  return _loadingState;
 }
 
-bool BSPScenario::loadDependencies() {
-  if (!_renderableMap) {
-    ResourcePtr<const BSPMap> mapResource = ResourceManager::getInstance()->getMap();
-    if (!mapResource.get()) {
-      cerr << "map failed to load\n";
-      return false;
-    }
-    _renderableMap = make_shared<RenderableBSP>(mapResource);
-  }
-
-  if (_renderableMap) {
-    return _renderableMap->loadDependencies();
-  }
-
-  cerr << "failed to load dependencies\n";
-  return false;
-}
-
-bool BSPScenario::finishLoading() {
-  if (!ResourceManager::getInstance()->finishedLoading()) {
-    cerr << "tried to load scenario before resources finished loading\n";
-    return false;
-  }
-
-  if (loadDependencies()) {
-    cerr << "tried to finish loading when continue loading is still dirty\n";
-    return false;
-  }
-
-  {
-    bool success = _compositingRenderer.load() == HasResourcesState::DONE;
-    if (!success) {
-      return false;
-    }
-  }
-
-  { // Finish loading the map. This generates textures, VBOs, & EBOs
-    bool success = _renderableMap->finishLoading();
-    if (!success) {
-      return false;
-    }
-  }
-
+bool BSPScenario::generateBuffers() {
   // Get the screen size, this will be used for FBOs later
   GLint viewportSize[4];
   glGetIntegerv(GL_VIEWPORT, viewportSize);
@@ -277,6 +261,8 @@ bool BSPScenario::finishLoading() {
   }
 
   if (hasErrors()) {
+    cerr << "failed to generate buffers\n";
+    _loadingState = HasResourcesState::FAILED;
     return false;
   }
 
