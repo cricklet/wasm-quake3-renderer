@@ -5,6 +5,14 @@
 #include "bsp.h"
 #include "pprint.hpp"
 
+TextureRenderer::TextureRenderer(TextureRendererMode mode) {
+  if (mode == TextureRendererMode::FLIP_VERTICALLY) {
+    for (int i = 0; i < sizeof(_vertices) / sizeof(_vertices[0]); i += 4) {
+      _vertices[i + 1] = - _vertices[i + 1];
+    }
+  }
+}
+
 void TextureRenderer::startLoading() {
   _shaderResourceID = ResourceManager::nextID();
   ResourceManager::getInstance()->loadShaders({
@@ -20,7 +28,7 @@ bool TextureRenderer::finishLoading() {
   glGenBuffers(1, &_ebo);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(_elements), _elements, GL_STATIC_DRAW);
 
   ////////////////////////////////////////////////////////////////////////////
   // Generate VBO
@@ -28,7 +36,7 @@ bool TextureRenderer::finishLoading() {
   glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 
   // Copy the vertex data into the vbo
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(_vertices), _vertices, GL_STATIC_DRAW);
 
   ////////////////////////////////////////////////////////////////////////////
   // Get the test shader program
@@ -69,7 +77,7 @@ void TextureRenderer::render(GLuint textureID) {
 
   glUseProgram(*shaderProgram);
 
-  glClearColor(0.0, 1.0, 1.0, 1.0);
+  glClearColor(1.0, 1.0, 1.0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT);
 
   glActiveTexture(GL_TEXTURE0);
@@ -82,7 +90,7 @@ void TextureRenderer::render(GLuint textureID) {
   glVertexAttribPointer(_inPosition, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
   glVertexAttribPointer(_inTextureCoords, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*) (2 * sizeof(float)));
 
-  glDrawElements(GL_TRIANGLES, sizeof(elements) / sizeof(elements[0]), GL_UNSIGNED_INT, 0);
+  glDrawElements(GL_TRIANGLES, sizeof(_elements) / sizeof(_elements[0]), GL_UNSIGNED_INT, 0);
 
   hasErrors();
 }
@@ -136,6 +144,8 @@ void BSPScenario::startLoading() {
     "./src/glsl/render_scene.frag",
     _sceneShaderResourceID
   });
+
+  _compositingRenderer.startLoading();
 }
 
 bool BSPScenario::loadDependencies() {
@@ -165,6 +175,13 @@ bool BSPScenario::finishLoading() {
   if (loadDependencies()) {
     cerr << "tried to finish loading when continue loading is still dirty\n";
     return false;
+  }
+
+  {
+    bool success = _compositingRenderer.finishLoading();
+    if (!success) {
+      return false;
+    }
   }
 
   { // Finish loading the map. This generates textures, VBOs, & EBOs
@@ -218,6 +235,13 @@ bool BSPScenario::finishLoading() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _sceneTexture, 0);
+
+    // Create a depth texture for the FBO
+    glGenTextures(1, &_sceneDepthTexture);
+    glBindTexture(GL_TEXTURE_2D, _sceneDepthTexture);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, screenWidth, screenHeight, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, NULL);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _sceneDepthTexture, 0);
   }
 
   // Create an FBO for translucent elements
@@ -282,32 +306,31 @@ void BSPScenario::render() {
     return;
   }
 
-  // Use the program...
-  glUseProgram(_sceneShader);
-
-  glClearColor(0.6, 0.2, 0.6, 1.0);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-  glEnable(GL_DEPTH_TEST);
-  glDepthMask(GL_TRUE);
-  glDisable(GL_BLEND);
-
-  // Update camera transform
-  glm::mat4 cameraTransform = glm::lookAt(
-    _camera.location, // location of camera
-    _camera.location + _camera.forward(), // look at
-    glm::vec3(0,0,1)  // camera up vector
-  );
-
-  glUniformMatrix4fv(_unifCameraTransform, 1, GL_FALSE, glm::value_ptr(cameraTransform));
-
-  // And projection transform
-  glm::mat4 projectionTransform = glm::perspective(glm::radians(90.0f), 1200.0f / 800.0f, 0.5f, 10000.0f);
-  glUniformMatrix4fv(_unifProjTransform, 1, GL_FALSE, glm::value_ptr(projectionTransform));
-
   // Render all the solid geometry in the map to the scene-FBO
-  glBindFramebuffer(GL_FRAMEBUFFER, _sceneFBO);
   {
+    glUseProgram(_sceneShader);
+    glBindFramebuffer(GL_FRAMEBUFFER, _sceneFBO);
+
+    glClearColor(0.6, 0.2, 0.6, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glEnable(GL_DEPTH_TEST);
+    // glDepthMask(GL_TRUE);
+    // glDisable(GL_BLEND);
+
+    // Update camera transform
+    glm::mat4 cameraTransform = glm::lookAt(
+      _camera.location, // location of camera
+      _camera.location + _camera.forward(), // look at
+      glm::vec3(0,0,1)  // camera up vector
+    );
+
+    glUniformMatrix4fv(_unifCameraTransform, 1, GL_FALSE, glm::value_ptr(cameraTransform));
+
+    // And projection transform
+    glm::mat4 projectionTransform = glm::perspective(glm::radians(90.0f), 1200.0f / 800.0f, 0.5f, 10000.0f);
+    glUniformMatrix4fv(_unifProjTransform, 1, GL_FALSE, glm::value_ptr(projectionTransform));
+
     ShaderParameters shaderInputs {
       _inPosition,
       _inColor,
@@ -342,4 +365,5 @@ void BSPScenario::render() {
 
   // Composite them onto the screen
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  _compositingRenderer.render(_sceneTexture);
 }

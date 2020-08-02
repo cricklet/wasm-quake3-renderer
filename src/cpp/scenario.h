@@ -14,7 +14,13 @@ public:
   virtual void render();
 };
 
+enum class TextureRendererMode {
+  DEFAULT, FLIP_VERTICALLY
+};
+
 struct TextureRenderer {
+  TextureRenderer(TextureRendererMode mode = TextureRendererMode::DEFAULT);
+
   void startLoading();
   bool finishLoading();
   void render(GLuint textureID);
@@ -30,7 +36,7 @@ private:
 
   GLuint _unifTexture;
 
-  static constexpr float vertices[] = {
+  float _vertices[16] = {
     // Position   Texcoords
     -1.0f,  1.0f, 0.0f, 0.0f, // Top-left
     1.0f,  1.0f, 1.0f, 0.0f, // Top-right
@@ -38,7 +44,7 @@ private:
     -1.0f, -1.0f, 0.0f, 1.0f  // Bottom-left
   };
 
-  static constexpr GLuint elements[] = {
+  GLuint _elements[6] = {
     0, 1, 2,
     2, 3, 0
   };
@@ -82,7 +88,8 @@ public:
 private:
   int _bspResourceID;
   int _sceneShaderResourceID;
-  // int compositeShaderResourceID;
+
+  TextureRenderer _compositingRenderer { TextureRendererMode::FLIP_VERTICALLY };
 
   shared_ptr<RenderableBSP> _renderableMap = nullptr;
 
@@ -110,6 +117,7 @@ private:
   // For rendering solid elements
   GLuint _sceneFBO;
   GLuint _sceneTexture;
+  GLuint _sceneDepthTexture;
 
   // For rendering transparency
   GLuint _effectsFBO;
