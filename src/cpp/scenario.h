@@ -83,8 +83,6 @@ public:
 private:
   bool finishLoading() override;
 
-  bool generateBuffers();
-
   int _bspResourceID;
   int _sceneShaderResourceID;
 

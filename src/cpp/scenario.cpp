@@ -152,10 +152,7 @@ bool BSPScenario::finishLoading() {
   // The renderable map registers itself with the ResourceManager and owns it's own
   // loading flow.
   _renderableMap = make_shared<RenderableBSP>(mapResource);
-  return true;
-}
 
-bool BSPScenario::generateBuffers() {
   // Get the screen size, this will be used for FBOs later
   GLint viewportSize[4];
   glGetIntegerv(GL_VIEWPORT, viewportSize);
