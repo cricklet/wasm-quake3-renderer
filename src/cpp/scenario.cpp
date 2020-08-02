@@ -5,61 +5,34 @@
 #include "bsp.h"
 #include "pprint.hpp"
 
-
-void TestScenario::startLoading() {
-  ResourceManager::getInstance()->loadResource({
-    "./data/textures/poptart.jpg",
-    ResourceType::IMAGE_FILE,
-    TEXTURE_ID
-  });
-
+void TextureRenderer::startLoading() {
+  _shaderResourceID = ResourceManager::nextID();
   ResourceManager::getInstance()->loadShaders({
     "./src/glsl/test.vert",
     "./src/glsl/test.frag",
-    SHADER_ID
+    _shaderResourceID
   });
 }
 
-bool TestScenario::loadDependencies() {
-  return false;
-}
-
-bool TestScenario::finishLoading() {
-  if (!ResourceManager::getInstance()->finishedLoading()) {
-    cerr << "tried to load scenario before resources finished loading\n";
-    return false;
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  // Working through open.gl again...
-
-  // Save the following attribute configuration as a vao (vertex array object)
-  GLuint vao;
-  glGenVertexArrays(1, &vao);
-  glBindVertexArray(vao);
-
+bool TextureRenderer::finishLoading() {
   ////////////////////////////////////////////////////////////////////////////
   // Generate EBO
-  GLuint ebo;
-  glGenBuffers(1, &ebo);
+  glGenBuffers(1, &_ebo);
 
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
 
   ////////////////////////////////////////////////////////////////////////////
   // Generate VBO
-  GLuint vbo;
-  glGenBuffers(1, &vbo);
-
-  // Choose the vbo...
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glGenBuffers(1, &_vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 
   // Copy the vertex data into the vbo
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
   ////////////////////////////////////////////////////////////////////////////
   // Get the test shader program
-  optional<GLuint> shaderProgram = ResourceManager::getInstance()->getShaderProgram(SHADER_ID);
+  optional<GLuint> shaderProgram = ResourceManager::getInstance()->getShaderProgram(_shaderResourceID);
   if (!shaderProgram) {
     cerr << "failed to load shader program\n";
     return false;
@@ -72,15 +45,13 @@ bool TestScenario::finishLoading() {
   ////////////////////////////////////////////////////////////////////////////
   // Specify the inputs
 
-  // For the vertices
-  GLint posAttrib = glGetAttribLocation(*shaderProgram, "position");
-  glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
-  glEnableVertexAttribArray(posAttrib);
+  _inPosition = glGetAttribLocation(*shaderProgram, "inPosition");
+  glEnableVertexAttribArray(_inPosition);
 
-  // And colors
-  GLint texAttrib = glGetAttribLocation(*shaderProgram, "texCoord");
-  glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*) (2 * sizeof(float)));
-  glEnableVertexAttribArray(texAttrib);
+  _inTextureCoords = glGetAttribLocation(*shaderProgram, "inTextureCoords");
+  glEnableVertexAttribArray(_inTextureCoords);
+
+  _unifTexture = glGetUniformLocation(*shaderProgram, "unifTexture");
 
   if (hasErrors()) {
     return false;
@@ -89,27 +60,81 @@ bool TestScenario::finishLoading() {
   return true;
 }
 
-void TestScenario::render() {
+void TextureRenderer::render(GLuint textureID) {
+  optional<GLuint> shaderProgram = ResourceManager::getInstance()->getShaderProgram(_shaderResourceID);
+  if (!shaderProgram) {
+    cerr << "failed to load shader program\n";
+    return;
+  }
+
+  glUseProgram(*shaderProgram);
+
   glClearColor(0.0, 1.0, 1.0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT);
 
-  // glDrawArrays(GL_TRIANGLES, 0, 3);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, textureID);
+  glUniform1i(_unifTexture, 0);
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+  glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+
+  glVertexAttribPointer(_inPosition, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+  glVertexAttribPointer(_inTextureCoords, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*) (2 * sizeof(float)));
+
   glDrawElements(GL_TRIANGLES, sizeof(elements) / sizeof(elements[0]), GL_UNSIGNED_INT, 0);
 
   hasErrors();
 }
 
+void TestScenario::startLoading() {
+  _textureResourceID = ResourceManager::nextID();
+  ResourceManager::getInstance()->loadResource({
+    "./data/textures/poptart.jpg",
+    ResourceType::IMAGE_FILE,
+    _textureResourceID
+  });
+
+  _renderer.startLoading();
+}
+
+bool TestScenario::loadDependencies() {
+  return false;
+}
+
+bool TestScenario::finishLoading() {
+  if (!ResourceManager::getInstance()->finishedLoading()) {
+    cerr << "tried to load scenario before resources finished loading\n";
+    return false;
+  }
+
+  if (!_renderer.finishLoading()) {
+    return false;
+  }
+
+  return true;
+}
+
+void TestScenario::render() {
+  optional<GLuint> textureId = ResourceManager::getInstance()->getTexture(_textureResourceID);
+  if (textureId) {
+    _renderer.render(*textureId);
+  }
+}
+
 void BSPScenario::startLoading() {
+  _bspResourceID = ResourceManager::nextID();
   ResourceManager::getInstance()->loadResource({
     "./data/aerowalk.bsp",
     ResourceType::BSP_FILE,
-    BSP_ID
+    _bspResourceID
   });
 
+  _sceneShaderResourceID = ResourceManager::nextID();
   ResourceManager::getInstance()->loadShaders({
     "./src/glsl/render_scene.vert",
     "./src/glsl/render_scene.frag",
-    SCENE_SHADER_ID
+    _sceneShaderResourceID
   });
 }
 
@@ -156,7 +181,7 @@ bool BSPScenario::finishLoading() {
   int screenHeight = viewportSize[3];
 
   // Load the shader
-  _sceneShader = *ResourceManager::getInstance()->getShaderProgram(SCENE_SHADER_ID);
+  _sceneShader = *ResourceManager::getInstance()->getShaderProgram(_sceneShaderResourceID);
 
   // Use the program...
   glLinkProgram(_sceneShader);
@@ -179,6 +204,36 @@ bool BSPScenario::finishLoading() {
   _unifLightmapTexture = glGetUniformLocation(_sceneShader, "unifLightmapTexture");
   _unifCameraTransform = glGetUniformLocation(_sceneShader, "unifCameraTransform");
   _unifProjTransform = glGetUniformLocation(_sceneShader, "unifProjTransform");
+
+  // Create an FBO for solid elements
+  glGenFramebuffers(1, &_sceneFBO);
+  glBindFramebuffer(GL_FRAMEBUFFER, _sceneFBO);
+  {
+    // Create a color texture for the FBO
+    glGenTextures(1, &_sceneTexture);
+    glBindTexture(GL_TEXTURE_2D, _sceneTexture);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, screenWidth, screenHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _sceneTexture, 0);
+  }
+
+  // Create an FBO for translucent elements
+  glGenFramebuffers(1, &_effectsFBO);
+  glBindFramebuffer(GL_FRAMEBUFFER, _effectsFBO);
+  {
+    // Create a color texture for the FBO
+    glGenTextures(1, &_effectsTexture);
+    glBindTexture(GL_TEXTURE_2D, _effectsTexture);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, screenWidth, screenHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _effectsTexture, 0);
+  }
 
   if (hasErrors()) {
     return false;
@@ -216,7 +271,7 @@ void BSPScenario::render() {
 
   //////////////////////////////////////////////////////////////////////////////
 
-  optional<GLuint> sceneShaderID = ResourceManager::getInstance()->getShaderProgram(SCENE_SHADER_ID);
+  optional<GLuint> sceneShaderID = ResourceManager::getInstance()->getShaderProgram(_sceneShaderResourceID);
   if (!sceneShaderID) {
     cerr << "failed to load shader program\n";
     return;
@@ -250,7 +305,8 @@ void BSPScenario::render() {
   glm::mat4 projectionTransform = glm::perspective(glm::radians(90.0f), 1200.0f / 800.0f, 0.5f, 10000.0f);
   glUniformMatrix4fv(_unifProjTransform, 1, GL_FALSE, glm::value_ptr(projectionTransform));
 
-  // Render all the solid geometry in the map
+  // Render all the solid geometry in the map to the scene-FBO
+  glBindFramebuffer(GL_FRAMEBUFFER, _sceneFBO);
   {
     ShaderParameters shaderInputs {
       _inPosition,
@@ -264,21 +320,26 @@ void BSPScenario::render() {
     _renderableMap->render(shaderInputs);
   }
 
-  // Render all the transparent geometry on top of the existing geometry
-  glDepthMask(GL_FALSE);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  // // Render all the transparent geometry in the map to the effects-scene-FBO
+  // glBindFramebuffer(GL_FRAMEBUFFER, _effectsFBO);
 
-  {
-    ShaderParameters shaderInputs {
-      _inPosition,
-      _inColor,
-      _inTextureCoords,
-      _inLightmapCoords,
-      _unifTexture,
-      _unifLightmapTexture,
-      RenderMode::TRANSPARENCY
-    };
-    _renderableMap->render(shaderInputs);
-  }
+  // glDepthMask(GL_FALSE);
+  // glEnable(GL_BLEND);
+  // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  // {
+  //   ShaderParameters shaderInputs {
+  //     _inPosition,
+  //     _inColor,
+  //     _inTextureCoords,
+  //     _inLightmapCoords,
+  //     _unifTexture,
+  //     _unifLightmapTexture,
+  //     RenderMode::TRANSPARENCY
+  //   };
+  //   _renderableMap->render(shaderInputs);
+  // }
+
+  // Composite them onto the screen
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }

@@ -12,6 +12,11 @@ shared_ptr<ResourceManager> ResourceManager::getInstance() {
   return _instance;
 }
 
+int ResourceManager::nextID() {
+  static int resourceID = 0;
+  return resourceID ++;
+}
+
 bool ResourceManager::finishedLoading() const {
   return _loadingResources.size() == 0 && _failedResources.size() == 0;
 }

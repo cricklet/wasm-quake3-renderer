@@ -16,6 +16,7 @@ struct RenderableTextureOptions;
 struct ResourceManager : IMessageHandler {
 public:
   static shared_ptr<ResourceManager> getInstance();
+  static int nextID();
 
   bool finishedLoading() const;
 

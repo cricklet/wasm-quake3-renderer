@@ -1,10 +1,10 @@
 #version 300 es
 
-in lowp vec2 vertexTexCoord;
+in lowp vec2 intermTextureCoords;
 out lowp vec4 outColor;
 
-uniform sampler2D tex;
+uniform sampler2D unifTexture;
 
 void main() {
-  outColor = texture(tex, vertexTexCoord);
+  outColor = texture(unifTexture, intermTextureCoords);
 }

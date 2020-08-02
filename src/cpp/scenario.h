@@ -14,6 +14,36 @@ public:
   virtual void render();
 };
 
+struct TextureRenderer {
+  void startLoading();
+  bool finishLoading();
+  void render(GLuint textureID);
+
+private:
+  int _shaderResourceID;
+
+  GLuint _vbo;
+  GLuint _ebo;
+
+  GLuint _inPosition;
+  GLuint _inTextureCoords;
+
+  GLuint _unifTexture;
+
+  static constexpr float vertices[] = {
+    // Position   Texcoords
+    -1.0f,  1.0f, 0.0f, 0.0f, // Top-left
+    1.0f,  1.0f, 1.0f, 0.0f, // Top-right
+    1.0f, -1.0f, 1.0f, 1.0f, // Bottom-right
+    -1.0f, -1.0f, 0.0f, 1.0f  // Bottom-left
+  };
+
+  static constexpr GLuint elements[] = {
+    0, 1, 2,
+    2, 3, 0
+  };
+};
+
 struct TestScenario : IScenario {
 public:
   void startLoading() override;
@@ -23,21 +53,9 @@ public:
   void render() override;
 
 private:
-  static const int SHADER_ID = 1;
-  static const int TEXTURE_ID = 2;
+  int _textureResourceID;
 
-  static constexpr float vertices[] = {
-    // Position   Texcoords
-    -0.5f,  0.5f, 0.0f, 0.0f, // Top-left
-    0.5f,  0.5f, 1.0f, 0.0f, // Top-right
-    0.5f, -0.5f, 1.0f, 1.0f, // Bottom-right
-    -0.5f, -0.5f, 0.0f, 1.0f  // Bottom-left
-  };
-
-  static constexpr GLuint elements[] = {
-    0, 1, 2,
-    2, 3, 0
-  };
+  TextureRenderer _renderer;
 };
 
 struct Camera {
@@ -62,9 +80,9 @@ public:
   void render() override;
 
 private:
-  static const int BSP_ID = 0;
-  static const int SCENE_SHADER_ID = 1;
-  static const int BLEND_SHADER_ID = 2;
+  int _bspResourceID;
+  int _sceneShaderResourceID;
+  // int compositeShaderResourceID;
 
   shared_ptr<RenderableBSP> _renderableMap = nullptr;
 
@@ -88,6 +106,18 @@ private:
   vector<VBO> _verticesPerFace;
   vector<VBO> _colorsPerFace;
   vector<EBO> _elementsPerFace;
+
+  // For rendering solid elements
+  GLuint _sceneFBO;
+  GLuint _sceneTexture;
+
+  // For rendering transparency
+  GLuint _effectsFBO;
+  GLuint _effectsTexture;
+
+  // For rendering FBOs to the screen
+  VBO _screenVBO;
+  GLuint _screenShader;
 
   Camera _camera;
 };
