@@ -13,74 +13,77 @@ TextureRenderer::TextureRenderer(TextureRendererMode mode) {
   }
 }
 
-HasResourcesState TextureRenderer::load() {
-  if (_loadingState == HasResourcesState::DONE) {
-    return HasResourcesState::DONE;
+void TextureRenderer::load() {
+  switch (_loadingState) {
+    case HasResourcesState::NOT_STARTED: {
+      _shaderResourceID = ResourceManager::nextID();
+      ResourceManager::getInstance()->loadShaders({
+        "./src/glsl/test.vert",
+        "./src/glsl/test.frag",
+        _shaderResourceID
+      });
+      _loadingState = HasResourcesState::STILL_REQUESTING;
+      return;
+    }
+    case HasResourcesState::STILL_REQUESTING: {
+      ////////////////////////////////////////////////////////////////////////////
+      // Generate EBO
+      glGenBuffers(1, &_ebo);
+
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+      glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(_elements), _elements, GL_STATIC_DRAW);
+
+      ////////////////////////////////////////////////////////////////////////////
+      // Generate VBO
+      glGenBuffers(1, &_vbo);
+      glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+
+      // Copy the vertex data into the vbo
+      glBufferData(GL_ARRAY_BUFFER, sizeof(_vertices), _vertices, GL_STATIC_DRAW);
+
+      ////////////////////////////////////////////////////////////////////////////
+      // Get the test shader program
+      optional<GLuint> shaderProgram = ResourceManager::getInstance()->getShaderProgram(_shaderResourceID);
+      if (!shaderProgram) {
+        cerr << "failed to load shader program in TextureRenderer::load\n";
+        _loadingState = HasResourcesState::FAILED;
+        return;
+      }
+
+      // Use the program...
+      glLinkProgram(*shaderProgram);
+      glUseProgram(*shaderProgram);
+
+      ////////////////////////////////////////////////////////////////////////////
+      // Specify the inputs
+
+      _inPosition = glGetAttribLocation(*shaderProgram, "inPosition");
+      glEnableVertexAttribArray(_inPosition);
+
+      _inTextureCoords = glGetAttribLocation(*shaderProgram, "inTextureCoords");
+      glEnableVertexAttribArray(_inTextureCoords);
+
+      _unifTexture = glGetUniformLocation(*shaderProgram, "unifTexture");
+
+      if (hasErrors()) {
+        _loadingState = HasResourcesState::FAILED;
+        return;
+      }
+
+      _loadingState = HasResourcesState::ALL_RESOURCES_REQUESTED;
+      return;
+    }
+    case HasResourcesState::ALL_RESOURCES_REQUESTED:
+    case HasResourcesState::FAILED: {
+      return;
+    }
   }
-
-  if (_loadingState == HasResourcesState::NOT_STARTED) {
-    _shaderResourceID = ResourceManager::nextID();
-    ResourceManager::getInstance()->loadShaders({
-      "./src/glsl/test.vert",
-      "./src/glsl/test.frag",
-      _shaderResourceID
-    });
-    _loadingState = HasResourcesState::LOADING;
-    return _loadingState;
-  }
-
-  ////////////////////////////////////////////////////////////////////////////
-  // Generate EBO
-  glGenBuffers(1, &_ebo);
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(_elements), _elements, GL_STATIC_DRAW);
-
-  ////////////////////////////////////////////////////////////////////////////
-  // Generate VBO
-  glGenBuffers(1, &_vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-
-  // Copy the vertex data into the vbo
-  glBufferData(GL_ARRAY_BUFFER, sizeof(_vertices), _vertices, GL_STATIC_DRAW);
-
-  ////////////////////////////////////////////////////////////////////////////
-  // Get the test shader program
-  optional<GLuint> shaderProgram = ResourceManager::getInstance()->getShaderProgram(_shaderResourceID);
-  if (!shaderProgram) {
-    cerr << "failed to load shader program\n";
-    _loadingState = HasResourcesState::FAILED;
-    return _loadingState;
-  }
-
-  // Use the program...
-  glLinkProgram(*shaderProgram);
-  glUseProgram(*shaderProgram);
-
-  ////////////////////////////////////////////////////////////////////////////
-  // Specify the inputs
-
-  _inPosition = glGetAttribLocation(*shaderProgram, "inPosition");
-  glEnableVertexAttribArray(_inPosition);
-
-  _inTextureCoords = glGetAttribLocation(*shaderProgram, "inTextureCoords");
-  glEnableVertexAttribArray(_inTextureCoords);
-
-  _unifTexture = glGetUniformLocation(*shaderProgram, "unifTexture");
-
-  if (hasErrors()) {
-    _loadingState = HasResourcesState::FAILED;
-    return _loadingState;
-  }
-
-  _loadingState = HasResourcesState::DONE;
-  return _loadingState;
 }
 
 void TextureRenderer::render(vector<GLuint> textureIDs) {
   optional<GLuint> shaderProgram = ResourceManager::getInstance()->getShaderProgram(_shaderResourceID);
   if (!shaderProgram) {
-    cerr << "failed to load shader program\n";
+    cerr << "failed to load shader program in TextureRenderer::render\n";
     return;
   }
 
@@ -108,83 +111,83 @@ void TextureRenderer::render(vector<GLuint> textureIDs) {
   hasErrors();
 }
 
-HasResourcesState TestScenario::load() {
-  if (_loadingState == HasResourcesState::NOT_STARTED) {
-    _textureResourceID = ResourceManager::nextID();
-    ResourceManager::getInstance()->loadResource({
-      "./data/textures/poptart.jpg",
-      ResourceType::IMAGE_FILE,
-      _textureResourceID
-    });
-  }
+void TestScenario::load() {
+  switch (_loadingState) {
+    case HasResourcesState::NOT_STARTED: {
+      _textureResourceID = ResourceManager::nextID();
+      ResourceManager::getInstance()->loadResource({
+        "./data/textures/poptart.jpg",
+        ResourceType::IMAGE_FILE,
+        _textureResourceID
+      });
 
-  _loadingState = _renderer.load();
-  return _loadingState;
+      _renderer = shared_ptr<TextureRenderer>();
+      _loadingState = HasResourcesState::ALL_RESOURCES_REQUESTED;
+      return;
+    }
+    case HasResourcesState::STILL_REQUESTING:
+    case HasResourcesState::ALL_RESOURCES_REQUESTED:
+    case HasResourcesState::FAILED: {
+      return;
+    }
+  }
 }
 
 void TestScenario::render() {
   optional<GLuint> textureId = ResourceManager::getInstance()->getTexture(_textureResourceID);
   if (textureId) {
-    _renderer.render({*textureId});
+    _renderer->render({*textureId});
   }
 }
 
-HasResourcesState BSPScenario::load() {
-  if (_loadingState == HasResourcesState::DONE || _loadingState == HasResourcesState::FAILED) {
-    return _loadingState;
-  }
+void BSPScenario::load() {
+  switch (_loadingState) {
+    case HasResourcesState::NOT_STARTED: {
+      _bspResourceID = ResourceManager::nextID();
+      ResourceManager::getInstance()->loadResource({
+        "./data/aerowalk.bsp",
+        ResourceType::BSP_FILE,
+        _bspResourceID
+      });
 
-  if (_loadingState == HasResourcesState::NOT_STARTED) {
-    _bspResourceID = ResourceManager::nextID();
-    ResourceManager::getInstance()->loadResource({
-      "./data/aerowalk.bsp",
-      ResourceType::BSP_FILE,
-      _bspResourceID
-    });
+      _sceneShaderResourceID = ResourceManager::nextID();
+      ResourceManager::getInstance()->loadShaders({
+        "./src/glsl/render_scene.vert",
+        "./src/glsl/render_scene.frag",
+        _sceneShaderResourceID
+      });
 
-    _sceneShaderResourceID = ResourceManager::nextID();
-    ResourceManager::getInstance()->loadShaders({
-      "./src/glsl/render_scene.vert",
-      "./src/glsl/render_scene.frag",
-      _sceneShaderResourceID
-    });
+      // The compositing renderer registers itself with the ResourceManager and owns it's own
+      // loading flow.
+      _compositingRenderer = make_shared<TextureRenderer>(TextureRendererMode::FLIP_VERTICALLY);
 
-    _compositingRenderer.load();
+      _loadingState = HasResourcesState::STILL_REQUESTING;
+      return;
+    }
+    case HasResourcesState::STILL_REQUESTING: {
+      if (_renderableMap) {
+        _loadingState = HasResourcesState::ALL_RESOURCES_REQUESTED;
+      } else {
+        ResourcePtr<const BSPMap> mapResource = ResourceManager::getInstance()->getMap();
+        if (!mapResource.get()) {
+          cerr << "map failed to load\n";
+          _loadingState = HasResourcesState::FAILED;
+          return;
+        }
 
-    _loadingState = HasResourcesState::LOADING;
-    return _loadingState;
-  }
+        // The renderable map registers itself with the ResourceManager and owns it's own
+        // loading flow.
+        _renderableMap = make_shared<RenderableBSP>(mapResource);
 
-  if (_loadingState == HasResourcesState::LOADING) {
-    if (!_renderableMap) {
-      ResourcePtr<const BSPMap> mapResource = ResourceManager::getInstance()->getMap();
-      if (!mapResource.get()) {
-        cerr << "map failed to load\n";
-        return HasResourcesState::FAILED;
+        _loadingState = HasResourcesState::ALL_RESOURCES_REQUESTED;
       }
-      _renderableMap = make_shared<RenderableBSP>(mapResource);
+      return;
     }
-
-
-    auto compositingLoading = _compositingRenderer.load();
-
-    auto renderMapLoading = _renderableMap->load();
-
-    if (compositingLoading == HasResourcesState::DONE && renderMapLoading == HasResourcesState::DONE) {
-      generateBuffers();
-      _loadingState = HasResourcesState::DONE;
-      return _loadingState;
+    case HasResourcesState::ALL_RESOURCES_REQUESTED:
+    case HasResourcesState::FAILED: {
+      return;
     }
-
-    if (compositingLoading == HasResourcesState::FAILED && renderMapLoading == HasResourcesState::FAILED) {
-      _loadingState = HasResourcesState::FAILED;
-      return _loadingState;
-    }
-
-    return _loadingState;
   }
-
-  return _loadingState;
 }
 
 bool BSPScenario::generateBuffers() {
@@ -374,7 +377,7 @@ void BSPScenario::render() {
 
   // Composite them onto the screen
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  _compositingRenderer.render({_sceneTexture, _effectsTexture});
+  _compositingRenderer->render({_sceneTexture, _effectsTexture});
 
   // static int x = 0;
   // x ++;

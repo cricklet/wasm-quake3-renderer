@@ -2,6 +2,14 @@
 #include "gl_helpers.h"
 #include "bsp.h"
 
+IHasResources::IHasResources() {
+  ResourceManager::getInstance()->addResourceLoader(this);
+}
+
+IHasResources::~IHasResources() {
+  ResourceManager::getInstance()->removeResourceLoader(this);
+}
+
 shared_ptr<ResourceManager> ResourceManager::_instance = nullptr;
 
 shared_ptr<ResourceManager> ResourceManager::getInstance() {
@@ -17,9 +25,46 @@ int ResourceManager::nextID() {
   return resourceID ++;
 }
 
-bool ResourceManager::finishedLoading() const {
-  return _loadingResources.size() == 0 && _failedResources.size() == 0;
+void ResourceManager::addResourceLoader(IHasResources* loader) {
+  _resourceLoaders.insert(loader);
 }
+
+void ResourceManager::removeResourceLoader(IHasResources* loader) {
+  _resourceLoaders.erase(loader);
+}
+
+bool ResourceManager::hasOutstandingResources() const {
+  return _loadingResources.size() > 0 || _failedResources.size() > 0;
+}
+
+LoadingState ResourceManager::think() {
+  if (hasOutstandingResources()) {
+    return LoadingState::LOADING;
+  }
+
+  for (auto& loader : _resourceLoaders) {
+    loader->load();
+  }
+
+  if (hasOutstandingResources()) {
+    return LoadingState::LOADING;
+  }
+
+  for (auto& loader : _resourceLoaders) {
+    switch (loader->loadingState()) {
+      case HasResourcesState::NOT_STARTED:
+      case HasResourcesState::STILL_REQUESTING:
+        return LoadingState::LOADING;
+      case HasResourcesState::FAILED:
+        return LoadingState::FAILED;
+      case HasResourcesState::ALL_RESOURCES_REQUESTED:
+        break;
+    }
+  }
+
+  return LoadingState::DONE;
+}
+
 
 void ResourceManager::loadResource(const LoadResource& message) {
   MessageBindings::sendMessageToWeb(message);

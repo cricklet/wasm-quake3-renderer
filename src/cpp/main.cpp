@@ -42,9 +42,8 @@ int main() {
   MessageBindings::sendMessageToWeb(CPPLoaded{});
   MessageBindings::sendMessageToWeb(TestMessage{ "main() called in CPP" });
   
-  // currentScenario = make_shared<TestScenario>();
-  currentScenario = make_shared<BSPScenario>();
-  currentScenario->load();
+  currentScenario = make_shared<TestScenario>();
+  // currentScenario = make_shared<BSPScenario>();
 
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -67,22 +66,18 @@ int main() {
       return;
     }
 
-    if (!ResourceManager::getInstance()->finishedLoading()) {
-      return;
-    }
-
     static bool ready = false;
     if (!ready) {
-      HasResourcesState loadingState = currentScenario->load();
-      if (loadingState == HasResourcesState::FAILED) {
-        error = true;
-        return;
-      }
-
-      if (loadingState == HasResourcesState::DONE) {
-        ready = true;
-      } else {
-        return;
+      LoadingState loadingState = ResourceManager::getInstance()->think();
+      switch (loadingState) {
+        case LoadingState::FAILED:
+          error = true;
+          return;
+        case LoadingState::DONE:
+          ready = true;
+          return;
+        default:
+          return;
       }
     }
 

@@ -19,10 +19,11 @@ enum class TextureRendererMode {
 struct TextureRenderer : IHasResources {
   TextureRenderer(TextureRendererMode mode = TextureRendererMode::DEFAULT);
 
-  HasResourcesState load() override;
   void render(vector<GLuint> textureIDs);
 
 private:
+  void load() override;
+  HasResourcesState loadingState() const override { return _loadingState; }
   HasResourcesState _loadingState = HasResourcesState::NOT_STARTED;
 
   int _shaderResourceID;
@@ -51,16 +52,16 @@ private:
 
 struct TestScenario : IScenario {
 public:
-  HasResourcesState load() override;
-
   void think(glm::vec2 dir, double pitch, double yaw) override {}
   void render() override;
 
 private:
+  void load() override;
+  HasResourcesState loadingState() const override { return _loadingState; }
   HasResourcesState _loadingState = HasResourcesState::NOT_STARTED;
 
   int _textureResourceID;
-  TextureRenderer _renderer;
+  shared_ptr<TextureRenderer> _renderer;
 };
 
 struct Camera {
@@ -78,19 +79,20 @@ struct RenderableBSP;
 
 struct BSPScenario : IScenario {
 public:
-  HasResourcesState load() override;
-
   void think(glm::vec2 dir, double pitch, double yaw) override;
   void render() override;
 
 private:
+  void load() override;
+  HasResourcesState loadingState() const override { return _loadingState; }
   HasResourcesState _loadingState = HasResourcesState::NOT_STARTED;
+
   bool generateBuffers();
 
   int _bspResourceID;
   int _sceneShaderResourceID;
 
-  TextureRenderer _compositingRenderer { TextureRendererMode::FLIP_VERTICALLY };
+  shared_ptr<TextureRenderer> _compositingRenderer = nullptr;
 
   shared_ptr<RenderableBSP> _renderableMap = nullptr;
 

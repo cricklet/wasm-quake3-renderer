@@ -12,16 +12,29 @@ namespace BSP {
 using BSPMap = BSP::header_t;
 
 struct RenderableTextureOptions;
+struct ResourceManager;
 
 enum class HasResourcesState {
   NOT_STARTED,
-  LOADING,
-  DONE,
+  STILL_REQUESTING,
+  ALL_RESOURCES_REQUESTED,
   FAILED
 };
 
 struct IHasResources {
-  virtual HasResourcesState load();
+  IHasResources();
+  virtual ~IHasResources();
+
+private:
+  friend ResourceManager;
+  virtual void load() = 0;
+  virtual HasResourcesState loadingState() const = 0;
+};
+
+enum class LoadingState {
+  LOADING,
+  DONE,
+  FAILED
 };
 
 struct ResourceManager : IMessageHandler {
@@ -29,7 +42,12 @@ public:
   static shared_ptr<ResourceManager> getInstance();
   static int nextID();
 
-  bool finishedLoading() const;
+  LoadingState think();
+
+  void addResourceLoader(IHasResources* loader);
+  void removeResourceLoader(IHasResources* loader);
+
+  bool hasOutstandingResources() const;
 
   void loadResource(const LoadResource& message);
   void loadShaders(const LoadShaders& message);
@@ -59,6 +77,8 @@ private:
   unordered_map<int, RenderableTextureOptions> _textureOptions = {};
 
   ResourcePtr<const BSPMap> _map = nullptr;
+
+  unordered_set<IHasResources*> _resourceLoaders;
 
   static shared_ptr<ResourceManager> _instance;
 };

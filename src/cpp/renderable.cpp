@@ -6,44 +6,45 @@
 #include "pprint.hpp"
 #include "assert.h"
 
-HasResourcesState RenderableBSP::load() {
-  if (_loadingState == HasResourcesState::NOT_STARTED) {
-    const BSPMap* map = _map.get();
-    if (!map) {
-      cerr << "map failed to load\n";
-      _loadingState = HasResourcesState::FAILED;
-      return _loadingState;
+void RenderableBSP::load() {
+  switch (_loadingState) {
+    case HasResourcesState::NOT_STARTED: {
+      const BSPMap* map = _map.get();
+      if (!map) {
+        cerr << "map failed to load\n";
+        _loadingState = HasResourcesState::FAILED;
+        return;
+      }
+
+      const BSP::texture_t* textures = map->textures();
+      const int numTextures = map->numTextures();
+
+      int textureResourceId = 100;
+
+      for (int textureIndex = 0; textureIndex < numTextures; textureIndex ++) {
+        const BSP::texture_t* texture = textures + textureIndex;
+        
+        _textureResourceIds[string(texture->name)] = textureResourceId;
+        ResourceManager::getInstance()->loadResource({
+          string("./data/") + string(texture->name),
+          ResourceType::IMAGE_FILE,
+          textureResourceId
+        });
+
+        textureResourceId ++;
+      }
+
+      _loadingState = HasResourcesState::STILL_REQUESTING;
+      return;
     }
-
-    const BSP::texture_t* textures = map->textures();
-    const int numTextures = map->numTextures();
-
-    int textureResourceId = 100;
-
-    for (int textureIndex = 0; textureIndex < numTextures; textureIndex ++) {
-      const BSP::texture_t* texture = textures + textureIndex;
-      
-      _textureResourceIds[string(texture->name)] = textureResourceId;
-      ResourceManager::getInstance()->loadResource({
-        string("./data/") + string(texture->name),
-        ResourceType::IMAGE_FILE,
-        textureResourceId
-      });
-
-      textureResourceId ++;
+    case HasResourcesState::STILL_REQUESTING: {
+      generateBuffers();
+      _loadingState = HasResourcesState::ALL_RESOURCES_REQUESTED;
+      return;
     }
-
-    _loadingState = HasResourcesState::LOADING;
-    return _loadingState;
+    default:
+      return;
   }
-
-  if (_loadingState == HasResourcesState::LOADING) {
-    generateBuffers();
-    _loadingState = HasResourcesState::DONE;
-    return _loadingState;
-  }
-
-  return _loadingState;
 }
 
 struct TesselatedPatch {

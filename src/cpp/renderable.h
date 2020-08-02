@@ -40,14 +40,14 @@ struct ShaderParameters {
 struct RenderableBSP : IHasResources {
   RenderableBSP(ResourcePtr<const BSPMap> map): _map(map) {}
 
-  HasResourcesState load() override;
-
   void render(const ShaderParameters& inputs);
 
 private:
-  bool generateBuffers();
-
+  void load() override;
+  HasResourcesState loadingState() const override { return _loadingState; }
   HasResourcesState _loadingState = HasResourcesState::NOT_STARTED;
+
+  bool generateBuffers();
 
   ResourcePtr<const BSPMap> _map;
   unordered_map<string, int> _textureResourceIds;
