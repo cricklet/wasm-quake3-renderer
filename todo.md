@@ -88,10 +88,15 @@
    - [x] Run on all faces (brute force)
  - [ ] Speed up by only checking faces relevant to a player's current location (eg which bsp leaves?)
 
-## Improvements to the development environment
- - [ ] Use Catch.h to run tests
- - [ ] Add an OSX compilation target
- - [ ] Add flags which can be controlled via checkboxes in index.html
+## Add OSX as a compliation target
+ - [ ] ???
+ - [ ] I want to be able to use the XCode debugger!
+
+## Introduce a React layer
+ - [ ] Add React
+ - [ ] Pass some state to TS (at first, just boolean flags & debugging strings)
+ - [ ] Show debugging info in React
+ - [ ] Allow modifying debugging flags within React
 
 ## Find out what leaf we're in... render only visible leaves
 
