@@ -29,6 +29,7 @@ struct ShaderParameters {
   GLuint inTextureCoords;
   GLuint inLightmapCoords;
 
+  GLuint unifAlpha;
   GLuint unifTexture;
   GLuint unifLightmapTexture;
 

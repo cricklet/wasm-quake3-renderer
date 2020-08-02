@@ -217,6 +217,7 @@ bool BSPScenario::finishLoading() {
   _inColor = glGetAttribLocation(_sceneShader, "inColor");
   glEnableVertexAttribArray(_inColor);
 
+  _unifAlpha = glGetUniformLocation(_sceneShader, "unifAlpha");
   _unifTexture = glGetUniformLocation(_sceneShader, "unifTexture");
   _unifLightmapTexture = glGetUniformLocation(_sceneShader, "unifLightmapTexture");
   _unifCameraTransform = glGetUniformLocation(_sceneShader, "unifCameraTransform");
@@ -257,6 +258,9 @@ bool BSPScenario::finishLoading() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _effectsTexture, 0);
+
+    // Reuse the depth texture from the scene FBO!
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _sceneDepthTexture, 0);
   }
 
   if (hasErrors()) {
@@ -311,12 +315,12 @@ void BSPScenario::render() {
     glUseProgram(_sceneShader);
     glBindFramebuffer(GL_FRAMEBUFFER, _sceneFBO);
 
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+    glDisable(GL_BLEND);
+
     glClearColor(0.6, 0.2, 0.6, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glEnable(GL_DEPTH_TEST);
-    // glDepthMask(GL_TRUE);
-    // glDisable(GL_BLEND);
 
     // Update camera transform
     glm::mat4 cameraTransform = glm::lookAt(
@@ -336,6 +340,7 @@ void BSPScenario::render() {
       _inColor,
       _inTextureCoords,
       _inLightmapCoords,
+      _unifAlpha,
       _unifTexture,
       _unifLightmapTexture,
       RenderMode::SOLID
@@ -343,27 +348,40 @@ void BSPScenario::render() {
     _renderableMap->render(shaderInputs);
   }
 
-  // // Render all the transparent geometry in the map to the effects-scene-FBO
-  // glBindFramebuffer(GL_FRAMEBUFFER, _effectsFBO);
+  // Render all the translucent geometry in the map to the effects-FBO
+  {
+    glUseProgram(_sceneShader);
+    glBindFramebuffer(GL_FRAMEBUFFER, _effectsFBO);
 
-  // glDepthMask(GL_FALSE);
-  // glEnable(GL_BLEND);
-  // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_FALSE);
+    glEnable(GL_BLEND);
 
-  // {
-  //   ShaderParameters shaderInputs {
-  //     _inPosition,
-  //     _inColor,
-  //     _inTextureCoords,
-  //     _inLightmapCoords,
-  //     _unifTexture,
-  //     _unifLightmapTexture,
-  //     RenderMode::TRANSPARENCY
-  //   };
-  //   _renderableMap->render(shaderInputs);
-  // }
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT); // Don't clear the depth!
+
+    ShaderParameters shaderInputs {
+      _inPosition,
+      _inColor,
+      _inTextureCoords,
+      _inLightmapCoords,
+      _unifAlpha,
+      _unifTexture,
+      _unifLightmapTexture,
+      RenderMode::TRANSPARENCY
+    };
+    _renderableMap->render(shaderInputs);
+  }
 
   // Composite them onto the screen
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  _compositingRenderer.render(_sceneTexture);
+  _compositingRenderer.render(_effectsTexture);
+
+  // static int x = 0;
+  // x ++;
+  // if (x % 2) {
+  //   _compositingRenderer.render(_sceneTexture);
+  // } else {
+  //   _compositingRenderer.render(_effectsTexture);
+  // }
 }

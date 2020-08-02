@@ -103,6 +103,8 @@ private:
   GLuint _inTextureCoords;
   GLuint _inLightmapCoords;
 
+  GLuint _unifAlpha;
+
   GLuint _unifTexture;
   GLuint _unifLightmapTexture;
 
