@@ -380,7 +380,7 @@ void RenderableBSP::render(const ShaderParameters& inputs) {
     } else if (inputs.mode == RenderMode::TRANSPARENCY && !isTransparent) {
       continue;
     }
-    glUniform1f(inputs.unifAlpha, isTransparent ? 0.75 : 1);
+    glUniform1f(inputs.unifAlpha, isTransparent ? 0.9 : 1);
 
     optional<GLuint> textureId = ResourceManager::getInstance()->getTexture(textureResourceId);
     if (textureId) {

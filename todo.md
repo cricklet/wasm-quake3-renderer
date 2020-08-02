@@ -63,12 +63,12 @@
  - [x] Add an alpha setting to the texture commands!
  - [x] Pass texture commands from TS => C++ per texture
  - [x] Read texture commands when rendering faces, starting with alpha.
- - [ ] Render transparency
-   - [ ] Extend render_scene shader to also allow taking in a depth-buffer
-   - [ ] Allow render_scene shader to blend
-   - [ ] Render translucent elements onto a separate buffer
-   - [ ] Composite the translucency buffer with the solid buffer
-
+ - [x] Render transparency
+   - [x] Extend render_scene shader to also allow taking in a depth-buffer
+   - [x] Allow render_scene shader to blend
+   - [x] Render translucent elements onto a separate buffer
+   - [x] Composite the translucency buffer with the solid buffer
+ - [ ] Learn more about the Quake shader pipeline? http://toolz.nexuizninjaz.com/shader/shader/section2.htm#2.1
  - [ ] Organize faces into which faces need to be drawn in which pass
  - [ ] textures/proto2/beam_blue -- uses alpha & add blend function
  - [ ] data/textures/sfx/beam.jpg -- uses scroll mod

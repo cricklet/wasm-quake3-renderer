@@ -1,4 +1,4 @@
-![](https://i.imgur.com/HsUMnIh.png)
+![](https://i.imgur.com/Cok9pCX.png)
 
 A small Q3 BSP renderer, built in C++ targeting the web. Progress tracked in `todo.md`!
 
