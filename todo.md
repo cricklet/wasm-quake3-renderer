@@ -74,10 +74,6 @@
  - [ ] data/textures/sfx/beam.jpg -- uses scroll mod
  - [ ] data/textures/skies/meth_clouds_blue.jpg -- uses scale & scroll mod
 
-## Improvements to the ResourceManger
- - [ ] It should assign the resource IDs
- - [ ] Have multiple loading states
-
 ## Improvements to the development environment
  - [ ] Use Catch.h to run tests
  - [ ] Add an OSX compilation target
