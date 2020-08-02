@@ -49,7 +49,7 @@ export interface LoadedBSP {
 export interface LoadedTextureOptions {
   type: 'LoadedTextureOptions'
   resourceID: number;
-  transparency: number;
+  surfaceParamTrans: boolean;
 }
 export type Message = { type: 'Unknown' }  | TestMessage  | CPPLoaded  | LoadResource  | LoadShaders  | LoadedShaders  | LoadedTexture  | MissingTexture  | LoadedBSP  | LoadedTextureOptions 
 export function parseMessage(json: string): Message {

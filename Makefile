@@ -14,7 +14,7 @@ all: data/textures_manifest.json src/cpp/bindings.h output/index.js output/app.j
 src/cpp/bindings.h: generate_bindings.py schema.py
 	python3 generate_bindings.py
 
-data/textures_manifest.json: generate_manifests.py
+data/textures_manifest.json: generate_manifests.py schema.py
 	python3 generate_manifests.py
 
 output/app.js: $(TS_FILES)

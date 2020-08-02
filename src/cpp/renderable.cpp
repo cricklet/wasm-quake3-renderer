@@ -374,13 +374,13 @@ void RenderableBSP::render(const ShaderParameters& inputs) {
     const int textureResourceId = _textureResourceIds[string(texture->name)];
 
     optional<RenderableTextureOptions> textureOptions = ResourceManager::getInstance()->getTextureOptions(textureResourceId);
-    float transparency = textureOptions ? textureOptions->transparency : 1;
-    if (inputs.mode == RenderMode::SOLID && transparency < 0.99) {
+    bool isTransparent = textureOptions ? textureOptions->surfaceParamTrans : false;
+    if (inputs.mode == RenderMode::SOLID && isTransparent) {
       continue;
-    } else if (inputs.mode == RenderMode::TRANSPARENCY && transparency >= 0.99) {
+    } else if (inputs.mode == RenderMode::TRANSPARENCY && !isTransparent) {
       continue;
     }
-    glUniform1f(inputs.unifAlpha, transparency);
+    glUniform1f(inputs.unifAlpha, isTransparent ? 0.75 : 1);
 
     optional<GLuint> textureId = ResourceManager::getInstance()->getTexture(textureResourceId);
     if (textureId) {

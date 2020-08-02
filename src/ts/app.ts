@@ -33,7 +33,6 @@ async function loadImage(src: string) {
 
   const pointer = _CPP_createBuffer(image.width * image.height * 4)
   Module.HEAP8.set(image.data, pointer)
-
   return { pointer, width: image.width, height: image.height }
 }
 
@@ -82,7 +81,7 @@ function findTextureInManifest(url: string, manifest: TextureManifest): string |
 }
 
 type TextureOptions = {
-  qer_trans?: number
+  surfaceParamTrans?: boolean
 }
 
 function findTextureOptions(url: string, manifest: TextureManifest) : TextureOptions | undefined {
@@ -108,8 +107,8 @@ function findTextureOptions(url: string, manifest: TextureManifest) : TextureOpt
 
   const result: TextureOptions = {}
   for (const line of rawShader) {
-    if (line[0] === 'qer_trans') {
-      result['qer_trans'] = parseFloat(line[1])
+    if (line[0] == 'surfaceparm' && line[1] == 'trans') {
+      result['surfaceParamTrans'] = true
     }
   }
 
@@ -146,7 +145,7 @@ async function loadResource(message: LoadResource) {
           sendMessageFromWeb({
             type: 'LoadedTextureOptions',
             resourceID: message.resourceID,
-            transparency: shaderForTexture.qer_trans === undefined ? 1 : shaderForTexture.qer_trans
+            surfaceParamTrans: shaderForTexture.surfaceParamTrans === true
           })
         }
 

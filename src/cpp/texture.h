@@ -2,7 +2,7 @@
 #define TEXTURE_H
 
 struct RenderableTextureOptions {
-  float transparency;
+  bool surfaceParamTrans;
 };
 
 #endif

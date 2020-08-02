@@ -76,7 +76,7 @@ void ResourceManager::handleMessageFromWeb(const LoadedShaders& message) {
 }
 
 void ResourceManager::handleMessageFromWeb(const LoadedTextureOptions& message) {
-  _textureOptions[message.resourceID] = { message.transparency };
+  _textureOptions[message.resourceID] = { message.surfaceParamTrans };
 }
 
 optional<GLuint> ResourceManager::getShaderProgram(int resourceID) {

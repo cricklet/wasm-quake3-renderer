@@ -23,7 +23,7 @@ struct TextureRenderer {
 
   void startLoading();
   bool finishLoading();
-  void render(GLuint textureID);
+  void render(vector<GLuint> textureIDs);
 
 private:
   int _shaderResourceID;

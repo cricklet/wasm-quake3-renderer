@@ -9,6 +9,8 @@ def convert_ts_type(t):
     return 'number'
   if t == 'void*':
     return 'number'
+  if t == 'bool':
+    return 'boolean'
   return t
 
 def cpp_to_json_cast(t):

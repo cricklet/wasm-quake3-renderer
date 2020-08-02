@@ -155,18 +155,18 @@ struct LoadedBSP {
 };
 struct LoadedTextureOptions {
   int resourceID;
-  float transparency;
+  bool surfaceParamTrans;
   string toJson() const {
     json j;
     j["type"] = "LoadedTextureOptions";
     j["resourceID"] =  resourceID;
-    j["transparency"] =  transparency;
+    j["surfaceParamTrans"] =  surfaceParamTrans;
     return j.dump();
   }
   static LoadedTextureOptions fromJson(const json& j) {
     return LoadedTextureOptions {
       j["resourceID"],
-      j["transparency"],
+      j["surfaceParamTrans"],
     };
   }
 };

@@ -68,7 +68,7 @@ bool TextureRenderer::finishLoading() {
   return true;
 }
 
-void TextureRenderer::render(GLuint textureID) {
+void TextureRenderer::render(vector<GLuint> textureIDs) {
   optional<GLuint> shaderProgram = ResourceManager::getInstance()->getShaderProgram(_shaderResourceID);
   if (!shaderProgram) {
     cerr << "failed to load shader program\n";
@@ -77,20 +77,24 @@ void TextureRenderer::render(GLuint textureID) {
 
   glUseProgram(*shaderProgram);
 
-  glClearColor(1.0, 1.0, 1.0, 1.0);
+  glClearColor(0.0, 0.0, 0.0, 0.0);
   glClear(GL_COLOR_BUFFER_BIT);
 
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, textureID);
-  glUniform1i(_unifTexture, 0);
+  glBlendFunc(GL_ONE, GL_ONE);
 
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
-  glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+  for (const auto textureID : textureIDs) {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    glUniform1i(_unifTexture, 0);
 
-  glVertexAttribPointer(_inPosition, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
-  glVertexAttribPointer(_inTextureCoords, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*) (2 * sizeof(float)));
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
+    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
 
-  glDrawElements(GL_TRIANGLES, sizeof(_elements) / sizeof(_elements[0]), GL_UNSIGNED_INT, 0);
+    glVertexAttribPointer(_inPosition, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+    glVertexAttribPointer(_inTextureCoords, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*) (2 * sizeof(float)));
+
+    glDrawElements(GL_TRIANGLES, sizeof(_elements) / sizeof(_elements[0]), GL_UNSIGNED_INT, 0);
+  }
 
   hasErrors();
 }
@@ -126,7 +130,7 @@ bool TestScenario::finishLoading() {
 void TestScenario::render() {
   optional<GLuint> textureId = ResourceManager::getInstance()->getTexture(_textureResourceID);
   if (textureId) {
-    _renderer.render(*textureId);
+    _renderer.render({*textureId});
   }
 }
 
@@ -375,7 +379,7 @@ void BSPScenario::render() {
 
   // Composite them onto the screen
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  _compositingRenderer.render(_effectsTexture);
+  _compositingRenderer.render({_sceneTexture, _effectsTexture});
 
   // static int x = 0;
   // x ++;

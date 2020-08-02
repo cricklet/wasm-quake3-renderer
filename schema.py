@@ -1,6 +1,6 @@
 
 enums = [
-  ('ResourceType', 'RESOURCE_', ['BSP_FILE', 'IMAGE_FILE'])
+  ('ResourceType', 'RESOURCE_', ['BSP_FILE', 'IMAGE_FILE']),
 ]
 
 messages = [
@@ -48,6 +48,6 @@ messages = [
 
   ('LoadedTextureOptions', [
     ('resourceID', 'int'),
-    ('transparency', 'float')
+    ('surfaceParamTrans', 'bool')
   ])
 ]
