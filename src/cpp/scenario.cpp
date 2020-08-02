@@ -3,6 +3,7 @@
 #include "renderable.h"
 #include "gl_helpers.h"
 #include "bsp.h"
+#include "hitscan.h"
 #include "pprint.hpp"
 
 TextureRenderer::TextureRenderer(TextureRendererMode mode) {
@@ -167,23 +168,24 @@ bool BSPScenario::finishLoading() {
   glUseProgram(_sceneShader);
 
   // Bind the inputs
-  _inPosition = glGetAttribLocation(_sceneShader, "inPosition");
-  glEnableVertexAttribArray(_inPosition);
+  _sceneShaderParams.inPosition = glGetAttribLocation(_sceneShader, "inPosition");
+  glEnableVertexAttribArray(_sceneShaderParams.inPosition);
 
-  _inTextureCoords = glGetAttribLocation(_sceneShader, "inTextureCoords");
-  glEnableVertexAttribArray(_inTextureCoords);
+  _sceneShaderParams.inTextureCoords = glGetAttribLocation(_sceneShader, "inTextureCoords");
+  glEnableVertexAttribArray(_sceneShaderParams.inTextureCoords);
 
-  _inLightmapCoords = glGetAttribLocation(_sceneShader, "inLightmapCoords");
-  glEnableVertexAttribArray(_inLightmapCoords);
+  _sceneShaderParams.inLightmapCoords = glGetAttribLocation(_sceneShader, "inLightmapCoords");
+  glEnableVertexAttribArray(_sceneShaderParams.inLightmapCoords);
 
-  _inColor = glGetAttribLocation(_sceneShader, "inColor");
-  glEnableVertexAttribArray(_inColor);
+  _sceneShaderParams.inColor = glGetAttribLocation(_sceneShader, "inColor");
+  glEnableVertexAttribArray(_sceneShaderParams.inColor);
 
-  _unifAlpha = glGetUniformLocation(_sceneShader, "unifAlpha");
-  _unifTexture = glGetUniformLocation(_sceneShader, "unifTexture");
-  _unifLightmapTexture = glGetUniformLocation(_sceneShader, "unifLightmapTexture");
-  _unifCameraTransform = glGetUniformLocation(_sceneShader, "unifCameraTransform");
-  _unifProjTransform = glGetUniformLocation(_sceneShader, "unifProjTransform");
+  _sceneShaderParams.unifAlpha = glGetUniformLocation(_sceneShader, "unifAlpha");
+  _sceneShaderParams.unifHighlight = glGetUniformLocation(_sceneShader, "unifHighlight");
+  _sceneShaderParams.unifTexture = glGetUniformLocation(_sceneShader, "unifTexture");
+  _sceneShaderParams.unifLightmapTexture = glGetUniformLocation(_sceneShader, "unifLightmapTexture");
+  _sceneShaderParams.unifCameraTransform = glGetUniformLocation(_sceneShader, "unifCameraTransform");
+  _sceneShaderParams.unifProjTransform = glGetUniformLocation(_sceneShader, "unifProjTransform");
 
   // Create an FBO for solid elements
   glGenFramebuffers(1, &_sceneFBO);
@@ -273,6 +275,8 @@ void BSPScenario::render() {
     return;
   }
 
+  optional<HitScanResult> result = HitScan::findFaceIndex(map, _camera.location, _camera.forward());
+
   // Render all the solid geometry in the map to the scene-FBO
   {
     glUseProgram(_sceneShader);
@@ -292,23 +296,13 @@ void BSPScenario::render() {
       glm::vec3(0,0,1)  // camera up vector
     );
 
-    glUniformMatrix4fv(_unifCameraTransform, 1, GL_FALSE, glm::value_ptr(cameraTransform));
+    glUniformMatrix4fv(_sceneShaderParams.unifCameraTransform, 1, GL_FALSE, glm::value_ptr(cameraTransform));
 
     // And projection transform
     glm::mat4 projectionTransform = glm::perspective(glm::radians(86.0f), 1200.0f / 800.0f, 0.5f, 10000.0f);
-    glUniformMatrix4fv(_unifProjTransform, 1, GL_FALSE, glm::value_ptr(projectionTransform));
+    glUniformMatrix4fv(_sceneShaderParams.unifProjTransform, 1, GL_FALSE, glm::value_ptr(projectionTransform));
 
-    ShaderParameters shaderInputs {
-      _inPosition,
-      _inColor,
-      _inTextureCoords,
-      _inLightmapCoords,
-      _unifAlpha,
-      _unifTexture,
-      _unifLightmapTexture,
-      RenderMode::SOLID
-    };
-    _renderableMap->render(shaderInputs);
+    _renderableMap->render(_sceneShaderParams, RenderMode::SOLID, result);
   }
 
   // Render all the translucent geometry in the map to the effects-FBO
@@ -323,17 +317,7 @@ void BSPScenario::render() {
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT); // Don't clear the depth!
 
-    ShaderParameters shaderInputs {
-      _inPosition,
-      _inColor,
-      _inTextureCoords,
-      _inLightmapCoords,
-      _unifAlpha,
-      _unifTexture,
-      _unifLightmapTexture,
-      RenderMode::TRANSPARENCY
-    };
-    _renderableMap->render(shaderInputs);
+    _renderableMap->render(_sceneShaderParams, RenderMode::TRANSPARENCY, result);
   }
 
   // Composite them onto the screen

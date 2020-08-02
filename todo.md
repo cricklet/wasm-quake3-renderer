@@ -78,8 +78,15 @@
  - [x] Add a interface HasResources interface
  - [x] Refactor the scenarios etc to use it
 
-## Hitscan, for debugging
- - [ ] Draw a crosshair on the screen
+## HUD
+ - [ ] Create a HUD element that's the same size as the canvas
+ - [ ] Draw a crosshair in the center of that HUD
+
+## Hitscan
+ - [x] Detect which face is closest to the player @ the crosshair location
+   - [x] What's the interesection distance?
+   - [x] Run on all faces (brute force)
+ - [ ] Speed up by only checking faces relevant to a player's current location (eg which bsp leaves?)
 
 ## Improvements to the development environment
  - [ ] Use Catch.h to run tests

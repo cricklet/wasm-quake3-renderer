@@ -11,6 +11,9 @@ namespace BSP {
 }
 using BSPMap = BSP::header_t;
 
+struct SceneShaderParameters;
+struct HitScanResult;
+
 struct RenderableFace {
   static optional<RenderableFace> generate(const BSPMap* map, int faceIndex);
   int faceIndex; // auto* face = map->faces() + faceIndex
@@ -24,23 +27,10 @@ enum class RenderMode {
   TRANSPARENCY
 };
 
-struct ShaderParameters {
-  GLuint inPosition;
-  GLuint inColor;
-  GLuint inTextureCoords;
-  GLuint inLightmapCoords;
-
-  GLuint unifAlpha;
-  GLuint unifTexture;
-  GLuint unifLightmapTexture;
-
-  RenderMode mode;
-};
-
 struct RenderableBSP : IHasResources {
   RenderableBSP(ResourcePtr<const BSPMap> map);
 
-  void render(const ShaderParameters& inputs);
+  void render(const SceneShaderParameters& inputs, RenderMode mode, const optional<HitScanResult>& hitScanResult);
 
 private:
   bool finishLoading() override;

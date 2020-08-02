@@ -74,6 +74,21 @@ public:
 
 struct RenderableBSP;
 
+struct SceneShaderParameters {
+  GLuint inPosition;
+  GLuint inColor;
+  GLuint inTextureCoords;
+  GLuint inLightmapCoords;
+
+  GLuint unifHighlight;
+  GLuint unifAlpha;
+  GLuint unifTexture;
+  GLuint unifLightmapTexture;
+
+  GLuint unifCameraTransform;
+  GLuint unifProjTransform;
+};
+
 struct BSPScenario : IScenario {
 public:
   BSPScenario();
@@ -93,19 +108,7 @@ private:
   GLuint _fallbackLightmapTexture;
 
   GLuint _sceneShader;
-
-  GLuint _inPosition;
-  GLuint _inColor;
-  GLuint _inTextureCoords;
-  GLuint _inLightmapCoords;
-
-  GLuint _unifAlpha;
-
-  GLuint _unifTexture;
-  GLuint _unifLightmapTexture;
-
-  GLuint _unifCameraTransform;
-  GLuint _unifProjTransform;
+  SceneShaderParameters _sceneShaderParams;
 
   // For rendering with the scene shader
   vector<VBO> _verticesPerFace;

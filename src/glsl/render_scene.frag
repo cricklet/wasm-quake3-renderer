@@ -8,6 +8,7 @@ uniform lowp float unifAlpha;
 
 uniform sampler2D unifTexture;
 uniform sampler2D unifLightmapTexture;
+uniform bool unifHighlight;
 
 out lowp vec4 outColor;
 
@@ -18,5 +19,9 @@ void main() {
     outColor = vec4(0.15, 0.15, 0.15, 0.15) + color * light * 4.0;
   } else {
     outColor = unifAlpha * color * 2.0;
+  }
+
+  if (unifHighlight) {
+    outColor += vec4(0, 0.2, 0, 1.0);
   }
 }

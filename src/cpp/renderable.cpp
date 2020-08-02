@@ -3,6 +3,8 @@
 #include "bsp.h"
 #include "gl_helpers.h"
 #include "resources.h"
+#include "scenario.h"
+#include "hitscan.h"
 #include "pprint.hpp"
 #include "assert.h"
 
@@ -330,7 +332,7 @@ optional<RenderableFace> RenderableFace::generate(const BSPMap* map, int faceInd
   return {};
 }
 
-void RenderableBSP::render(const ShaderParameters& inputs) {
+void RenderableBSP::render(const SceneShaderParameters& inputs, RenderMode mode, const optional<HitScanResult>& result) {
   const BSPMap* map = _map.get();
   if (!map) {
     cerr << "map failed to load\n";
@@ -364,9 +366,9 @@ void RenderableBSP::render(const ShaderParameters& inputs) {
 
     optional<RenderableTextureOptions> textureOptions = ResourceManager::getInstance()->getTextureOptions(textureResourceId);
     bool isTransparent = textureOptions ? textureOptions->surfaceParamTrans : false;
-    if (inputs.mode == RenderMode::SOLID && isTransparent) {
+    if (mode == RenderMode::SOLID && isTransparent) {
       continue;
-    } else if (inputs.mode == RenderMode::TRANSPARENCY && !isTransparent) {
+    } else if (mode == RenderMode::TRANSPARENCY && !isTransparent) {
       continue;
     }
     glUniform1f(inputs.unifAlpha, isTransparent ? 0.9 : 1);
@@ -376,6 +378,17 @@ void RenderableBSP::render(const ShaderParameters& inputs) {
       glActiveTexture(GL_TEXTURE0);
       glBindTexture(GL_TEXTURE_2D, *textureId);
       glUniform1i(inputs.unifTexture, 0);
+    }
+
+    if (result && result->face == face) {
+      glUniform1i(inputs.unifHighlight, 1);
+
+      static int printLimiter = 0;
+      if (result && printLimiter ++ % 100 == 0) {
+        cout << "current face: " << *face << ", " << *texture << "\n";
+      }
+    } else {
+      glUniform1i(inputs.unifHighlight, 0);
     }
 
     // Bind the lightmap
