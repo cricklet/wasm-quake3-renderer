@@ -58,12 +58,17 @@
 
 ## Rendering script textures (shaders)
  - [x] Load the script definitions into textures_manifest.json
- - [ ] Load the script definition into TS
- - [ ] Add basic texture commands to schema
- - [ ] Add an alpha setting to the texture commands!
- - [ ] Pass texture commands from TS => C++ per texture
- - [ ] Read texture commands when rendering faces, starting with alpha.
- - [ ] Extend texture commands to include extra passes (eg blendfunc add?)
+ - [x] Load the script definition into TS
+ - [x] Add basic texture commands to schema
+ - [x] Add an alpha setting to the texture commands!
+ - [x] Pass texture commands from TS => C++ per texture
+ - [x] Read texture commands when rendering faces, starting with alpha.
+ - [ ] Render transparency
+   - [ ] Extend render_scene shader to also allow taking in a depth-buffer
+   - [ ] Allow render_scene shader to blend
+   - [ ] Render translucent elements onto a separate buffer
+   - [ ] Composite the translucency buffer with the solid buffer
+
  - [ ] Organize faces into which faces need to be drawn in which pass
  - [ ] textures/proto2/beam_blue -- uses alpha & add blend function
  - [ ] data/textures/sfx/beam.jpg -- uses scroll mod
