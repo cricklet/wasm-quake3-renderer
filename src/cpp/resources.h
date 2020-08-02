@@ -13,6 +13,18 @@ using BSPMap = BSP::header_t;
 
 struct RenderableTextureOptions;
 
+enum class HasResourcesState {
+  NOT_STARTED,
+  LOADING,
+  LOADING_SECONDARY, // not always used
+  DONE,
+  FAILED
+};
+
+struct IHasResources {
+  virtual HasResourcesState load();
+};
+
 struct ResourceManager : IMessageHandler {
 public:
   static shared_ptr<ResourceManager> getInstance();

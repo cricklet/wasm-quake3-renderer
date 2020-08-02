@@ -2,9 +2,10 @@
 #define SCENARIO_H
 
 #include "support.h"
+#include "resources.h"
 #include "gl_helpers.h"
 
-struct IScenario {
+struct IScenario : IHasResources {
 public:
   virtual ~IScenario() {}
   virtual void startLoading();
@@ -18,14 +19,15 @@ enum class TextureRendererMode {
   DEFAULT, FLIP_VERTICALLY
 };
 
-struct TextureRenderer {
+struct TextureRenderer : IHasResources {
   TextureRenderer(TextureRendererMode mode = TextureRendererMode::DEFAULT);
 
-  void startLoading();
-  bool finishLoading();
+  HasResourcesState load() override;
   void render(vector<GLuint> textureIDs);
 
 private:
+  HasResourcesState _loadingState = HasResourcesState::NOT_STARTED;
+
   int _shaderResourceID;
 
   GLuint _vbo;

@@ -74,6 +74,13 @@
  - [ ] data/textures/sfx/beam.jpg -- uses scroll mod
  - [ ] data/textures/skies/meth_clouds_blue.jpg -- uses scale & scroll mod
 
+## Improve ResourceManager
+ - [ ] Add a interface HasResources interface
+ - [ ] Refactor the scenarios etc to use it
+
+## Hitscan, for debugging
+ - [ ] Draw a crosshair on the screen
+
 ## Improvements to the development environment
  - [ ] Use Catch.h to run tests
  - [ ] Add an OSX compilation target

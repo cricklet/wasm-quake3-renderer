@@ -13,16 +13,22 @@ TextureRenderer::TextureRenderer(TextureRendererMode mode) {
   }
 }
 
-void TextureRenderer::startLoading() {
-  _shaderResourceID = ResourceManager::nextID();
-  ResourceManager::getInstance()->loadShaders({
-    "./src/glsl/test.vert",
-    "./src/glsl/test.frag",
-    _shaderResourceID
-  });
-}
+HasResourcesState TextureRenderer::load() {
+  if (_loadingState == HasResourcesState::DONE) {
+    return HasResourcesState::DONE;
+  }
 
-bool TextureRenderer::finishLoading() {
+  if (_loadingState == HasResourcesState::NOT_STARTED) {
+    _shaderResourceID = ResourceManager::nextID();
+    ResourceManager::getInstance()->loadShaders({
+      "./src/glsl/test.vert",
+      "./src/glsl/test.frag",
+      _shaderResourceID
+    });
+    _loadingState = HasResourcesState::LOADING;
+    return _loadingState;
+  }
+
   ////////////////////////////////////////////////////////////////////////////
   // Generate EBO
   glGenBuffers(1, &_ebo);
@@ -43,7 +49,8 @@ bool TextureRenderer::finishLoading() {
   optional<GLuint> shaderProgram = ResourceManager::getInstance()->getShaderProgram(_shaderResourceID);
   if (!shaderProgram) {
     cerr << "failed to load shader program\n";
-    return false;
+    _loadingState = HasResourcesState::FAILED;
+    return _loadingState;
   }
 
   // Use the program...
@@ -62,10 +69,12 @@ bool TextureRenderer::finishLoading() {
   _unifTexture = glGetUniformLocation(*shaderProgram, "unifTexture");
 
   if (hasErrors()) {
-    return false;
+    _loadingState = HasResourcesState::FAILED;
+    return _loadingState;
   }
 
-  return true;
+  _loadingState = HasResourcesState::DONE;
+  return _loadingState;
 }
 
 void TextureRenderer::render(vector<GLuint> textureIDs) {
@@ -107,7 +116,7 @@ void TestScenario::startLoading() {
     _textureResourceID
   });
 
-  _renderer.startLoading();
+  _renderer.load();
 }
 
 bool TestScenario::loadDependencies() {
@@ -120,11 +129,11 @@ bool TestScenario::finishLoading() {
     return false;
   }
 
-  if (!_renderer.finishLoading()) {
-    return false;
+  if (_renderer.load() == HasResourcesState::DONE) {
+    return true;
   }
 
-  return true;
+  return false;
 }
 
 void TestScenario::render() {
@@ -149,7 +158,7 @@ void BSPScenario::startLoading() {
     _sceneShaderResourceID
   });
 
-  _compositingRenderer.startLoading();
+  _compositingRenderer.load();
 }
 
 bool BSPScenario::loadDependencies() {
@@ -182,7 +191,7 @@ bool BSPScenario::finishLoading() {
   }
 
   {
-    bool success = _compositingRenderer.finishLoading();
+    bool success = _compositingRenderer.load() == HasResourcesState::DONE;
     if (!success) {
       return false;
     }
@@ -245,7 +254,7 @@ bool BSPScenario::finishLoading() {
     glGenTextures(1, &_sceneDepthTexture);
     glBindTexture(GL_TEXTURE_2D, _sceneDepthTexture);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, screenWidth, screenHeight, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, screenWidth, screenHeight, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, _sceneDepthTexture, 0);
   }
 
