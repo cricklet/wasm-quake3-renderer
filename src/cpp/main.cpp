@@ -3,6 +3,7 @@
 #include "messages.h"
 #include "bindings.h"
 #include "resources.h"
+#include "resource_manager.h"
 #include "scenario.h"
 
 
@@ -10,8 +11,6 @@
 // => C++
 
 extern "C" {
-  void EMSCRIPTEN_KEEPALIVE CPP_onClick() { cout << "onClick\n"; }
-
   EMSCRIPTEN_KEEPALIVE void* CPP_createBuffer(int bytes) {
     cout << "malloc for " <<  bytes << " bytes\n";
     return malloc(bytes * sizeof(char));

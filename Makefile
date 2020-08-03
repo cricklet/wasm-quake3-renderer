@@ -11,6 +11,8 @@ TS_FILES := $(wildcard src/ts/*ts)
 
 all: data/textures_manifest.json src/cpp/bindings.h output/index.js output/app.js
 
+excluding_cpp: data/textures_manifest.json src/cpp/bindings.h output/app.js
+
 src/cpp/bindings.h: generate_bindings.py schema.py
 	python3 generate_bindings.py
 

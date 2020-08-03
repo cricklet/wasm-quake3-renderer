@@ -7,19 +7,20 @@
 #include <emscripten/html5.h>
 #endif
 
-// Window, renderer, input
-// #include <SDL2/SDL.h>
-#include <GLFW/glfw3.h>
-
 // OpenGL extensions
 // #define GLEW_STATIC
 // #include <GL/glew.h>
 // #include <SDL2/SDL_opengles2.h>
 
 #ifdef __APPLE__
+#include <GL/glew.h>
 #else
 #include <GLES3/gl3.h>
 #endif
+
+// Window, renderer, input
+// #include <SDL2/SDL.h>
+#include <GLFW/glfw3.h>
 
 #include <stdlib.h>
 #include <iostream>

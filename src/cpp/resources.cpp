@@ -1,4 +1,5 @@
 #include "resources.h"
+#include "resource_manager.h"
 #include "gl_helpers.h"
 #include "bsp.h"
 

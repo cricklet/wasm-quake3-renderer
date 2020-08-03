@@ -136,6 +136,9 @@ public:
 cpp_template = Template("""
 #include "bindings.h"
 #include "messages.h"
+
+#ifdef __APPLE__
+#else
 #include <emscripten/val.h>
 
 {% for (name, values) in messages %}
@@ -160,6 +163,8 @@ void MessagesFromWeb::sendMessage(const json& j) {
   }
 {% endfor %}
 }
+#endif
+
 """)
 
 def generate_h_file(messages, enums):

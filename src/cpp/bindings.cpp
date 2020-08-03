@@ -1,5 +1,7 @@
 #include "bindings.h"
 #include "messages.h"
+#ifdef __APPLE__
+#else
 #include <emscripten/val.h>
 void MessageBindings::sendMessageToWeb(const TestMessage& message) {
   emscripten::val MessageHandler = emscripten::val::global("MessageHandler");
@@ -129,3 +131,4 @@ void MessagesFromWeb::sendMessage(const json& j) {
     }
   }
 }
+#endif

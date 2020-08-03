@@ -1,5 +1,6 @@
 #include "scenario.h"
 #include "resources.h"
+#include "resource_manager.h"
 #include "renderable.h"
 #include "gl_helpers.h"
 #include "bsp.h"

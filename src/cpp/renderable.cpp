@@ -2,7 +2,7 @@
 
 #include "bsp.h"
 #include "gl_helpers.h"
-#include "resources.h"
+#include "resource_manager.h"
 #include "scenario.h"
 #include "hitscan.h"
 #include "pprint.hpp"
