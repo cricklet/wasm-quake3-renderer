@@ -104,20 +104,18 @@ void TextureRenderer::render(vector<GLuint> textureIDs) {
 TestScenario::TestScenario() {
 }
 
-bool TestScenario::finishLoading() {
-  const GLchar* vertexSource = R"glsl(
+bool TestScenario::finishLoading() {// Shader sources
+  static const char* vertexSource = R"glsl(
       #version 300 es
-      in lowp vec2 position;
-      void main()
-      {
+      in vec2 position;
+      void main() {
           gl_Position = vec4(position, 0.0, 1.0);
       }
   )glsl";
-  const GLchar* fragmentSource = R"glsl(
+  static const char* fragmentSource = R"glsl(
       #version 300 es
-      out lopw vec4 outColor;
-      void main()
-      {
+      out vec4 outColor;
+      void main() {
           outColor = vec4(1.0, 1.0, 1.0, 1.0);
       }
   )glsl";
@@ -143,30 +141,25 @@ bool TestScenario::finishLoading() {
 
   // Copy the vertex data into the vbo
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+  hasErrors();
 
-  // Create and compile the vertex shader
-  GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vertexShader, 1, &vertexSource, NULL);
-  glCompileShader(vertexShader);
-
-  // Create and compile the fragment shader
-  GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
-  glCompileShader(fragmentShader);
-
-  // Link the vertex and fragment shader into a shader program
-  GLuint shaderProgram = glCreateProgram();
-  glAttachShader(shaderProgram, vertexShader);
-  glAttachShader(shaderProgram, fragmentShader);
+  optional<GLuint> shader = GLHelpers::compileShaderProgram(
+                                                            vertexSource, string(vertexSource).length(), fragmentSource, string(fragmentSource).length());
+  if (!shader) {
+    cerr << "failed to load shader\n";
+    return false;
+  }
+  hasErrors();
 
   // Use the program...
-  glLinkProgram(shaderProgram);
-  glUseProgram(shaderProgram);
+  glUseProgram(*shader);
+  hasErrors();
 
   // Specify the layout of the vertices
-  GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
+  GLint posAttrib = glGetAttribLocation(*shader, "position");
   glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
   glEnableVertexAttribArray(posAttrib);
+  hasErrors();
 
   return true;
 }

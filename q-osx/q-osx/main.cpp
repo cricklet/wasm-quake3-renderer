@@ -15,7 +15,7 @@ int main(int argc, const char * argv[]) {
   // Setup GL window
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
@@ -29,7 +29,8 @@ int main(int argc, const char * argv[]) {
   glewInit();
 
   OSXWebView::setupInstance("http://0.0.0.0:8000/osx.html");
-
+  
+  printf("Supported GLSL version is %s.\n", (char *)glGetString(GL_SHADING_LANGUAGE_VERSION));
   printf("OpenGL version supported by this platform : %s\n", glGetString(GL_VERSION));
 
   App app;
