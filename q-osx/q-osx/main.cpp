@@ -14,15 +14,13 @@ int main(int argc, const char * argv[]) {
   glfwMakeContextCurrent(window);
 
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-  
-  
+
   // Setup the webview
   webview::webview w(true, nullptr);
   w.set_title("q");
   w.set_size(300, 600, WEBVIEW_HINT_FIXED);
   w.navigate("http://0.0.0.0:8000/osx.html");
   w.run();
-  
 
   printf("OpenGL version supported by this platform : %s\n", glGetString(GL_VERSION));
 
