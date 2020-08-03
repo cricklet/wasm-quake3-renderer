@@ -1,14 +1,21 @@
 #include "osx_helpers.h"
 
-#include <thread>
+#include "webview.h"
 
 OSXWebView::OSXWebView(std::string url) {
+  _w = new webview::webview {true, nullptr};
+  _w->set_title("Minimal example");
+  _w->set_size(300, 600, WEBVIEW_HINT_NONE);
+  _w->navigate(url);
 }
 
 OSXWebView::~OSXWebView() {
+  delete _w;
 }
 
-void OSXWebView::think() {
+void OSXWebView::run(void (*fn)(webview_t, void *)) {
+  webview_dispatch(static_cast<webview_t>(_w), fn, this);
+  _w->run();
 }
 
 void OSXWebView::eval(std::string javascript) {

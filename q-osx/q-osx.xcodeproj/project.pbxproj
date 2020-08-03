@@ -19,6 +19,8 @@
 		3008FD6324D8BAC400FFA316 /* bindings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3008FD5624D8BAC400FFA316 /* bindings.cpp */; };
 		3008FD6424D8BAC400FFA316 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3008FD5724D8BAC400FFA316 /* main.cpp */; };
 		304A118824D86A680012F242 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 304A118724D86A680012F242 /* main.cpp */; };
+		306387E324D8BDD500E58844 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 306387E224D8BDD500E58844 /* Cocoa.framework */; };
+		306387E624D8C10F00E58844 /* app.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 306387E424D8C10F00E58844 /* app.cpp */; };
 		30F1EAC924D8B7FB00A232D3 /* osx_helpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30F1EAC724D8B7FB00A232D3 /* osx_helpers.cpp */; };
 /* End PBXBuildFile section */
 
@@ -61,6 +63,9 @@
 		3008FD5A24D8BAC400FFA316 /* support.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = support.h; sourceTree = "<group>"; };
 		304A118724D86A680012F242 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		304A11DE24D886A90012F242 /* webview.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = webview.h; sourceTree = "<group>"; };
+		306387E224D8BDD500E58844 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		306387E424D8C10F00E58844 /* app.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = app.cpp; sourceTree = "<group>"; };
+		306387E524D8C10F00E58844 /* app.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = app.h; sourceTree = "<group>"; };
 		30F1EAC724D8B7FB00A232D3 /* osx_helpers.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = osx_helpers.cpp; sourceTree = "<group>"; };
 		30F1EAC824D8B7FB00A232D3 /* osx_helpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = osx_helpers.h; sourceTree = "<group>"; };
 		30F1EACA24D8B98800A232D3 /* q-osx */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "q-osx"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -71,6 +76,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				306387E324D8BDD500E58844 /* Cocoa.framework in Frameworks */,
 				3008FD4224D8BAA100FFA316 /* OpenGL.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -81,6 +87,7 @@
 		3008FD4024D8BAA000FFA316 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				306387E224D8BDD500E58844 /* Cocoa.framework */,
 				3008FD4324D8BAC400FFA316 /* cpp */,
 				3008FD4124D8BAA000FFA316 /* OpenGL.framework */,
 			);
@@ -113,6 +120,8 @@
 				3008FD5824D8BAC400FFA316 /* pprint.hpp */,
 				3008FD5924D8BAC400FFA316 /* hitscan.h */,
 				3008FD5A24D8BAC400FFA316 /* support.h */,
+				306387E424D8C10F00E58844 /* app.cpp */,
+				306387E524D8C10F00E58844 /* app.h */,
 			);
 			name = cpp;
 			path = ../src/cpp;
@@ -198,6 +207,7 @@
 				3008FD5D24D8BAC400FFA316 /* binding_helpers.cpp in Sources */,
 				3008FD5E24D8BAC400FFA316 /* resources.cpp in Sources */,
 				30F1EAC924D8B7FB00A232D3 /* osx_helpers.cpp in Sources */,
+				306387E624D8C10F00E58844 /* app.cpp in Sources */,
 				3008FD6424D8BAC400FFA316 /* main.cpp in Sources */,
 				3008FD5B24D8BAC400FFA316 /* gl_helpers.cpp in Sources */,
 				3008FD5F24D8BAC400FFA316 /* scenario.cpp in Sources */,

@@ -1,6 +1,13 @@
 #include "support.h"
 #include "osx_helpers.h"
 
+GLFWwindow* window;
+
+std::function<void()> loopCallback;
+static void loop(webview_t webview, void * t) {
+  loopCallback();
+}
+
 int main(int argc, const char * argv[]) {
   // Setup GL window
   glfwInit();
@@ -10,7 +17,7 @@ int main(int argc, const char * argv[]) {
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-  GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL", nullptr, nullptr); // Windowed
+  window = glfwCreateWindow(800, 600, "OpenGL", nullptr, nullptr); // Windowed
   glfwMakeContextCurrent(window);
 
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -18,12 +25,14 @@ int main(int argc, const char * argv[]) {
   OSXWebView::setupInstance("http://0.0.0.0:8000/osx.html");
 
   printf("OpenGL version supported by this platform : %s\n", glGetString(GL_VERSION));
+  
+  loopCallback = [&] {
+    if (!glfwWindowShouldClose(window)) {
+      glfwSwapBuffers(window);
+      glfwPollEvents();
+    }
+  };
+  OSXWebView::getInstance()->run(loop);
 
-  while(!glfwWindowShouldClose(window)) {
-    glfwSwapBuffers(window);
-    glfwPollEvents();
-    
-    OSXWebView::getInstance()->think();
-  }
   return EXIT_SUCCESS;
 }
