@@ -1,4 +1,4 @@
-#include "messages.h"
+#include "binding_helpers.h"
 #include "bindings.h"
 
 #ifdef __APPLE__
@@ -16,6 +16,17 @@ void MessageBindings::sendMessageToCPP(string value) {
 #else
 EMSCRIPTEN_BINDINGS(my_module) {
   emscripten::function("sendMessageToCPP", &MessageBindings::sendMessageToCPP);
+}
+
+extern "C" {
+  EMSCRIPTEN_KEEPALIVE void* CPP_createBuffer(int bytes) {
+    cout << "malloc for " <<  bytes << " bytes\n";
+    return malloc(bytes * sizeof(char));
+  }
+
+  EMSCRIPTEN_KEEPALIVE void CPP_destroyBuffer(void* pointer) {
+    free(pointer);
+  }
 }
 #endif
 

@@ -8,8 +8,8 @@
 struct IScenario : IHasResources {
 public:
   virtual ~IScenario() {}
-  virtual void think(glm::vec2 dir, double pitch, double yaw);
-  virtual void render();
+  virtual void think(glm::vec2 dir, double pitch, double yaw) = 0;
+  virtual void render() = 0;
 };
 
 enum class TextureRendererMode {

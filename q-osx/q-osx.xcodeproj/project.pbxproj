@@ -17,7 +17,6 @@
 		304A11AE24D8705D0012F242 /* scenario.h in Sources */ = {isa = PBXBuildFile; fileRef = 304A119824D8705C0012F242 /* scenario.h */; };
 		304A11AF24D8705D0012F242 /* gl_helpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 304A119924D8705C0012F242 /* gl_helpers.cpp */; };
 		304A11B024D8705D0012F242 /* hitscan.h in Sources */ = {isa = PBXBuildFile; fileRef = 304A119A24D8705C0012F242 /* hitscan.h */; };
-		304A11B124D8705D0012F242 /* messages.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 304A119B24D8705D0012F242 /* messages.cpp */; };
 		304A11B224D8705D0012F242 /* gl_helpers.h in Sources */ = {isa = PBXBuildFile; fileRef = 304A119C24D8705D0012F242 /* gl_helpers.h */; };
 		304A11B324D8705D0012F242 /* hitscan.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 304A119D24D8705D0012F242 /* hitscan.cpp */; };
 		304A11B424D8705D0012F242 /* bsp.h in Sources */ = {isa = PBXBuildFile; fileRef = 304A119E24D8705D0012F242 /* bsp.h */; };
@@ -28,9 +27,10 @@
 		304A11B924D8705D0012F242 /* renderable.h in Sources */ = {isa = PBXBuildFile; fileRef = 304A11A524D8705D0012F242 /* renderable.h */; };
 		304A11BA24D8705D0012F242 /* texture.h in Sources */ = {isa = PBXBuildFile; fileRef = 304A11A624D8705D0012F242 /* texture.h */; };
 		304A11BB24D8705D0012F242 /* bsp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 304A11A724D8705D0012F242 /* bsp.cpp */; };
-		304A11BC24D8705D0012F242 /* messages.h in Sources */ = {isa = PBXBuildFile; fileRef = 304A11A824D8705D0012F242 /* messages.h */; };
-		304A11BD24D8705D0012F242 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 304A11A924D8705D0012F242 /* main.cpp */; };
+		304A11BC24D8705D0012F242 /* binding_helpers.h in Sources */ = {isa = PBXBuildFile; fileRef = 304A11A824D8705D0012F242 /* binding_helpers.h */; };
 		304A11BE24D8705D0012F242 /* resources.h in Sources */ = {isa = PBXBuildFile; fileRef = 304A11AA24D8705D0012F242 /* resources.h */; };
+		304A11D624D8763A0012F242 /* resource_manager.h in Sources */ = {isa = PBXBuildFile; fileRef = 304A11C724D876390012F242 /* resource_manager.h */; };
+		304A11D724D8763A0012F242 /* binding_helpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 304A11C924D876390012F242 /* binding_helpers.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -70,9 +70,32 @@
 		304A11A524D8705D0012F242 /* renderable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = renderable.h; path = ../src/cpp/renderable.h; sourceTree = "<group>"; };
 		304A11A624D8705D0012F242 /* texture.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = texture.h; path = ../src/cpp/texture.h; sourceTree = "<group>"; };
 		304A11A724D8705D0012F242 /* bsp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = bsp.cpp; path = ../src/cpp/bsp.cpp; sourceTree = "<group>"; };
-		304A11A824D8705D0012F242 /* messages.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = messages.h; path = ../src/cpp/messages.h; sourceTree = "<group>"; };
+		304A11A824D8705D0012F242 /* binding_helpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = binding_helpers.h; path = ../src/cpp/binding_helpers.h; sourceTree = "<group>"; };
 		304A11A924D8705D0012F242 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../src/cpp/main.cpp; sourceTree = "<group>"; };
 		304A11AA24D8705D0012F242 /* resources.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = resources.h; path = ../src/cpp/resources.h; sourceTree = "<group>"; };
+		304A11BF24D876390012F242 /* support.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = support.h; path = ../src/cpp/support.h; sourceTree = "<group>"; };
+		304A11C024D876390012F242 /* json.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = json.hpp; path = ../src/cpp/json.hpp; sourceTree = "<group>"; };
+		304A11C124D876390012F242 /* bsp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = bsp.cpp; path = ../src/cpp/bsp.cpp; sourceTree = "<group>"; };
+		304A11C224D876390012F242 /* renderable.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = renderable.cpp; path = ../src/cpp/renderable.cpp; sourceTree = "<group>"; };
+		304A11C324D876390012F242 /* hitscan.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = hitscan.h; path = ../src/cpp/hitscan.h; sourceTree = "<group>"; };
+		304A11C424D876390012F242 /* hitscan.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = hitscan.cpp; path = ../src/cpp/hitscan.cpp; sourceTree = "<group>"; };
+		304A11C524D876390012F242 /* gl_helpers.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = gl_helpers.cpp; path = ../src/cpp/gl_helpers.cpp; sourceTree = "<group>"; };
+		304A11C624D876390012F242 /* binding_helpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = binding_helpers.h; path = ../src/cpp/binding_helpers.h; sourceTree = "<group>"; };
+		304A11C724D876390012F242 /* resource_manager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = resource_manager.h; path = ../src/cpp/resource_manager.h; sourceTree = "<group>"; };
+		304A11C824D876390012F242 /* resources.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = resources.cpp; path = ../src/cpp/resources.cpp; sourceTree = "<group>"; };
+		304A11C924D876390012F242 /* binding_helpers.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = binding_helpers.cpp; path = ../src/cpp/binding_helpers.cpp; sourceTree = "<group>"; };
+		304A11CA24D876390012F242 /* bindings.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = bindings.h; path = ../src/cpp/bindings.h; sourceTree = "<group>"; };
+		304A11CB24D876390012F242 /* resources.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = resources.h; path = ../src/cpp/resources.h; sourceTree = "<group>"; };
+		304A11CC24D8763A0012F242 /* scenario.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = scenario.cpp; path = ../src/cpp/scenario.cpp; sourceTree = "<group>"; };
+		304A11CD24D8763A0012F242 /* support.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = support.cpp; path = ../src/cpp/support.cpp; sourceTree = "<group>"; };
+		304A11CE24D8763A0012F242 /* texture.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = texture.h; path = ../src/cpp/texture.h; sourceTree = "<group>"; };
+		304A11CF24D8763A0012F242 /* bsp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = bsp.h; path = ../src/cpp/bsp.h; sourceTree = "<group>"; };
+		304A11D024D8763A0012F242 /* scenario.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = scenario.h; path = ../src/cpp/scenario.h; sourceTree = "<group>"; };
+		304A11D124D8763A0012F242 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../src/cpp/main.cpp; sourceTree = "<group>"; };
+		304A11D224D8763A0012F242 /* renderable.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = renderable.h; path = ../src/cpp/renderable.h; sourceTree = "<group>"; };
+		304A11D324D8763A0012F242 /* gl_helpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = gl_helpers.h; path = ../src/cpp/gl_helpers.h; sourceTree = "<group>"; };
+		304A11D424D8763A0012F242 /* bindings.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = bindings.cpp; path = ../src/cpp/bindings.cpp; sourceTree = "<group>"; };
+		304A11D524D8763A0012F242 /* pprint.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = pprint.hpp; path = ../src/cpp/pprint.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,7 +113,28 @@
 		304A117B24D86A680012F242 = {
 			isa = PBXGroup;
 			children = (
+				304A11D024D8763A0012F242 /* scenario.h */,
 				304A119124D86FCA0012F242 /* support.cpp */,
+				304A11C924D876390012F242 /* binding_helpers.cpp */,
+				304A11C624D876390012F242 /* binding_helpers.h */,
+				304A11D424D8763A0012F242 /* bindings.cpp */,
+				304A11CA24D876390012F242 /* bindings.h */,
+				304A11C124D876390012F242 /* bsp.cpp */,
+				304A11CF24D8763A0012F242 /* bsp.h */,
+				304A11C524D876390012F242 /* gl_helpers.cpp */,
+				304A11D324D8763A0012F242 /* gl_helpers.h */,
+				304A11C424D876390012F242 /* hitscan.cpp */,
+				304A11C324D876390012F242 /* hitscan.h */,
+				304A11C024D876390012F242 /* json.hpp */,
+				304A11D124D8763A0012F242 /* main.cpp */,
+				304A11D524D8763A0012F242 /* pprint.hpp */,
+				304A11C224D876390012F242 /* renderable.cpp */,
+				304A11D224D8763A0012F242 /* renderable.h */,
+				304A11C724D876390012F242 /* resource_manager.h */,
+				304A11C824D876390012F242 /* resources.cpp */,
+				304A11CB24D876390012F242 /* resources.h */,
+				304A11CC24D8763A0012F242 /* scenario.cpp */,
+				304A11CD24D8763A0012F242 /* support.cpp */,
 				304A119224D86FCA0012F242 /* support.h */,
 				304A119F24D8705D0012F242 /* bindings.cpp */,
 				304A119524D8705C0012F242 /* bindings.h */,
@@ -102,8 +146,10 @@
 				304A119A24D8705C0012F242 /* hitscan.h */,
 				304A11A124D8705D0012F242 /* json.hpp */,
 				304A11A924D8705D0012F242 /* main.cpp */,
+				304A11BF24D876390012F242 /* support.h */,
+				304A11CE24D8763A0012F242 /* texture.h */,
 				304A119B24D8705D0012F242 /* messages.cpp */,
-				304A11A824D8705D0012F242 /* messages.h */,
+				304A11A824D8705D0012F242 /* binding_helpers.h */,
 				304A119624D8705C0012F242 /* pprint.hpp */,
 				304A119724D8705C0012F242 /* renderable.cpp */,
 				304A11A524D8705D0012F242 /* renderable.h */,
@@ -201,28 +247,28 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				304A11AB24D8705D0012F242 /* bindings.h in Sources */,
-				304A11AC24D8705D0012F242 /* pprint.hpp in Sources */,
-				304A11AD24D8705D0012F242 /* renderable.cpp in Sources */,
-				304A11AE24D8705D0012F242 /* scenario.h in Sources */,
-				304A11AF24D8705D0012F242 /* gl_helpers.cpp in Sources */,
-				304A11B024D8705D0012F242 /* hitscan.h in Sources */,
-				304A11B124D8705D0012F242 /* messages.cpp in Sources */,
-				304A11B224D8705D0012F242 /* gl_helpers.h in Sources */,
-				304A11B324D8705D0012F242 /* hitscan.cpp in Sources */,
-				304A11B424D8705D0012F242 /* bsp.h in Sources */,
-				304A11B524D8705D0012F242 /* bindings.cpp in Sources */,
-				304A11B624D8705D0012F242 /* scenario.cpp in Sources */,
-				304A11B724D8705D0012F242 /* json.hpp in Sources */,
-				304A11B824D8705D0012F242 /* resources.cpp in Sources */,
-				304A119324D86FCA0012F242 /* support.cpp in Sources */,
 				304A119424D86FCA0012F242 /* support.h in Sources */,
-				304A11B924D8705D0012F242 /* renderable.h in Sources */,
-				304A11BA24D8705D0012F242 /* texture.h in Sources */,
+				304A11B724D8705D0012F242 /* json.hpp in Sources */,
 				304A11BB24D8705D0012F242 /* bsp.cpp in Sources */,
-				304A11BC24D8705D0012F242 /* messages.h in Sources */,
-				304A11BD24D8705D0012F242 /* main.cpp in Sources */,
+				304A11AD24D8705D0012F242 /* renderable.cpp in Sources */,
+				304A11B024D8705D0012F242 /* hitscan.h in Sources */,
+				304A11B324D8705D0012F242 /* hitscan.cpp in Sources */,
+				304A11AF24D8705D0012F242 /* gl_helpers.cpp in Sources */,
+				304A11BC24D8705D0012F242 /* binding_helpers.h in Sources */,
+				304A11D624D8763A0012F242 /* resource_manager.h in Sources */,
+				304A11B824D8705D0012F242 /* resources.cpp in Sources */,
+				304A11D724D8763A0012F242 /* binding_helpers.cpp in Sources */,
+				304A11AB24D8705D0012F242 /* bindings.h in Sources */,
 				304A11BE24D8705D0012F242 /* resources.h in Sources */,
+				304A11B624D8705D0012F242 /* scenario.cpp in Sources */,
+				304A119324D86FCA0012F242 /* support.cpp in Sources */,
+				304A11BA24D8705D0012F242 /* texture.h in Sources */,
+				304A11B424D8705D0012F242 /* bsp.h in Sources */,
+				304A11AE24D8705D0012F242 /* scenario.h in Sources */,
+				304A11B924D8705D0012F242 /* renderable.h in Sources */,
+				304A11B224D8705D0012F242 /* gl_helpers.h in Sources */,
+				304A11B524D8705D0012F242 /* bindings.cpp in Sources */,
+				304A11AC24D8705D0012F242 /* pprint.hpp in Sources */,
 				304A118824D86A680012F242 /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -349,7 +395,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = /usr/local/include;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
-				OTHER_LDFLAGS = "-lglfw.3.3";
+				OTHER_LDFLAGS = (
+					"-lglfw.3.3",
+					"-lglew",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -360,7 +409,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				HEADER_SEARCH_PATHS = /usr/local/include;
 				LIBRARY_SEARCH_PATHS = /usr/local/lib;
-				OTHER_LDFLAGS = "-lglfw.3.3";
+				OTHER_LDFLAGS = (
+					"-lglfw.3.3",
+					"-lglew",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

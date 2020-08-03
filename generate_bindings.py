@@ -113,7 +113,6 @@ public:
   {% endfor %}
 };
 
-
 namespace MessageBindings {
   {% for (name, values) in messages %}
   void sendMessageToWeb(const {{ name }}& message);
@@ -129,16 +128,27 @@ public:
   {% endfor %}
 };
 
-
 #endif
 """)
 
 cpp_template = Template("""
 #include "bindings.h"
-#include "messages.h"
+#include "binding_helpers.h"
 
 #ifdef __APPLE__
+////////////////////////////////////////////////
+// Native bindings
+
+{% for (name, values) in messages %}
+void MessageBindings::sendMessageToWeb(const {{ name }}& message) {
+  // TODO
+}
+{% endfor %}
+
 #else
+////////////////////////////////////////////////
+// Emscripten bindings
+
 #include <emscripten/val.h>
 
 {% for (name, values) in messages %}
@@ -153,6 +163,8 @@ void MessageBindings::sendMessageToWeb(const {{ name }}& message) {
 }
 {% endfor %}
 
+#endif
+
 void MessagesFromWeb::sendMessage(const json& j) {
 {% for (name, values) in messages %}
   if (j["type"] == "{{ name }}") {
@@ -163,8 +175,6 @@ void MessagesFromWeb::sendMessage(const json& j) {
   }
 {% endfor %}
 }
-#endif
-
 """)
 
 def generate_h_file(messages, enums):

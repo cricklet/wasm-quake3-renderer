@@ -1,7 +1,38 @@
 #include "bindings.h"
-#include "messages.h"
+#include "binding_helpers.h"
 #ifdef __APPLE__
+////////////////////////////////////////////////
+// Native bindings
+void MessageBindings::sendMessageToWeb(const TestMessage& message) {
+  // TODO
+}
+void MessageBindings::sendMessageToWeb(const CPPLoaded& message) {
+  // TODO
+}
+void MessageBindings::sendMessageToWeb(const LoadResource& message) {
+  // TODO
+}
+void MessageBindings::sendMessageToWeb(const LoadShaders& message) {
+  // TODO
+}
+void MessageBindings::sendMessageToWeb(const LoadedShaders& message) {
+  // TODO
+}
+void MessageBindings::sendMessageToWeb(const LoadedTexture& message) {
+  // TODO
+}
+void MessageBindings::sendMessageToWeb(const MissingTexture& message) {
+  // TODO
+}
+void MessageBindings::sendMessageToWeb(const LoadedBSP& message) {
+  // TODO
+}
+void MessageBindings::sendMessageToWeb(const LoadedTextureOptions& message) {
+  // TODO
+}
 #else
+////////////////////////////////////////////////
+// Emscripten bindings
 #include <emscripten/val.h>
 void MessageBindings::sendMessageToWeb(const TestMessage& message) {
   emscripten::val MessageHandler = emscripten::val::global("MessageHandler");
@@ -75,6 +106,7 @@ void MessageBindings::sendMessageToWeb(const LoadedTextureOptions& message) {
   }
   MessageHandler.call<void>("handleMessageFromCPP", emscripten::val(message.toJson()));
 }
+#endif
 void MessagesFromWeb::sendMessage(const json& j) {
   if (j["type"] == "TestMessage") {
     auto message = TestMessage::fromJson(j);
@@ -131,4 +163,3 @@ void MessagesFromWeb::sendMessage(const json& j) {
     }
   }
 }
-#endif
