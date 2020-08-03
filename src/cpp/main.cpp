@@ -1,3 +1,5 @@
+#ifdef __APPLE__
+#else
 
 #include "support.h"
 #include "binding_helpers.h"
@@ -104,3 +106,5 @@ int main() {
 
   return EXIT_SUCCESS;
 }
+
+#endif

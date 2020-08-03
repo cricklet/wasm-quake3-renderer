@@ -1,5 +1,5 @@
 #include "support.h"
-#include "webview.h"
+#include "osx_helpers.h"
 
 int main(int argc, const char * argv[]) {
   // Setup GL window
@@ -15,18 +15,15 @@ int main(int argc, const char * argv[]) {
 
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
-  // Setup the webview
-  webview::webview w(true, nullptr);
-  w.set_title("q");
-  w.set_size(300, 600, WEBVIEW_HINT_FIXED);
-  w.navigate("http://0.0.0.0:8000/osx.html");
-  w.run();
+  OSXWebView::setupInstance("http://0.0.0.0:8000/osx.html");
 
   printf("OpenGL version supported by this platform : %s\n", glGetString(GL_VERSION));
 
   while(!glfwWindowShouldClose(window)) {
     glfwSwapBuffers(window);
     glfwPollEvents();
+    
+    OSXWebView::getInstance()->think();
   }
   return EXIT_SUCCESS;
 }
