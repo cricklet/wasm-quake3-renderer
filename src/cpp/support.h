@@ -50,14 +50,18 @@ using namespace std;
 template<typename T>
 struct ResourcePtr {
   ResourcePtr(T* pointer): _pointer(pointer) {
-    _counter = shared_ptr<int>(0);
-    (*_counter) ++;
+    if (_pointer) {
+      _counter = shared_ptr<int>(0);
+      (*_counter) ++;
+    }
   }
 
-  ResourcePtr(ResourcePtr<T>& other) { 
-    _pointer = other._pointer;
-    _counter = other._counter;
-    (*_counter)++; 
+  ResourcePtr(ResourcePtr<T>& other) {
+    if (_pointer) {
+      _pointer = other._pointer;
+      _counter = other._counter;
+      (*_counter)++;
+    }
   }
 
   operator bool() const { return !!_pointer; }
@@ -66,9 +70,11 @@ struct ResourcePtr {
   T* operator->() { return _pointer; }
 
   ~ResourcePtr() {
-    (*_counter) --;
-    if (*_counter == 0) {
-      free((void*) _pointer);
+    if (_pointer) {
+      (*_counter) --;
+      if (*_counter == 0) {
+        free((void*) _pointer);
+      }
     }
   }
 

@@ -1,5 +1,7 @@
 #include "support.h"
 #include "osx_helpers.h"
+#include "app.h"
+
 
 GLFWwindow* window;
 
@@ -25,11 +27,11 @@ int main(int argc, const char * argv[]) {
   OSXWebView::setupInstance("http://0.0.0.0:8000/osx.html");
 
   printf("OpenGL version supported by this platform : %s\n", glGetString(GL_VERSION));
-  
+
+  App app;
   loopCallback = [&] {
     if (!glfwWindowShouldClose(window)) {
-      glfwSwapBuffers(window);
-      glfwPollEvents();
+      app.loop(window);
     }
   };
   OSXWebView::getInstance()->run(loop);
