@@ -31,6 +31,7 @@
 		304A11BE24D8705D0012F242 /* resources.h in Sources */ = {isa = PBXBuildFile; fileRef = 304A11AA24D8705D0012F242 /* resources.h */; };
 		304A11D624D8763A0012F242 /* resource_manager.h in Sources */ = {isa = PBXBuildFile; fileRef = 304A11C724D876390012F242 /* resource_manager.h */; };
 		304A11D724D8763A0012F242 /* binding_helpers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 304A11C924D876390012F242 /* binding_helpers.cpp */; };
+		304A11DF24D888160012F242 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 304A11D824D87C9F0012F242 /* WebKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -96,6 +97,10 @@
 		304A11D324D8763A0012F242 /* gl_helpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = gl_helpers.h; path = ../src/cpp/gl_helpers.h; sourceTree = "<group>"; };
 		304A11D424D8763A0012F242 /* bindings.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = bindings.cpp; path = ../src/cpp/bindings.cpp; sourceTree = "<group>"; };
 		304A11D524D8763A0012F242 /* pprint.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = pprint.hpp; path = ../src/cpp/pprint.hpp; sourceTree = "<group>"; };
+		304A11D824D87C9F0012F242 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		304A11DA24D87D290012F242 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		304A11DC24D87D790012F242 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		304A11DE24D886A90012F242 /* webview.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = webview.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,6 +108,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				304A11DF24D888160012F242 /* WebKit.framework in Frameworks */,
 				304A119024D86F3C0012F242 /* OpenGL.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -178,6 +184,7 @@
 			isa = PBXGroup;
 			children = (
 				304A118724D86A680012F242 /* main.cpp */,
+				304A11DE24D886A90012F242 /* webview.h */,
 			);
 			path = "q-osx";
 			sourceTree = "<group>";
@@ -185,6 +192,9 @@
 		304A118E24D86F3C0012F242 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				304A11DC24D87D790012F242 /* CoreFoundation.framework */,
+				304A11DA24D87D290012F242 /* Foundation.framework */,
+				304A11D824D87C9F0012F242 /* WebKit.framework */,
 				304A118F24D86F3C0012F242 /* OpenGL.framework */,
 			);
 			name = Frameworks;

@@ -8,11 +8,6 @@
     body {
       background-color: #333;
     }
-    #hud {
-      background-color: #aaaaaa;
-      background-blend-mode: overlay;
-      position: absolute;
-    }
   </style>
 </head>
 
@@ -20,12 +15,10 @@
 
   <!-- Create the canvas that the C++ code will draw into -->
   <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
-  <div id="hud">asdfasdf</div>
 
   <!-- Allow the C++ to access the canvas element --> 
   <script type='text/javascript'>
     const canvasEl = document.getElementById('canvas')
-    const hudEl = document.getElementById('hud')
     var Module = {
       canvas: canvasEl
     }
