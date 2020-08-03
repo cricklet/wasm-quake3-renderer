@@ -56,6 +56,16 @@ public:
 
 private:
   bool finishLoading() override;
+};
+
+struct PopTartScenario : IScenario {
+public:
+  PopTartScenario();
+  void think(glm::vec2 dir, double pitch, double yaw) override {}
+  void render() override;
+
+private:
+  bool finishLoading() override;
 
   int _textureResourceID;
   shared_ptr<TextureRenderer> _renderer = nullptr;

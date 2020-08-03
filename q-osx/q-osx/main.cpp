@@ -6,7 +6,8 @@
 GLFWwindow* window;
 
 std::function<void()> loopCallback;
-static void loop(webview_t webview, void * t) {
+static void loop(webview_t webview, void* arg) {
+  OSXWebView::getInstance()->queueDispatch(loop);
   loopCallback();
 }
 
@@ -24,6 +25,9 @@ int main(int argc, const char * argv[]) {
 
   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
+  glewExperimental = GL_TRUE;
+  glewInit();
+
   OSXWebView::setupInstance("http://0.0.0.0:8000/osx.html");
 
   printf("OpenGL version supported by this platform : %s\n", glGetString(GL_VERSION));
@@ -34,7 +38,9 @@ int main(int argc, const char * argv[]) {
       app.loop(window);
     }
   };
-  OSXWebView::getInstance()->run(loop);
+
+  OSXWebView::getInstance()->queueDispatch(loop);
+  OSXWebView::getInstance()->run();
 
   return EXIT_SUCCESS;
 }

@@ -102,6 +102,85 @@ void TextureRenderer::render(vector<GLuint> textureIDs) {
 }
 
 TestScenario::TestScenario() {
+}
+
+bool TestScenario::finishLoading() {
+  const GLchar* vertexSource = R"glsl(
+      #version 300 es
+      in lowp vec2 position;
+      void main()
+      {
+          gl_Position = vec4(position, 0.0, 1.0);
+      }
+  )glsl";
+  const GLchar* fragmentSource = R"glsl(
+      #version 300 es
+      out lopw vec4 outColor;
+      void main()
+      {
+          outColor = vec4(1.0, 1.0, 1.0, 1.0);
+      }
+  )glsl";
+
+  static float vertices[] = {
+    0.0f,  0.5f, // Vertex 1 (X, Y)
+    0.5f, -0.5f, // Vertex 2 (X, Y)
+    -0.5f, -0.5f  // Vertex 3 (X, Y)
+  };
+
+  // And save the following attribute configuration as a vao (vertex array object)
+  GLuint vao;
+  glGenVertexArrays(1, &vao);
+  glBindVertexArray(vao);
+
+  ////////////////////////////////////////////////////////////////////////////
+  // Generate VBO
+  GLuint vbo;
+  glGenBuffers(1, &vbo);
+
+  // Choose the vbo...
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+  // Copy the vertex data into the vbo
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+  // Create and compile the vertex shader
+  GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+  glShaderSource(vertexShader, 1, &vertexSource, NULL);
+  glCompileShader(vertexShader);
+
+  // Create and compile the fragment shader
+  GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
+  glCompileShader(fragmentShader);
+
+  // Link the vertex and fragment shader into a shader program
+  GLuint shaderProgram = glCreateProgram();
+  glAttachShader(shaderProgram, vertexShader);
+  glAttachShader(shaderProgram, fragmentShader);
+
+  // Use the program...
+  glLinkProgram(shaderProgram);
+  glUseProgram(shaderProgram);
+
+  // Specify the layout of the vertices
+  GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
+  glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE, 0, 0);
+  glEnableVertexAttribArray(posAttrib);
+
+  return true;
+}
+
+void TestScenario::render() {
+  // Clear the screen to black
+  glClearColor(0.0f, 0.5f, 0.5f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  // Draw a triangle from the 3 vertices
+  glDrawArrays(GL_TRIANGLES, 0, 3);
+}
+
+PopTartScenario::PopTartScenario() {
   _textureResourceID = ResourceManager::nextID();
   ResourceManager::getInstance()->loadResource(this, {
     "./data/textures/poptart.jpg",
@@ -109,15 +188,15 @@ TestScenario::TestScenario() {
     _textureResourceID
   });
 
-  cout << "starting TestScenario\n";
+  cout << "starting PopTartScenario\n";
   _renderer = shared_ptr<TextureRenderer>(new TextureRenderer());
 }
 
-bool TestScenario::finishLoading() {
+bool PopTartScenario::finishLoading() {
   return true;
 }
 
-void TestScenario::render() {
+void PopTartScenario::render() {
   optional<GLuint> textureId = ResourceManager::getInstance()->getTexture(_textureResourceID);
   if (textureId) {
     _renderer->render({*textureId});

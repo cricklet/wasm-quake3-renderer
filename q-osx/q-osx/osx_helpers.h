@@ -15,7 +15,8 @@ struct OSXWebView {
   static void setupInstance(std::string url);
   static OSXWebView* getInstance();
 
-  void run(void (*fn)(webview_t, void *));
+  void queueDispatch(void (*fn)(webview_t, void *));
+  void run();
   void eval(std::string javascript);
 private:
   OSXWebView(std::string url);

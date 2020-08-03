@@ -13,8 +13,11 @@ OSXWebView::~OSXWebView() {
   delete _w;
 }
 
-void OSXWebView::run(void (*fn)(webview_t, void *)) {
+void OSXWebView::queueDispatch(void (*fn)(webview_t, void *)) {
   webview_dispatch(static_cast<webview_t>(_w), fn, this);
+}
+
+void OSXWebView::run() {
   _w->run();
 }
 
