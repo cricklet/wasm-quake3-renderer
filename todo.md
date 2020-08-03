@@ -89,7 +89,7 @@
  - [ ] Speed up by only checking faces relevant to a player's current location (eg which bsp leaves?)
 
 ## Add OSX as a compliation target
- - [ ] ???
+ - [ ] Read over https://developer.apple.com/documentation/webkit/wkwebview
  - [ ] I want to be able to use the XCode debugger!
 
 ## Introduce a React layer

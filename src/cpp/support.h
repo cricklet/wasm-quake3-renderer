@@ -1,8 +1,11 @@
 #ifndef SUPPORT_H
 #define SUPPORT_H
 
+#ifdef __APPLE__
+#else
 #include <emscripten.h>
 #include <emscripten/html5.h>
+#endif
 
 // Window, renderer, input
 // #include <SDL2/SDL.h>
@@ -12,7 +15,11 @@
 // #define GLEW_STATIC
 // #include <GL/glew.h>
 // #include <SDL2/SDL_opengles2.h>
+
+#ifdef __APPLE__
+#else
 #include <GLES3/gl3.h>
+#endif
 
 #include <stdlib.h>
 #include <iostream>
