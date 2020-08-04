@@ -89,8 +89,13 @@
  - [ ] Speed up by only checking faces relevant to a player's current location (eg which bsp leaves?)
 
 ## Add OSX as a compliation target
- - [ ] Read over https://developer.apple.com/documentation/webkit/wkwebview
- - [ ] I want to be able to use the XCode debugger!
+ - [x] Create an XCode project
+ - [x] Get GLFW working in XCode
+ - [x] Get a WebView showing up
+ - [ ] Show a triangle on the screen
+ - [ ] Get mouse-input working
+ - [ ] Add bindings from TS <=> C++ in the XCode build
+ - [ ] Setup CMakelists.txt
 
 ## Introduce a React layer
  - [ ] Add React
