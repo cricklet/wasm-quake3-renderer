@@ -103,23 +103,37 @@ void TextureRenderer::render(vector<GLuint> textureIDs) {
 
 TestScenario::TestScenario() {
 }
+#ifdef __APPLE__
+static const char* testVertexSource =
+R"glsl(#version 330
+in vec2 position;
+void main() {
+  gl_Position = vec4(position, 0.0, 1.0);
+})glsl";
+static const char* testFragmentSource =
+R"glsl(#version 330
+out lowp vec4 outColor;
+void main() {
+  outColor = vec4(1.0, 1.0, 1.0, 1.0);
+}
+)glsl";
+#else
+static const char* testVertexSource =
+R"glsl(#version 300 es
+in vec2 position;
+void main() {
+  gl_Position = vec4(position, 0.0, 1.0);
+})glsl";
+static const char* testFragmentSource =
+R"glsl(#version 300 es
+out lowp vec4 outColor;
+void main() {
+  outColor = vec4(1.0, 1.0, 1.0, 1.0);
+}
+)glsl";
+#endif
 
 bool TestScenario::finishLoading() {// Shader sources
-  static const char* vertexSource = R"glsl(
-      #version 300 es
-      in vec2 position;
-      void main() {
-          gl_Position = vec4(position, 0.0, 1.0);
-      }
-  )glsl";
-  static const char* fragmentSource = R"glsl(
-      #version 300 es
-      out vec4 outColor;
-      void main() {
-          outColor = vec4(1.0, 1.0, 1.0, 1.0);
-      }
-  )glsl";
-
   static float vertices[] = {
     0.0f,  0.5f, // Vertex 1 (X, Y)
     0.5f, -0.5f, // Vertex 2 (X, Y)
@@ -143,8 +157,7 @@ bool TestScenario::finishLoading() {// Shader sources
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
   hasErrors();
 
-  optional<GLuint> shader = GLHelpers::compileShaderProgram(
-                                                            vertexSource, string(vertexSource).length(), fragmentSource, string(fragmentSource).length());
+  optional<GLuint> shader = GLHelpers::compileShaderProgram(testVertexSource, string(testVertexSource).length(), testFragmentSource, string(testFragmentSource).length());
   if (!shader) {
     cerr << "failed to load shader\n";
     return false;
