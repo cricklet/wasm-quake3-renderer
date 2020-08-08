@@ -3,32 +3,51 @@
 #ifdef __APPLE__
 ////////////////////////////////////////////////
 // Native bindings
+#include "osx_helpers.h"
 void MessageBindings::sendMessageToWeb(const TestMessage& message) {
-  // TODO
+  auto json = message.toJson();
+  std::replace(json.begin(), json.end(), '"', '\'');
+  OSXWebView::getInstance()->eval("handleMessageFromCPP(" + json + ");");
 }
-void MessageBindings::sendMessageToWeb(const CPPLoaded& message) {
-  // TODO
+void MessageBindings::sendMessageToWeb(const TSLoaded& message) {
+  auto json = message.toJson();
+  std::replace(json.begin(), json.end(), '"', '\'');
+  OSXWebView::getInstance()->eval("handleMessageFromCPP(" + json + ");");
 }
 void MessageBindings::sendMessageToWeb(const LoadResource& message) {
-  // TODO
+  auto json = message.toJson();
+  std::replace(json.begin(), json.end(), '"', '\'');
+  OSXWebView::getInstance()->eval("handleMessageFromCPP(" + json + ");");
 }
 void MessageBindings::sendMessageToWeb(const LoadShaders& message) {
-  // TODO
+  auto json = message.toJson();
+  std::replace(json.begin(), json.end(), '"', '\'');
+  OSXWebView::getInstance()->eval("handleMessageFromCPP(" + json + ");");
 }
 void MessageBindings::sendMessageToWeb(const LoadedShaders& message) {
-  // TODO
+  auto json = message.toJson();
+  std::replace(json.begin(), json.end(), '"', '\'');
+  OSXWebView::getInstance()->eval("handleMessageFromCPP(" + json + ");");
 }
 void MessageBindings::sendMessageToWeb(const LoadedTexture& message) {
-  // TODO
+  auto json = message.toJson();
+  std::replace(json.begin(), json.end(), '"', '\'');
+  OSXWebView::getInstance()->eval("handleMessageFromCPP(" + json + ");");
 }
 void MessageBindings::sendMessageToWeb(const MissingTexture& message) {
-  // TODO
+  auto json = message.toJson();
+  std::replace(json.begin(), json.end(), '"', '\'');
+  OSXWebView::getInstance()->eval("handleMessageFromCPP(" + json + ");");
 }
 void MessageBindings::sendMessageToWeb(const LoadedBSP& message) {
-  // TODO
+  auto json = message.toJson();
+  std::replace(json.begin(), json.end(), '"', '\'');
+  OSXWebView::getInstance()->eval("handleMessageFromCPP(" + json + ");");
 }
 void MessageBindings::sendMessageToWeb(const LoadedTextureOptions& message) {
-  // TODO
+  auto json = message.toJson();
+  std::replace(json.begin(), json.end(), '"', '\'');
+  OSXWebView::getInstance()->eval("handleMessageFromCPP(" + json + ");");
 }
 #else
 ////////////////////////////////////////////////
@@ -42,7 +61,7 @@ void MessageBindings::sendMessageToWeb(const TestMessage& message) {
   }
   MessageHandler.call<void>("handleMessageFromCPP", emscripten::val(message.toJson()));
 }
-void MessageBindings::sendMessageToWeb(const CPPLoaded& message) {
+void MessageBindings::sendMessageToWeb(const TSLoaded& message) {
   emscripten::val MessageHandler = emscripten::val::global("MessageHandler");
   if (!MessageHandler.as<bool>()) {
     cerr << "No global MessageHandler\n";
@@ -114,8 +133,8 @@ void MessagesFromWeb::sendMessage(const json& j) {
       handler->handleMessageFromWeb(message);
     }
   }
-  if (j["type"] == "CPPLoaded") {
-    auto message = CPPLoaded::fromJson(j);
+  if (j["type"] == "TSLoaded") {
+    auto message = TSLoaded::fromJson(j);
     for (const auto& handler : _handlers) {
       handler->handleMessageFromWeb(message);
     }

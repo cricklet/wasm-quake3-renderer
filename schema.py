@@ -8,7 +8,7 @@ messages = [
     ('text', 'string')
   ]),
 
-  ('CPPLoaded', []),
+  ('TSLoaded', []),
 
   ('LoadResource', [
     ('url', 'string'),

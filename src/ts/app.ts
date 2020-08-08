@@ -183,10 +183,6 @@ window.MessageHandler = {
     const message = parseMessage(json)
     console.log('CPP => TS w/', message)
     switch (message.type) {
-      case 'CPPLoaded': {
-        start()
-        break
-      }
       case 'LoadResource': {
         loadResource(message)
         break
@@ -199,10 +195,7 @@ window.MessageHandler = {
   }
 }
 
-async function start() {
-  sendMessageFromWeb({
-    type: "TestMessage",
-    text: "start() called in TS"
-  })
-}
-
+// TODO only send this if we're in the XCode build??? Not sure yet.
+sendMessageFromWeb({
+  type: "TSLoaded"
+})

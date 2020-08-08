@@ -8,16 +8,11 @@
 #include "scenario.h"
 
 App::App() {
-  // _messageLogger = make_shared<MessageLogger>();
+  _messageLogger = make_shared<MessageLogger>();
+  MessagesFromWeb::getInstance()->registerHandler(_messageLogger);
 
-  // MessagesFromWeb::getInstance()->registerHandler(_messageLogger);
-  // MessagesFromWeb::getInstance()->registerHandler(ResourceManager::getInstance());
-
-  // MessageBindings::sendMessageToWeb(CPPLoaded{});
-  // MessageBindings::sendMessageToWeb(TestMessage{ "main() called in CPP" });
-
-  _currentScenario = make_shared<TestScenario>();
-  // _currentScenario = make_shared<PopTartScenario>();
+  // _currentScenario = make_shared<TestScenario>();
+  _currentScenario = make_shared<PopTartScenario>();
   // _currentScenario = make_shared<BSPScenario>();
 }
 

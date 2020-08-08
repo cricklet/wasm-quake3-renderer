@@ -1,5 +1,7 @@
 #include "support.h"
 #include "osx_helpers.h"
+#include "bindings.h"
+#include "binding_helpers.h"
 #include "app.h"
 
 
@@ -10,6 +12,18 @@ static void loop(webview_t webview, void* arg) {
   OSXWebView::getInstance()->queueDispatch(loop);
   loopCallback();
 }
+
+shared_ptr<App> app = nullptr;
+
+
+struct AppStarter : IMessageHandler {
+public:
+  void handleMessageFromWeb(const TSLoaded& message) override {
+    cout << "finally loaded webview. let's start the app!";
+    assert(!app);
+    app = shared_ptr<App>{ new App() };
+  }
+};
 
 int main(int argc, const char * argv[]) {
   // Setup GL window
@@ -33,10 +47,15 @@ int main(int argc, const char * argv[]) {
   printf("Supported GLSL version is %s.\n", (char *)glGetString(GL_SHADING_LANGUAGE_VERSION));
   printf("OpenGL version supported by this platform : %s\n", glGetString(GL_VERSION));
 
-  App app;
+  shared_ptr<AppStarter> appStarter { new AppStarter() };
+  MessagesFromWeb::getInstance()->registerHandler(appStarter);
+
   loopCallback = [&] {
-    if (!glfwWindowShouldClose(window)) {
-      app.loop(window);
+    if (glfwWindowShouldClose(window)) {
+      return;
+    }
+    if (app) {
+      app->loop(window);
     }
   };
 
@@ -44,4 +63,5 @@ int main(int argc, const char * argv[]) {
   OSXWebView::getInstance()->run();
 
   return EXIT_SUCCESS;
+
 }

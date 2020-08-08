@@ -22,6 +22,8 @@ void OSXWebView::run() {
 }
 
 void OSXWebView::eval(std::string javascript) {
+  _w->eval(javascript);
+  _w->resolve("asdf", 0, "asdf");
 }
 
 static OSXWebView* instance = nullptr;

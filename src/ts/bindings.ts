@@ -7,8 +7,8 @@ export interface TestMessage {
   type: 'TestMessage'
   text: string;
 }
-export interface CPPLoaded {
-  type: 'CPPLoaded'
+export interface TSLoaded {
+  type: 'TSLoaded'
 }
 export interface LoadResource {
   type: 'LoadResource'
@@ -51,12 +51,12 @@ export interface LoadedTextureOptions {
   resourceID: number;
   surfaceParamTrans: boolean;
 }
-export type Message = { type: 'Unknown' }  | TestMessage  | CPPLoaded  | LoadResource  | LoadShaders  | LoadedShaders  | LoadedTexture  | MissingTexture  | LoadedBSP  | LoadedTextureOptions 
+export type Message = { type: 'Unknown' }  | TestMessage  | TSLoaded  | LoadResource  | LoadShaders  | LoadedShaders  | LoadedTexture  | MissingTexture  | LoadedBSP  | LoadedTextureOptions 
 export function parseMessage(json: string): Message {
   const val = JSON.parse(json)
   switch (val.type) {
     case 'TestMessage': return val as TestMessage
-    case 'CPPLoaded': return val as CPPLoaded
+    case 'TSLoaded': return val as TSLoaded
     case 'LoadResource': return val as LoadResource
     case 'LoadShaders': return val as LoadShaders
     case 'LoadedShaders': return val as LoadedShaders

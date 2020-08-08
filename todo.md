@@ -92,9 +92,27 @@
  - [x] Create an XCode project
  - [x] Get GLFW working in XCode
  - [x] Get a WebView showing up
- - [ ] Show a triangle on the screen
+ - [x] Show a triangle on the screen
  - [ ] Get mouse-input working
- - [ ] Add bindings from TS <=> C++ in the XCode build
+ - [x] Allow message passing from C++ => TS in the XCode build
+ - [ ] Allow message passing from TS => C++ in the XCode build
+      > TODO, look into:
+      > // Binds a native C callback so that it will appear under the given name as a
+      > // global JavaScript function. Internally it uses webview_init(). Callback
+      > // receives a request string and a user-provided argument pointer. Request
+      > // string is a JSON array of all the arguments passed to the JavaScript
+      > // function.
+      > WEBVIEW_API void webview_bind(webview_t w, const char *name,
+      >                               void (*fn)(const char *seq, const char *req,
+      >                                          void *arg),
+      >                               void *arg);
+      > 
+      > // Allows to return a value from the native binding. Original request pointer
+      > // must be provided to help internal RPC engine match requests with responses.
+      > // If status is zero - result is expected to be a valid JSON result value.
+      > // If status is not zero - result is an error JSON object.
+      > WEBVIEW_API void webview_return(webview_t w, const char *seq, int status,
+      >                                 const char *result);
  - [ ] Setup CMakelists.txt
 
 ## Introduce a React layer

@@ -22,14 +22,14 @@ struct TestMessage {
     };
   }
 };
-struct CPPLoaded {
+struct TSLoaded {
   string toJson() const {
     json j;
-    j["type"] = "CPPLoaded";
+    j["type"] = "TSLoaded";
     return j.dump();
   }
-  static CPPLoaded fromJson(const json& j) {
-    return CPPLoaded {
+  static TSLoaded fromJson(const json& j) {
+    return TSLoaded {
     };
   }
 };
@@ -174,7 +174,7 @@ class IMessageHandler {
 public:
   virtual ~IMessageHandler() {}
   virtual void handleMessageFromWeb(const TestMessage& message) {}
-  virtual void handleMessageFromWeb(const CPPLoaded& message) {}
+  virtual void handleMessageFromWeb(const TSLoaded& message) {}
   virtual void handleMessageFromWeb(const LoadResource& message) {}
   virtual void handleMessageFromWeb(const LoadShaders& message) {}
   virtual void handleMessageFromWeb(const LoadedShaders& message) {}
@@ -185,7 +185,7 @@ public:
 };
 namespace MessageBindings {
   void sendMessageToWeb(const TestMessage& message);
-  void sendMessageToWeb(const CPPLoaded& message);
+  void sendMessageToWeb(const TSLoaded& message);
   void sendMessageToWeb(const LoadResource& message);
   void sendMessageToWeb(const LoadShaders& message);
   void sendMessageToWeb(const LoadedShaders& message);
@@ -199,7 +199,7 @@ public:
   void handleMessageFromWeb(const TestMessage& message) override {
     cout << "TS => CPP w/ " << message.toJson() << "\n";
   }
-  void handleMessageFromWeb(const CPPLoaded& message) override {
+  void handleMessageFromWeb(const TSLoaded& message) override {
     cout << "TS => CPP w/ " << message.toJson() << "\n";
   }
   void handleMessageFromWeb(const LoadResource& message) override {

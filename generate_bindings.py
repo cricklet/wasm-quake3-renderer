@@ -139,9 +139,13 @@ cpp_template = Template("""
 ////////////////////////////////////////////////
 // Native bindings
 
+#include "osx_helpers.h"
+
 {% for (name, values) in messages %}
 void MessageBindings::sendMessageToWeb(const {{ name }}& message) {
-  // TODO
+  auto json = message.toJson();
+  std::replace(json.begin(), json.end(), '"', '\\\'');
+  OSXWebView::getInstance()->eval("handleMessageFromCPP(" + json + ");");
 }
 {% endfor %}
 
