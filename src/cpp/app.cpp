@@ -11,8 +11,8 @@ App::App() {
   _messageLogger = make_shared<MessageLogger>();
   MessagesFromWeb::getInstance()->registerHandler(_messageLogger);
 
-//  _currentScenario = make_shared<TestScenario>();
-   _currentScenario = make_shared<PopTartScenario>();
+  // _currentScenario = make_shared<TestScenario>();
+  _currentScenario = make_shared<PopTartScenario>();
   // _currentScenario = make_shared<BSPScenario>();
 }
 

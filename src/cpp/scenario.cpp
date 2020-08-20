@@ -25,12 +25,22 @@ TextureRenderer::TextureRenderer(TextureRendererMode mode) {
 
 bool TextureRenderer::finishLoading() {
   cout << "TextureRenderer::finishLoading\n";
+
+  ////////////////////////////////////////////////////////////////////////////
+  GLuint vao;
+  glGenVertexArrays(1, &vao);
+  glBindVertexArray(vao);
+
   ////////////////////////////////////////////////////////////////////////////
   // Generate EBO
   glGenBuffers(1, &_ebo);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(_elements), _elements, GL_STATIC_DRAW);
+  
+  if (hasErrors()) {
+    return false;
+  }
 
   ////////////////////////////////////////////////////////////////////////////
   // Generate VBO
@@ -39,6 +49,10 @@ bool TextureRenderer::finishLoading() {
 
   // Copy the vertex data into the vbo
   glBufferData(GL_ARRAY_BUFFER, sizeof(_vertices), _vertices, GL_STATIC_DRAW);
+  
+  if (hasErrors()) {
+    return false;
+  }
 
   ////////////////////////////////////////////////////////////////////////////
   // Get the test shader program
@@ -51,6 +65,10 @@ bool TextureRenderer::finishLoading() {
   // Use the program...
   glLinkProgram(*shaderProgram);
   glUseProgram(*shaderProgram);
+  
+  if (hasErrors()) {
+    return false;
+  }
 
   ////////////////////////////////////////////////////////////////////////////
   // Specify the inputs
@@ -103,21 +121,7 @@ void TextureRenderer::render(vector<GLuint> textureIDs) {
 
 TestScenario::TestScenario() {
 }
-#ifdef __APPLE__
-static const char* testVertexSource =
-R"glsl(#version 330
-in vec2 position;
-void main() {
-  gl_Position = vec4(position, 0.0, 1.0);
-})glsl";
-static const char* testFragmentSource =
-R"glsl(#version 330
-out lowp vec4 outColor;
-void main() {
-  outColor = vec4(1.0, 1.0, 1.0, 1.0);
-}
-)glsl";
-#else
+
 static const char* testVertexSource =
 R"glsl(#version 300 es
 in vec2 position;
@@ -131,7 +135,6 @@ void main() {
   outColor = vec4(1.0, 1.0, 1.0, 1.0);
 }
 )glsl";
-#endif
 
 bool TestScenario::finishLoading() {// Shader sources
   static float vertices[] = {

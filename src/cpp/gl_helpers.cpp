@@ -1,5 +1,7 @@
 #include "gl_helpers.h"
 
+#include <regex>
+
 bool _hasErrors(const char *filename, int line) {
   bool errored = false;
 
@@ -54,6 +56,23 @@ optional<GLuint> GLHelpers::compileShader(const char *fileContents, int fileLeng
 }
 
 optional<GLuint> GLHelpers::compileShaderProgram(const char* vert, int vertLength, const char* frag, int fragLength) {
+#ifdef __APPLE__
+  string fixedVert = vert;
+  if (fixedVert.find("#version 300 es") != std::string::npos) {
+    fixedVert = std::regex_replace(fixedVert, std::regex("#version 300 es"), "#version 330");
+    vert = fixedVert.c_str();
+    vertLength -= 3;
+  }
+
+  string fixedFrag = frag;
+  if (fixedFrag.find("#version 300 es") != std::string::npos) {
+    fixedFrag = std::regex_replace(fixedFrag, std::regex("#version 300 es"), "#version 330");
+    frag = fixedFrag.c_str();
+    fragLength -= 3;
+  }
+#else
+#endif
+
   optional<GLuint> vertShader = compileShader(vert, vertLength, GL_VERTEX_SHADER);
   optional<GLuint> fragShader = compileShader(frag, fragLength, GL_FRAGMENT_SHADER);
 
