@@ -117,7 +117,8 @@ void ResourceManager::handleMessageFromWeb(const MissingTexture& message) {
 
 void ResourceManager::handleMessageFromWeb(const LoadedBSP& message) {
   cout << "adding map for " << message.resourceID << "\n";
-  _map = (const BSPMap*) message.pointer;
+  const auto pointer = (const BSPMap*) message.pointer;
+  _map = pointer;
   _loadingResources.erase(message.resourceID);
 }
 

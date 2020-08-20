@@ -33,7 +33,7 @@ async function loadFile(src: string) {
   const buffer = await blob.arrayBuffer()
 
   const data = new Uint8ClampedArray(buffer)
-  Module.HEAP8.set(data, pointer)
+  window.Module.HEAP8.set(data, pointer)
 
   return {
     pointer,
@@ -58,7 +58,7 @@ async function loadImage(src: string) {
   const image = ctx.getImageData(0, 0, imageBitmap.width, imageBitmap.height);
 
   const pointer = await window.Module.createBuffer(image.width * image.height * 4)
-  Module.HEAP8.set(image.data, pointer)
+  window.Module.HEAP8.set(image.data, pointer)
   return { pointer, width: image.width, height: image.height }
 }
 

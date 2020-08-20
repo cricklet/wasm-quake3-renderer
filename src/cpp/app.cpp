@@ -12,8 +12,8 @@ App::App() {
   MessagesFromWeb::getInstance()->registerHandler(_messageLogger);
 
   // _currentScenario = make_shared<TestScenario>();
-  _currentScenario = make_shared<PopTartScenario>();
-  // _currentScenario = make_shared<BSPScenario>();
+  // _currentScenario = make_shared<PopTartScenario>();
+  _currentScenario = make_shared<BSPScenario>();
 }
 
 void App::loop(GLFWwindow* window) {
