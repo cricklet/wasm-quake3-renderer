@@ -8,6 +8,11 @@ using namespace nlohmann;
 
 struct IMessageHandler;
 
+namespace TypeConverters {
+  json cppToJsonPointer(void* pointer);
+  void* jsonToCppPointer(json value);
+}
+
 namespace MessageBindings {
   void sendMessageToCPP(string value);
 };

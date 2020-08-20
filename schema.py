@@ -8,7 +8,7 @@ messages = [
     ('text', 'string')
   ]),
 
-  ('TSLoaded', []),
+  ('OSXReady', []),
 
   ('LoadResource', [
     ('url', 'string'),

@@ -1,9 +1,26 @@
 import { parseMessage, LoadResource, Message, ResourceType, LoadShaders } from './bindings'
 import { isEmpty } from './helper'
 
+(function () {
+  File.prototype.arrayBuffer = File.prototype.arrayBuffer || arrayBufferPatchForSafari;
+  Blob.prototype.arrayBuffer = Blob.prototype.arrayBuffer || arrayBufferPatchForSafari;
+
+  function arrayBufferPatchForSafari() {
+    return new Promise((resolve) => {
+      let fr = new FileReader();
+      fr.onload = () => {
+        resolve(fr.result);
+      };
+      fr.readAsArrayBuffer(this);
+    })
+  }
+})();
+
 async function loadFile(src: string) {
+  console.warn('loading file', src);
   const blob = await fetch(src).then(resp => resp.blob())
-  const pointer = _CPP_createBuffer(blob.size)
+  console.warn(blob)
+  const pointer = await window.Module.createBuffer(blob.size)
   const buffer = await blob.arrayBuffer()
 
   const data = new Uint8ClampedArray(buffer)
@@ -31,7 +48,7 @@ async function loadImage(src: string) {
   // Get image data
   const image = ctx.getImageData(0, 0, imageBitmap.width, imageBitmap.height);
 
-  const pointer = _CPP_createBuffer(image.width * image.height * 4)
+  const pointer = await window.Module.createBuffer(image.width * image.height * 4)
   Module.HEAP8.set(image.data, pointer)
   return { pointer, width: image.width, height: image.height }
 }
@@ -116,6 +133,7 @@ function findTextureOptions(url: string, manifest: TextureManifest) : TextureOpt
 }
 
 async function loadResource(message: LoadResource) {
+  console.warn('loading resource', message)
   switch (message.resourceType) {
     case ResourceType.BSP_FILE: {
       const { pointer } = await loadFile(message.url)
@@ -174,7 +192,7 @@ async function loadShaders(message: LoadShaders) {
 }
 
 function sendMessageFromWeb(message: Message) {
-  Module.sendMessageToCPP(JSON.stringify(message))
+  window.Module.sendMessageToCPP(JSON.stringify(message))
 }
 
 // Setup bindings
@@ -195,7 +213,20 @@ window.MessageHandler = {
   }
 }
 
-// TODO only send this if we're in the XCode build??? Not sure yet.
-sendMessageFromWeb({
-  type: "TSLoaded"
-})
+document.onreadystatechange = async function() {
+  if (document.readyState === 'complete') {
+    if (window?.isOSX) {
+      // TS loads after C++ in the OSX build. So, we have to inform C++ that
+      // we're ready so the app can start.
+      sendMessageFromWeb({
+        type: "OSXReady"
+      })
+
+      // Try allocating & setting some memory to see that everything works.
+      const pointer = await window.Module.createBuffer(10);
+
+      const data = new Uint8ClampedArray([9,8,7,6,5,4,3,2,1,0])
+      window.Module.HEAP8.set(data, pointer)
+    }
+  }
+}

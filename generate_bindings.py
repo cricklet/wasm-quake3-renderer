@@ -8,19 +8,21 @@ def convert_ts_type(t):
   if t == 'float':
     return 'number'
   if t == 'void*':
-    return 'number'
+    return 'any'
   if t == 'bool':
     return 'boolean'
   return t
 
-def cpp_to_json_cast(t):
+def cpp_to_json_converter(t):
   if t == 'void*':
-    return '(unsigned long)'
+    return 'TypeConverters::cppToJsonPointer'
+    # return '(unsigned long)'
   return ''
 
-def json_to_cpp_cast(t):
+def json_to_cpp_converter(t):
   if t == 'void*':
-    return '(void*)(unsigned long)'
+    return 'TypeConverters::jsonToCppPointer'
+    # return '(void*)(unsigned long)'
   return ''
 
 ts_template = Template("""
@@ -85,22 +87,8 @@ struct {{ name }} {
   {{ property_type }} {{ property_name }};
   {% endfor %}
 
-  string toJson() const {
-    json j;
-    j["type"] = "{{ name }}";
-    {% for (property_name, property_type) in values %}
-    j["{{ property_name }}"] = {{ cpp_to_json_cast(property_type) }} {{ property_name }};
-    {% endfor %}
-    return j.dump();
-  }
-
-  static {{ name }} fromJson(const json& j) {
-    return {{ name }} {
-      {% for (property_name, property_type) in values %}
-      {{ json_to_cpp_cast(property_type) }}j["{{ property_name }}"],
-      {% endfor %}
-    };
-  }
+  string toJson() const;
+  static {{ name }} fromJson(const json& j);
 };
 
 {% endfor %}
@@ -145,7 +133,8 @@ cpp_template = Template("""
 void MessageBindings::sendMessageToWeb(const {{ name }}& message) {
   auto json = message.toJson();
   std::replace(json.begin(), json.end(), '"', '\\\'');
-  OSXWebView::getInstance()->eval("handleMessageFromCPP(" + json + ");");
+  std::string evalString = "window.MessageHandler.handleMessageFromCPP(JSON.stringify(" + json + "));";
+  OSXWebView::getInstance()->eval(evalString);
 }
 {% endfor %}
 
@@ -169,6 +158,27 @@ void MessageBindings::sendMessageToWeb(const {{ name }}& message) {
 
 #endif
 
+{% for (name, values) in messages %}
+
+string {{ name }}::toJson() const {
+  json j;
+  j["type"] = "{{ name }}";
+  {% for (property_name, property_type) in values %}
+  j["{{ property_name }}"] = {{ cpp_to_json_converter(property_type) }}({{ property_name }});
+  {% endfor %}
+  return j.dump();
+}
+
+{{ name }} {{ name }}::fromJson(const json& j) {
+  return {{ name }} {
+    {% for (property_name, property_type) in values %}
+    {{ json_to_cpp_converter(property_type) }}(j["{{ property_name }})"],
+    {% endfor %}
+  };
+}
+
+{% endfor %}
+
 void MessagesFromWeb::sendMessage(const json& j) {
 {% for (name, values) in messages %}
   if (j["type"] == "{{ name }}") {
@@ -182,7 +192,7 @@ void MessagesFromWeb::sendMessage(const json& j) {
 """)
 
 def generate_h_file(messages, enums):
-  h_result = h_template.render(messages=messages, enums=enums, cpp_to_json_cast=cpp_to_json_cast, json_to_cpp_cast=json_to_cpp_cast)
+  h_result = h_template.render(messages=messages, enums=enums, cpp_to_json_converter=cpp_to_json_converter, json_to_cpp_converter=json_to_cpp_converter)
   h_result = '\n'.join([line for line in h_result.split('\n') if line.strip() != ''])
 
   h_file = open('src/cpp/bindings.h', 'w')
@@ -190,7 +200,7 @@ def generate_h_file(messages, enums):
   h_file.write(h_result)
   h_file.close()
 
-  cpp_result = cpp_template.render(messages=messages, enums=enums, cpp_to_json_cast=cpp_to_json_cast, json_to_cpp_cast=json_to_cpp_cast)
+  cpp_result = cpp_template.render(messages=messages, enums=enums, cpp_to_json_converter=cpp_to_json_converter, json_to_cpp_converter=json_to_cpp_converter)
   cpp_result = '\n'.join([line for line in cpp_result.split('\n') if line.strip() != ''])
 
   cpp_file = open('src/cpp/bindings.cpp', 'w')

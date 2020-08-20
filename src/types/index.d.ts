@@ -1,5 +1,6 @@
 declare var Module: {
   sendMessageToCPP: (s: string) => void
+  createBuffer: (bytes: number) => Promise<number>
 } & EmscriptenModule
 
 interface MessageHandler {
@@ -8,6 +9,7 @@ interface MessageHandler {
 
 interface Window {
   MessageHandler: MessageHandler
+  isOSX?: boolean
 }
 
 declare function _CPP_createBuffer(bytes: number): number

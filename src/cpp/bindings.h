@@ -10,68 +10,26 @@ enum ResourceType {
 };
 struct TestMessage {
   string text;
-  string toJson() const {
-    json j;
-    j["type"] = "TestMessage";
-    j["text"] =  text;
-    return j.dump();
-  }
-  static TestMessage fromJson(const json& j) {
-    return TestMessage {
-      j["text"],
-    };
-  }
+  string toJson() const;
+  static TestMessage fromJson(const json& j);
 };
-struct TSLoaded {
-  string toJson() const {
-    json j;
-    j["type"] = "TSLoaded";
-    return j.dump();
-  }
-  static TSLoaded fromJson(const json& j) {
-    return TSLoaded {
-    };
-  }
+struct OSXReady {
+  string toJson() const;
+  static OSXReady fromJson(const json& j);
 };
 struct LoadResource {
   string url;
   ResourceType resourceType;
   int resourceID;
-  string toJson() const {
-    json j;
-    j["type"] = "LoadResource";
-    j["url"] =  url;
-    j["resourceType"] =  resourceType;
-    j["resourceID"] =  resourceID;
-    return j.dump();
-  }
-  static LoadResource fromJson(const json& j) {
-    return LoadResource {
-      j["url"],
-      j["resourceType"],
-      j["resourceID"],
-    };
-  }
+  string toJson() const;
+  static LoadResource fromJson(const json& j);
 };
 struct LoadShaders {
   string vertUrl;
   string fragUrl;
   int resourceID;
-  string toJson() const {
-    json j;
-    j["type"] = "LoadShaders";
-    j["vertUrl"] =  vertUrl;
-    j["fragUrl"] =  fragUrl;
-    j["resourceID"] =  resourceID;
-    return j.dump();
-  }
-  static LoadShaders fromJson(const json& j) {
-    return LoadShaders {
-      j["vertUrl"],
-      j["fragUrl"],
-      j["resourceID"],
-    };
-  }
+  string toJson() const;
+  static LoadShaders fromJson(const json& j);
 };
 struct LoadedShaders {
   int resourceID;
@@ -79,102 +37,39 @@ struct LoadedShaders {
   void* fragPointer;
   int vertLength;
   int fragLength;
-  string toJson() const {
-    json j;
-    j["type"] = "LoadedShaders";
-    j["resourceID"] =  resourceID;
-    j["vertPointer"] = (unsigned long) vertPointer;
-    j["fragPointer"] = (unsigned long) fragPointer;
-    j["vertLength"] =  vertLength;
-    j["fragLength"] =  fragLength;
-    return j.dump();
-  }
-  static LoadedShaders fromJson(const json& j) {
-    return LoadedShaders {
-      j["resourceID"],
-      (void*)(unsigned long)j["vertPointer"],
-      (void*)(unsigned long)j["fragPointer"],
-      j["vertLength"],
-      j["fragLength"],
-    };
-  }
+  string toJson() const;
+  static LoadedShaders fromJson(const json& j);
 };
 struct LoadedTexture {
   int resourceID;
   void* pointer;
   int width;
   int height;
-  string toJson() const {
-    json j;
-    j["type"] = "LoadedTexture";
-    j["resourceID"] =  resourceID;
-    j["pointer"] = (unsigned long) pointer;
-    j["width"] =  width;
-    j["height"] =  height;
-    return j.dump();
-  }
-  static LoadedTexture fromJson(const json& j) {
-    return LoadedTexture {
-      j["resourceID"],
-      (void*)(unsigned long)j["pointer"],
-      j["width"],
-      j["height"],
-    };
-  }
+  string toJson() const;
+  static LoadedTexture fromJson(const json& j);
 };
 struct MissingTexture {
   int resourceID;
-  string toJson() const {
-    json j;
-    j["type"] = "MissingTexture";
-    j["resourceID"] =  resourceID;
-    return j.dump();
-  }
-  static MissingTexture fromJson(const json& j) {
-    return MissingTexture {
-      j["resourceID"],
-    };
-  }
+  string toJson() const;
+  static MissingTexture fromJson(const json& j);
 };
 struct LoadedBSP {
   int resourceID;
   void* pointer;
-  string toJson() const {
-    json j;
-    j["type"] = "LoadedBSP";
-    j["resourceID"] =  resourceID;
-    j["pointer"] = (unsigned long) pointer;
-    return j.dump();
-  }
-  static LoadedBSP fromJson(const json& j) {
-    return LoadedBSP {
-      j["resourceID"],
-      (void*)(unsigned long)j["pointer"],
-    };
-  }
+  string toJson() const;
+  static LoadedBSP fromJson(const json& j);
 };
 struct LoadedTextureOptions {
   int resourceID;
   bool surfaceParamTrans;
-  string toJson() const {
-    json j;
-    j["type"] = "LoadedTextureOptions";
-    j["resourceID"] =  resourceID;
-    j["surfaceParamTrans"] =  surfaceParamTrans;
-    return j.dump();
-  }
-  static LoadedTextureOptions fromJson(const json& j) {
-    return LoadedTextureOptions {
-      j["resourceID"],
-      j["surfaceParamTrans"],
-    };
-  }
+  string toJson() const;
+  static LoadedTextureOptions fromJson(const json& j);
 };
 class IMessageHandler {
 public:
   virtual ~IMessageHandler() {}
   virtual void handleMessageFromWeb(const TestMessage& message) {}
-  virtual void handleMessageFromWeb(const TSLoaded& message) {}
+  virtual void handleMessageFromWeb(const OSXReady& message) {}
   virtual void handleMessageFromWeb(const LoadResource& message) {}
   virtual void handleMessageFromWeb(const LoadShaders& message) {}
   virtual void handleMessageFromWeb(const LoadedShaders& message) {}
@@ -185,7 +80,7 @@ public:
 };
 namespace MessageBindings {
   void sendMessageToWeb(const TestMessage& message);
-  void sendMessageToWeb(const TSLoaded& message);
+  void sendMessageToWeb(const OSXReady& message);
   void sendMessageToWeb(const LoadResource& message);
   void sendMessageToWeb(const LoadShaders& message);
   void sendMessageToWeb(const LoadedShaders& message);
@@ -199,7 +94,7 @@ public:
   void handleMessageFromWeb(const TestMessage& message) override {
     cout << "TS => CPP w/ " << message.toJson() << "\n";
   }
-  void handleMessageFromWeb(const TSLoaded& message) override {
+  void handleMessageFromWeb(const OSXReady& message) override {
     cout << "TS => CPP w/ " << message.toJson() << "\n";
   }
   void handleMessageFromWeb(const LoadResource& message) override {

@@ -2,6 +2,14 @@
 #include "bindings.h"
 
 #ifdef __APPLE__
+
+static json cppToJsonPointer(void* pointer) {
+  return {};
+}
+static void* jsonToCppPointer(json value) {
+  return nullptr;
+}
+
 #else
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
