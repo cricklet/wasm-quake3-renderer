@@ -10,6 +10,12 @@ void MessageBindings::sendMessageToWeb(const TestMessage& message) {
   std::string evalString = "window.MessageHandler.handleMessageFromCPP(JSON.stringify(" + json + "));";
   OSXWebView::getInstance()->eval(evalString);
 }
+void MessageBindings::sendMessageToWeb(const TestPointer& message) {
+  auto json = message.toJson();
+  std::replace(json.begin(), json.end(), '"', '\'');
+  std::string evalString = "window.MessageHandler.handleMessageFromCPP(JSON.stringify(" + json + "));";
+  OSXWebView::getInstance()->eval(evalString);
+}
 void MessageBindings::sendMessageToWeb(const OSXReady& message) {
   auto json = message.toJson();
   std::replace(json.begin(), json.end(), '"', '\'');
@@ -63,6 +69,14 @@ void MessageBindings::sendMessageToWeb(const LoadedTextureOptions& message) {
 // Emscripten bindings
 #include <emscripten/val.h>
 void MessageBindings::sendMessageToWeb(const TestMessage& message) {
+  emscripten::val MessageHandler = emscripten::val::global("MessageHandler");
+  if (!MessageHandler.as<bool>()) {
+    cerr << "No global MessageHandler\n";
+    return;
+  }
+  MessageHandler.call<void>("handleMessageFromCPP", emscripten::val(message.toJson()));
+}
+void MessageBindings::sendMessageToWeb(const TestPointer& message) {
   emscripten::val MessageHandler = emscripten::val::global("MessageHandler");
   if (!MessageHandler.as<bool>()) {
     cerr << "No global MessageHandler\n";
@@ -138,12 +152,23 @@ void MessageBindings::sendMessageToWeb(const LoadedTextureOptions& message) {
 string TestMessage::toJson() const {
   json j;
   j["type"] = "TestMessage";
-  j["text"] =  text;
+  j["text"] = (text);
   return j.dump();
 }
 TestMessage TestMessage::fromJson(const json& j) {
   return TestMessage {
-    j["text"],
+    (j["text"]),
+  };
+}
+string TestPointer::toJson() const {
+  json j;
+  j["type"] = "TestPointer";
+  j["pointer"] = TypeConverters::cppToJsonPointer(pointer);
+  return j.dump();
+}
+TestPointer TestPointer::fromJson(const json& j) {
+  return TestPointer {
+    TypeConverters::jsonToCppPointer(j["pointer"]),
   };
 }
 string OSXReady::toJson() const {
@@ -158,109 +183,115 @@ OSXReady OSXReady::fromJson(const json& j) {
 string LoadResource::toJson() const {
   json j;
   j["type"] = "LoadResource";
-  j["url"] =  url;
-  j["resourceType"] =  resourceType;
-  j["resourceID"] =  resourceID;
+  j["url"] = (url);
+  j["resourceType"] = (resourceType);
+  j["resourceID"] = (resourceID);
   return j.dump();
 }
 LoadResource LoadResource::fromJson(const json& j) {
   return LoadResource {
-    j["url"],
-    j["resourceType"],
-    j["resourceID"],
+    (j["url"]),
+    (j["resourceType"]),
+    (j["resourceID"]),
   };
 }
 string LoadShaders::toJson() const {
   json j;
   j["type"] = "LoadShaders";
-  j["vertUrl"] =  vertUrl;
-  j["fragUrl"] =  fragUrl;
-  j["resourceID"] =  resourceID;
+  j["vertUrl"] = (vertUrl);
+  j["fragUrl"] = (fragUrl);
+  j["resourceID"] = (resourceID);
   return j.dump();
 }
 LoadShaders LoadShaders::fromJson(const json& j) {
   return LoadShaders {
-    j["vertUrl"],
-    j["fragUrl"],
-    j["resourceID"],
+    (j["vertUrl"]),
+    (j["fragUrl"]),
+    (j["resourceID"]),
   };
 }
 string LoadedShaders::toJson() const {
   json j;
   j["type"] = "LoadedShaders";
-  j["resourceID"] =  resourceID;
-  j["vertPointer"] = (unsigned long) vertPointer;
-  j["fragPointer"] = (unsigned long) fragPointer;
-  j["vertLength"] =  vertLength;
-  j["fragLength"] =  fragLength;
+  j["resourceID"] = (resourceID);
+  j["vertPointer"] = TypeConverters::cppToJsonPointer(vertPointer);
+  j["fragPointer"] = TypeConverters::cppToJsonPointer(fragPointer);
+  j["vertLength"] = (vertLength);
+  j["fragLength"] = (fragLength);
   return j.dump();
 }
 LoadedShaders LoadedShaders::fromJson(const json& j) {
   return LoadedShaders {
-    j["resourceID"],
-    (void*)(unsigned long)j["vertPointer"],
-    (void*)(unsigned long)j["fragPointer"],
-    j["vertLength"],
-    j["fragLength"],
+    (j["resourceID"]),
+    TypeConverters::jsonToCppPointer(j["vertPointer"]),
+    TypeConverters::jsonToCppPointer(j["fragPointer"]),
+    (j["vertLength"]),
+    (j["fragLength"]),
   };
 }
 string LoadedTexture::toJson() const {
   json j;
   j["type"] = "LoadedTexture";
-  j["resourceID"] =  resourceID;
-  j["pointer"] = (unsigned long) pointer;
-  j["width"] =  width;
-  j["height"] =  height;
+  j["resourceID"] = (resourceID);
+  j["pointer"] = TypeConverters::cppToJsonPointer(pointer);
+  j["width"] = (width);
+  j["height"] = (height);
   return j.dump();
 }
 LoadedTexture LoadedTexture::fromJson(const json& j) {
   return LoadedTexture {
-    j["resourceID"],
-    (void*)(unsigned long)j["pointer"],
-    j["width"],
-    j["height"],
+    (j["resourceID"]),
+    TypeConverters::jsonToCppPointer(j["pointer"]),
+    (j["width"]),
+    (j["height"]),
   };
 }
 string MissingTexture::toJson() const {
   json j;
   j["type"] = "MissingTexture";
-  j["resourceID"] =  resourceID;
+  j["resourceID"] = (resourceID);
   return j.dump();
 }
 MissingTexture MissingTexture::fromJson(const json& j) {
   return MissingTexture {
-    j["resourceID"],
+    (j["resourceID"]),
   };
 }
 string LoadedBSP::toJson() const {
   json j;
   j["type"] = "LoadedBSP";
-  j["resourceID"] =  resourceID;
-  j["pointer"] = (unsigned long) pointer;
+  j["resourceID"] = (resourceID);
+  j["pointer"] = TypeConverters::cppToJsonPointer(pointer);
   return j.dump();
 }
 LoadedBSP LoadedBSP::fromJson(const json& j) {
   return LoadedBSP {
-    j["resourceID"],
-    (void*)(unsigned long)j["pointer"],
+    (j["resourceID"]),
+    TypeConverters::jsonToCppPointer(j["pointer"]),
   };
 }
 string LoadedTextureOptions::toJson() const {
   json j;
   j["type"] = "LoadedTextureOptions";
-  j["resourceID"] =  resourceID;
-  j["surfaceParamTrans"] =  surfaceParamTrans;
+  j["resourceID"] = (resourceID);
+  j["surfaceParamTrans"] = (surfaceParamTrans);
   return j.dump();
 }
 LoadedTextureOptions LoadedTextureOptions::fromJson(const json& j) {
   return LoadedTextureOptions {
-    j["resourceID"],
-    j["surfaceParamTrans"],
+    (j["resourceID"]),
+    (j["surfaceParamTrans"]),
   };
 }
 void MessagesFromWeb::sendMessage(const json& j) {
   if (j["type"] == "TestMessage") {
     auto message = TestMessage::fromJson(j);
+    for (const auto& handler : _handlers) {
+      handler->handleMessageFromWeb(message);
+    }
+  }
+  if (j["type"] == "TestPointer") {
+    auto message = TestPointer::fromJson(j);
     for (const auto& handler : _handlers) {
       handler->handleMessageFromWeb(message);
     }

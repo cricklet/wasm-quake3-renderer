@@ -1,4 +1,5 @@
 #include "resources.h"
+#include "binding_helpers.h"
 #include "resource_manager.h"
 #include "gl_helpers.h"
 #include "bsp.h"
@@ -16,6 +17,7 @@ shared_ptr<ResourceManager> ResourceManager::_instance = nullptr;
 shared_ptr<ResourceManager> ResourceManager::getInstance() {
   if (!_instance) {
     _instance = make_shared<ResourceManager>();
+    MessagesFromWeb::getInstance()->registerHandler(_instance);
   }
 
   return _instance;

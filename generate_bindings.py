@@ -172,7 +172,7 @@ string {{ name }}::toJson() const {
 {{ name }} {{ name }}::fromJson(const json& j) {
   return {{ name }} {
     {% for (property_name, property_type) in values %}
-    {{ json_to_cpp_converter(property_type) }}(j["{{ property_name }})"],
+    {{ json_to_cpp_converter(property_type) }}(j["{{ property_name }}"]),
     {% endfor %}
   };
 }

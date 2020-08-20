@@ -8,6 +8,10 @@ messages = [
     ('text', 'string')
   ]),
 
+  ('TestPointer', [
+    ('pointer', 'void*')
+  ]),
+
   ('OSXReady', []),
 
   ('LoadResource', [

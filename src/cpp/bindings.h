@@ -13,6 +13,11 @@ struct TestMessage {
   string toJson() const;
   static TestMessage fromJson(const json& j);
 };
+struct TestPointer {
+  void* pointer;
+  string toJson() const;
+  static TestPointer fromJson(const json& j);
+};
 struct OSXReady {
   string toJson() const;
   static OSXReady fromJson(const json& j);
@@ -69,6 +74,7 @@ class IMessageHandler {
 public:
   virtual ~IMessageHandler() {}
   virtual void handleMessageFromWeb(const TestMessage& message) {}
+  virtual void handleMessageFromWeb(const TestPointer& message) {}
   virtual void handleMessageFromWeb(const OSXReady& message) {}
   virtual void handleMessageFromWeb(const LoadResource& message) {}
   virtual void handleMessageFromWeb(const LoadShaders& message) {}
@@ -80,6 +86,7 @@ public:
 };
 namespace MessageBindings {
   void sendMessageToWeb(const TestMessage& message);
+  void sendMessageToWeb(const TestPointer& message);
   void sendMessageToWeb(const OSXReady& message);
   void sendMessageToWeb(const LoadResource& message);
   void sendMessageToWeb(const LoadShaders& message);
@@ -92,6 +99,9 @@ namespace MessageBindings {
 struct MessageLogger : IMessageHandler {
 public:
   void handleMessageFromWeb(const TestMessage& message) override {
+    cout << "TS => CPP w/ " << message.toJson() << "\n";
+  }
+  void handleMessageFromWeb(const TestPointer& message) override {
     cout << "TS => CPP w/ " << message.toJson() << "\n";
   }
   void handleMessageFromWeb(const OSXReady& message) override {

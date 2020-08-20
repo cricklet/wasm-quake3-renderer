@@ -19,8 +19,7 @@ shared_ptr<App> app = nullptr;
 struct AppStarter : IMessageHandler {
 public:
   void handleMessageFromWeb(const OSXReady& message) override {
-    cout << "finally loaded webview. let's start the app!";
-    assert(!app);
+    cout << "finally loaded webview. let's start the app!\n";
     app = shared_ptr<App>{ new App() };
   }
 };

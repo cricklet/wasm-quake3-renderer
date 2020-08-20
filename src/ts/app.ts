@@ -2,6 +2,8 @@ import { parseMessage, LoadResource, Message, ResourceType, LoadShaders } from '
 import { isEmpty } from './helper'
 
 (function () {
+  window.createImageBitmap = window.createImageBitmap  || createImageBitmapForSafari;
+
   File.prototype.arrayBuffer = File.prototype.arrayBuffer || arrayBufferPatchForSafari;
   Blob.prototype.arrayBuffer = Blob.prototype.arrayBuffer || arrayBufferPatchForSafari;
 
@@ -14,12 +16,19 @@ import { isEmpty } from './helper'
       fr.readAsArrayBuffer(this);
     })
   }
+  async function createImageBitmapForSafari(blob: Blob) {
+    return new Promise((resolve,reject) => {
+        let img = document.createElement('img');
+        img.addEventListener('load', function() {
+            resolve(this);
+        });
+        img.src = URL.createObjectURL(blob);
+    });
+  }
 })();
 
 async function loadFile(src: string) {
-  console.warn('loading file', src);
   const blob = await fetch(src).then(resp => resp.blob())
-  console.warn(blob)
   const pointer = await window.Module.createBuffer(blob.size)
   const buffer = await blob.arrayBuffer()
 
@@ -227,6 +236,16 @@ document.onreadystatechange = async function() {
 
       const data = new Uint8ClampedArray([9,8,7,6,5,4,3,2,1,0])
       window.Module.HEAP8.set(data, pointer)
+
+      sendMessageFromWeb({
+        type: "TestMessage",
+        text: "testing testing testing"
+      })
+
+      sendMessageFromWeb({
+        type: "TestPointer",
+        pointer: pointer
+      })
     }
   }
 }

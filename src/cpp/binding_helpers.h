@@ -10,7 +10,9 @@ struct IMessageHandler;
 
 namespace TypeConverters {
   json cppToJsonPointer(void* pointer);
-  void* jsonToCppPointer(json value);
+  void* jsonToCppPointer(const json& value);
+
+  void memcpyJsonDataToJsonPointer(const json& data, const json& pointer);
 }
 
 namespace MessageBindings {

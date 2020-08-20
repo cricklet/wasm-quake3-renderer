@@ -5,8 +5,6 @@
 #include "webview.h"
 #include <iostream>
 
-#include "base64.h"
-
 
 OSXWebView::OSXWebView(std::string url) {
   _w = new webview::webview {true, nullptr};
@@ -24,28 +22,11 @@ OSXWebView::OSXWebView(std::string url) {
   });
 
   _w->bind("_OSXheap8Set", [](std::string arguments) -> std::string {
-    json dataJson = json::parse(arguments).at(0);
-    json pointerJson = json::parse(arguments).at(1);
-    
-    void* decodedPointer;
+    json args = json::parse(arguments);
+    const json& dataJson = args.at(0);
+    const json& pointerJson = args.at(1);
 
-    { // Change the address for decodedPointer
-      string encodedPointer = pointerJson;
-
-      int decodedLength;
-      unsigned char* decoded = unbase64(encodedPointer.c_str(), encodedPointer.size(), &decodedLength);
-      
-      memcpy(&decodedPointer, decoded, decodedLength);
-    }
-    
-    { // Clobber the data at decodedPointer
-      string data = dataJson;
-
-      int decodedLength;
-      unsigned char* decoded = unbase64(data.c_str(), data.size(), &decodedLength);
-
-      memcpy(decodedPointer, decoded, decodedLength);
-    }
+    TypeConverters::memcpyJsonDataToJsonPointer(dataJson, pointerJson);
     
     json result;
     result["success"] = true;
@@ -60,29 +41,15 @@ OSXWebView::OSXWebView(std::string url) {
     for (int i = 0; i < bytes; i ++) {
       ((char*) pointer)[i] = 'a';
     }
+  
+    string encodedPointer = TypeConverters::cppToJsonPointer(pointer);
     
-    int encodedLength;
-    char* encodedString = base64(&pointer, sizeof(void*) / sizeof(unsigned char), &encodedLength);
-    
-    {
-      // Demonstrate decoding
-      int decodedLength;
-      unsigned char* decoded = unbase64(encodedString, encodedLength, &decodedLength);
-      
-      void* decodedPointer;
-      memcpy(&decodedPointer, decoded, decodedLength);
-      
-      assert(decodedPointer == pointer);
-      
-      free(decoded);
-    }
-
     json result;
     result["success"] = true;
-    result["pointer"] = encodedString;
-    
-    free(encodedString);
-    return (std::string) result.dump();
+    result["pointer"] = encodedPointer;
+
+    string resultString = result.dump();
+    return resultString;
   });
 }
 
