@@ -42,7 +42,6 @@ void* TypeConverters::jsonToCppPointer(const json& pointerJson) {
   return decodedPointer;
 }
 
-
 void TypeConverters::memcpyJsonDataToJsonPointer(const json& dataJson, const json& pointerJson) {
   void* decodedPointer = jsonToCppPointer(pointerJson);
   
@@ -59,6 +58,14 @@ void TypeConverters::memcpyJsonDataToJsonPointer(const json& dataJson, const jso
 #else
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
+
+json TypeConverters::cppToJsonPointer(void* pointer) {
+  return (unsigned long) pointer;
+}
+void* TypeConverters::jsonToCppPointer(const json& pointerJson) {
+  return (void*) (unsigned long) pointerJson;
+}
+
 #endif
 
 void MessageBindings::sendMessageToCPP(string value) {
@@ -68,19 +75,20 @@ void MessageBindings::sendMessageToCPP(string value) {
 
 #ifdef __APPLE__
 #else
+unsigned long MessageBindings::createBuffer(int bytes) {
+  cout << "malloc for " <<  bytes << " bytes\n";
+  void* pointer = malloc(bytes * sizeof(char));
+  unsigned long address = (unsigned long) pointer;
+  return address;
+}
+void MessageBindings::destroyBuffer(unsigned long address) {
+  void* pointer = (void*) address;
+  free(pointer);
+}
 EMSCRIPTEN_BINDINGS(my_module) {
   emscripten::function("sendMessageToCPP", &MessageBindings::sendMessageToCPP);
-}
-
-extern "C" {
-  EMSCRIPTEN_KEEPALIVE void* CPP_createBuffer(int bytes) {
-    cout << "malloc for " <<  bytes << " bytes\n";
-    return malloc(bytes * sizeof(char));
-  }
-
-  EMSCRIPTEN_KEEPALIVE void CPP_destroyBuffer(void* pointer) {
-    free(pointer);
-  }
+  emscripten::function("createBuffer", &MessageBindings::createBuffer, emscripten::allow_raw_pointers());
+  emscripten::function("destroyBuffer", &MessageBindings::destroyBuffer, emscripten::allow_raw_pointers());
 }
 #endif
 

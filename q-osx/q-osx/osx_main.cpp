@@ -36,7 +36,7 @@ int main(int argc, const char * argv[]) {
   window = glfwCreateWindow(800, 600, "OpenGL", nullptr, nullptr); // Windowed
   glfwMakeContextCurrent(window);
 
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
   glewExperimental = GL_TRUE;
   glewInit();

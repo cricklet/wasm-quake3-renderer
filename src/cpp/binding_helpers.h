@@ -12,11 +12,19 @@ namespace TypeConverters {
   json cppToJsonPointer(void* pointer);
   void* jsonToCppPointer(const json& value);
 
+#ifdef __APPLE__
   void memcpyJsonDataToJsonPointer(const json& data, const json& pointer);
+#endif
 }
 
 namespace MessageBindings {
   void sendMessageToCPP(string value);
+
+#ifdef __APPLE__
+#else
+static unsigned long createBuffer(int bytes);
+static void destroyBuffer(unsigned long pointer);
+#endif
 };
 
 struct MessagesFromWeb {
