@@ -78,15 +78,10 @@
  - [x] Add a interface HasResources interface
  - [x] Refactor the scenarios etc to use it
 
-## HUD
- - [ ] Create a HUD element that's the same size as the canvas
- - [ ] Draw a crosshair in the center of that HUD
-
 ## Hitscan
  - [x] Detect which face is closest to the player @ the crosshair location
    - [x] What's the interesection distance?
    - [x] Run on all faces (brute force)
- - [ ] Speed up by only checking faces relevant to a player's current location (eg which bsp leaves?)
 
 ## Add OSX as a compliation target
  - [x] Create an XCode project
@@ -99,25 +94,26 @@
  - [x] Get build working in emscripten again
  - [ ] Setup CMakelists.txt
 
-## Introduce a React layer
- - [ ] Add React
- - [ ] Pass some state to TS (at first, just boolean flags & debugging strings)
- - [ ] Show debugging info in React
- - [ ] Allow modifying debugging flags within React
+## Intorduce a debugging front-end
+ - [ ] Add a drop-down that lets you choose which scenario to run
+   - [ ] Each resource needs to be cleaned up.
+ - [ ] Maybe setup React? Mirror some state from C++ into a React store.
+ - [ ] Or... create a console?
 
-## Find out what leaf we're in... render only visible leaves
+## Physics
+ - [ ] Integrate ReactPhysics3D
+ - [ ] Generate static collision objects based on BSP mesh
+ - [ ] Generate dynamic collision object for the player
+ - [ ] WASD should accelerate the player
+ - [ ] :O
 
-## Render collision faces (for debugging)
-
-## Player physics (ground + gravity, walking, jumping)
-
-## Player physics (wall collisions)
-
-## VQ3 physics (strafe jumping!)
-
-## Rendering + lighting player model (3rd person)
+## Player model + 3rd person view
 
 ## Animating player model
+
+## HUD
+
+## VQ3 physics (strafe jumping!)
 
 ## Bots that can navigate
 
