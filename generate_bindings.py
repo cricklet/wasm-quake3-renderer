@@ -15,13 +15,13 @@ def convert_ts_type(t):
 
 def cpp_to_json_converter(t):
   if t == 'void*':
-    return 'TypeConverters::cppToJsonPointer'
+    return 'MemoryHelpers::cppToJsonPointer'
     # return '(unsigned long)'
   return ''
 
 def json_to_cpp_converter(t):
   if t == 'void*':
-    return 'TypeConverters::jsonToCppPointer'
+    return 'MemoryHelpers::jsonToCppPointer'
     # return '(void*)(unsigned long)'
   return ''
 

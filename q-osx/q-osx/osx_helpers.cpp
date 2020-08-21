@@ -7,7 +7,7 @@
 
 #include "base64.h"
 
-json TypeConverters::cppToJsonPointer(void* pointer) {
+json MemoryHelpers::cppToJsonPointer(void* pointer) {
   int encodedLength;
   char* encodedString = base64(&pointer, sizeof(void*) / sizeof(unsigned char), &encodedLength);
   
@@ -29,7 +29,7 @@ json TypeConverters::cppToJsonPointer(void* pointer) {
 
   return result;
 }
-void* TypeConverters::jsonToCppPointer(const json& pointerJson) {
+void* MemoryHelpers::jsonToCppPointer(const json& pointerJson) {
   void* decodedPointer;
 
   { // Change the address for decodedPointer
@@ -44,7 +44,7 @@ void* TypeConverters::jsonToCppPointer(const json& pointerJson) {
   return decodedPointer;
 }
 
-void TypeConverters::memcpyJsonDataToJsonPointer(const json& dataJson, const json& pointerJson) {
+void MemoryHelpers::memcpyJsonDataToJsonPointer(const json& dataJson, const json& pointerJson) {
   void* decodedPointer = jsonToCppPointer(pointerJson);
   
   { // Clobber the data at decodedPointer
@@ -55,6 +55,23 @@ void TypeConverters::memcpyJsonDataToJsonPointer(const json& dataJson, const jso
 
     memcpy(decodedPointer, decoded, decodedLength);
   }
+}
+
+std::string MemoryHelpers::createBuffer(int bytes) {
+  void* pointer = malloc(bytes * sizeof(char));
+
+  // Put some random stuff in pointer
+  for (int i = 0; i < bytes; i ++) {
+    ((char*) pointer)[i] = 'a';
+  }
+
+  return MemoryHelpers::cppToJsonPointer(pointer);
+}
+
+void MemoryHelpers::destroyBuffer(const std::string& pointer) {
+  json pointerJson = pointer;
+  void* decodedPointer = jsonToCppPointer(pointerJson);
+  free(decodedPointer);
 }
 
 OSXWebView::OSXWebView(std::string url) {
@@ -77,7 +94,7 @@ OSXWebView::OSXWebView(std::string url) {
     const json& dataJson = args.at(0);
     const json& pointerJson = args.at(1);
 
-    TypeConverters::memcpyJsonDataToJsonPointer(dataJson, pointerJson);
+    MemoryHelpers::memcpyJsonDataToJsonPointer(dataJson, pointerJson);
     
     json result;
     result["success"] = true;
@@ -86,14 +103,7 @@ OSXWebView::OSXWebView(std::string url) {
 
   _w->bind("_OSXcreateBuffer", [](std::string arguments) -> std::string {
     int bytes = json::parse(arguments).at(0);
-    void* pointer = malloc(bytes * sizeof(char));
-
-    // Put some random stuff in pointer
-    for (int i = 0; i < bytes; i ++) {
-      ((char*) pointer)[i] = 'a';
-    }
-  
-    string encodedPointer = TypeConverters::cppToJsonPointer(pointer);
+    std::string encodedPointer = MemoryHelpers::createBuffer(bytes);
     
     json result;
     result["success"] = true;

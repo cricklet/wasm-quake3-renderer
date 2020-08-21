@@ -163,12 +163,12 @@ TestMessage TestMessage::fromJson(const json& j) {
 string TestPointer::toJson() const {
   json j;
   j["type"] = "TestPointer";
-  j["pointer"] = TypeConverters::cppToJsonPointer(pointer);
+  j["pointer"] = MemoryHelpers::cppToJsonPointer(pointer);
   return j.dump();
 }
 TestPointer TestPointer::fromJson(const json& j) {
   return TestPointer {
-    TypeConverters::jsonToCppPointer(j["pointer"]),
+    MemoryHelpers::jsonToCppPointer(j["pointer"]),
   };
 }
 string OSXReady::toJson() const {
@@ -214,8 +214,8 @@ string LoadedShaders::toJson() const {
   json j;
   j["type"] = "LoadedShaders";
   j["resourceID"] = (resourceID);
-  j["vertPointer"] = TypeConverters::cppToJsonPointer(vertPointer);
-  j["fragPointer"] = TypeConverters::cppToJsonPointer(fragPointer);
+  j["vertPointer"] = MemoryHelpers::cppToJsonPointer(vertPointer);
+  j["fragPointer"] = MemoryHelpers::cppToJsonPointer(fragPointer);
   j["vertLength"] = (vertLength);
   j["fragLength"] = (fragLength);
   return j.dump();
@@ -223,8 +223,8 @@ string LoadedShaders::toJson() const {
 LoadedShaders LoadedShaders::fromJson(const json& j) {
   return LoadedShaders {
     (j["resourceID"]),
-    TypeConverters::jsonToCppPointer(j["vertPointer"]),
-    TypeConverters::jsonToCppPointer(j["fragPointer"]),
+    MemoryHelpers::jsonToCppPointer(j["vertPointer"]),
+    MemoryHelpers::jsonToCppPointer(j["fragPointer"]),
     (j["vertLength"]),
     (j["fragLength"]),
   };
@@ -233,7 +233,7 @@ string LoadedTexture::toJson() const {
   json j;
   j["type"] = "LoadedTexture";
   j["resourceID"] = (resourceID);
-  j["pointer"] = TypeConverters::cppToJsonPointer(pointer);
+  j["pointer"] = MemoryHelpers::cppToJsonPointer(pointer);
   j["width"] = (width);
   j["height"] = (height);
   return j.dump();
@@ -241,7 +241,7 @@ string LoadedTexture::toJson() const {
 LoadedTexture LoadedTexture::fromJson(const json& j) {
   return LoadedTexture {
     (j["resourceID"]),
-    TypeConverters::jsonToCppPointer(j["pointer"]),
+    MemoryHelpers::jsonToCppPointer(j["pointer"]),
     (j["width"]),
     (j["height"]),
   };
@@ -261,13 +261,13 @@ string LoadedBSP::toJson() const {
   json j;
   j["type"] = "LoadedBSP";
   j["resourceID"] = (resourceID);
-  j["pointer"] = TypeConverters::cppToJsonPointer(pointer);
+  j["pointer"] = MemoryHelpers::cppToJsonPointer(pointer);
   return j.dump();
 }
 LoadedBSP LoadedBSP::fromJson(const json& j) {
   return LoadedBSP {
     (j["resourceID"]),
-    TypeConverters::jsonToCppPointer(j["pointer"]),
+    MemoryHelpers::jsonToCppPointer(j["pointer"]),
   };
 }
 string LoadedTextureOptions::toJson() const {
