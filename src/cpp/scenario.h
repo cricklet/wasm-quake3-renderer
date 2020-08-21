@@ -26,6 +26,7 @@ private:
 
   int _shaderResourceID;
 
+  GLuint _vao;
   GLuint _vbo;
   GLuint _ebo;
 
@@ -120,6 +121,8 @@ private:
   GLuint _sceneShader;
   SceneShaderParameters _sceneShaderParams;
 
+  GLuint _vao;
+  
   // For rendering with the scene shader
   vector<VBO> _verticesPerFace;
   vector<VBO> _colorsPerFace;
@@ -137,6 +140,9 @@ private:
   // For rendering FBOs to the screen
   VBO _screenVBO;
   GLuint _screenShader;
+  
+  // For testing
+  int _poptartResourceID;
 
   Camera _camera;
 };

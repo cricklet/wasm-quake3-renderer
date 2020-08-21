@@ -25,11 +25,10 @@ TextureRenderer::TextureRenderer(TextureRendererMode mode) {
 
 bool TextureRenderer::finishLoading() {
   cout << "TextureRenderer::finishLoading\n";
-
-  ////////////////////////////////////////////////////////////////////////////
-  GLuint vao;
-  glGenVertexArrays(1, &vao);
-  glBindVertexArray(vao);
+  
+  // Create a VAO for the attribute configuration
+  glGenVertexArrays(1, &_vao);
+  glBindVertexArray(_vao);
 
   ////////////////////////////////////////////////////////////////////////////
   // Generate EBO
@@ -96,10 +95,14 @@ void TextureRenderer::render(vector<GLuint> textureIDs) {
   }
 
   glUseProgram(*shaderProgram);
+  glBindVertexArray(_vao);
 
   glClearColor(0.0, 0.0, 0.0, 0.0);
   glClear(GL_COLOR_BUFFER_BIT);
 
+  glDisable(GL_DEPTH_TEST);
+  glDepthMask(GL_FALSE);
+  glEnable(GL_BLEND);
   glBlendFunc(GL_ONE, GL_ONE);
 
   for (const auto textureID : textureIDs) {
@@ -143,7 +146,7 @@ bool TestScenario::finishLoading() {// Shader sources
     -0.5f, -0.5f  // Vertex 3 (X, Y)
   };
 
-  // And save the following attribute configuration as a vao (vertex array object)
+  // Create a VAO for the attribute configuration
   GLuint vao;
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
@@ -213,6 +216,12 @@ void PopTartScenario::render() {
 }
 
 BSPScenario::BSPScenario() {
+  // Create a VAO for the attribute configuration
+  // ... I'm honestly not 100% sure how to use VAOs most effectively.
+  GLuint vao;
+  glGenVertexArrays(1, &vao);
+  glBindVertexArray(vao);
+
   _bspResourceID = ResourceManager::nextID();
   ResourceManager::getInstance()->loadResource(this, {
     "./data/aerowalk.bsp",
@@ -225,6 +234,13 @@ BSPScenario::BSPScenario() {
     "./src/glsl/render_scene.vert",
     "./src/glsl/render_scene.frag",
     _sceneShaderResourceID
+  });
+
+  _poptartResourceID = ResourceManager::nextID();
+  ResourceManager::getInstance()->loadResource(this, {
+    "./data/textures/poptart.jpg",
+    ResourceType::IMAGE_FILE,
+    _poptartResourceID
   });
 
   // The compositing renderer registers itself with the ResourceManager and owns it's own
@@ -242,12 +258,17 @@ bool BSPScenario::finishLoading() {
   // The renderable map registers itself with the ResourceManager and owns it's own
   // loading flow.
   _renderableMap = make_shared<RenderableBSP>(mapResource);
+  
+  // Create a VAO for the attribute configuration
+  glGenVertexArrays(1, &_vao);
+  glBindVertexArray(_vao);
 
   // Get the screen size, this will be used for FBOs later
   GLint viewportSize[4];
   glGetIntegerv(GL_VIEWPORT, viewportSize);
   int screenWidth = viewportSize[2];
   int screenHeight = viewportSize[3];
+  cout << "screen size: " << screenWidth << ", " << screenHeight << "\n";
 
   // Load the shader
   _sceneShader = *ResourceManager::getInstance()->getShaderProgram(_sceneShaderResourceID);
@@ -364,40 +385,42 @@ void BSPScenario::render() {
     return;
   }
 
-  optional<HitScanResult> result = HitScan::findFaceIndex(map, _camera.location, _camera.forward());
+   optional<HitScanResult> result = HitScan::findFaceIndex(map, _camera.location, _camera.forward());
 
-  // Render all the solid geometry in the map to the scene-FBO
-  {
-    glUseProgram(_sceneShader);
-    glBindFramebuffer(GL_FRAMEBUFFER, _sceneFBO);
+   // Render all the solid geometry in the map to the scene-FBO
+   {
+     glUseProgram(_sceneShader);
+     glBindFramebuffer(GL_FRAMEBUFFER, _sceneFBO);
+     glBindVertexArray(_vao);
 
-    glEnable(GL_DEPTH_TEST);
-    glDepthMask(GL_TRUE);
-    glDisable(GL_BLEND);
+     glEnable(GL_DEPTH_TEST);
+     glDepthMask(GL_TRUE);
+     glDisable(GL_BLEND);
 
-    glClearColor(0.6, 0.2, 0.6, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+     glClearColor(0.6, 0.2, 0.6, 1.0);
+     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Update camera transform
-    glm::mat4 cameraTransform = glm::lookAt(
-      _camera.location, // location of camera
-      _camera.location + _camera.forward(), // look at
-      glm::vec3(0,0,1)  // camera up vector
-    );
+     // Update camera transform
+     glm::mat4 cameraTransform = glm::lookAt(
+       _camera.location, // location of camera
+       _camera.location + _camera.forward(), // look at
+       glm::vec3(0,0,1)  // camera up vector
+     );
 
-    glUniformMatrix4fv(_sceneShaderParams.unifCameraTransform, 1, GL_FALSE, glm::value_ptr(cameraTransform));
+     glUniformMatrix4fv(_sceneShaderParams.unifCameraTransform, 1, GL_FALSE, glm::value_ptr(cameraTransform));
 
-    // And projection transform
-    glm::mat4 projectionTransform = glm::perspective(glm::radians(86.0f), 1200.0f / 800.0f, 0.5f, 10000.0f);
-    glUniformMatrix4fv(_sceneShaderParams.unifProjTransform, 1, GL_FALSE, glm::value_ptr(projectionTransform));
+     // And projection transform
+     glm::mat4 projectionTransform = glm::perspective(glm::radians(86.0f), 1200.0f / 800.0f, 0.5f, 10000.0f);
+     glUniformMatrix4fv(_sceneShaderParams.unifProjTransform, 1, GL_FALSE, glm::value_ptr(projectionTransform));
 
-    _renderableMap->render(_sceneShaderParams, RenderMode::SOLID, result);
-  }
+     _renderableMap->render(_sceneShaderParams, RenderMode::SOLID, result);
+   }
 
   // Render all the translucent geometry in the map to the effects-FBO
   {
     glUseProgram(_sceneShader);
     glBindFramebuffer(GL_FRAMEBUFFER, _effectsFBO);
+    glBindVertexArray(_vao);
 
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_FALSE);
@@ -411,13 +434,7 @@ void BSPScenario::render() {
 
   // Composite them onto the screen
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  _compositingRenderer->render({_sceneTexture, _effectsTexture});
-
-  // static int x = 0;
-  // x ++;
-  // if (x % 2) {
-  //   _compositingRenderer.render(_sceneTexture);
-  // } else {
-  //   _compositingRenderer.render(_effectsTexture);
-  // }
+   _compositingRenderer->render({_sceneTexture, _effectsTexture});
+  // _compositingRenderer->render({_sceneTexture});
+  // _compositingRenderer->render({*ResourceManager::getInstance()->getTexture(_poptartResourceID)});
 }

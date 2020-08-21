@@ -19,7 +19,7 @@ shared_ptr<App> app = nullptr;
 struct AppStarter : IMessageHandler {
 public:
   void handleMessageFromWeb(const OSXReady& message) override {
-    cout << "finally loaded webview. let's start the app!\n";
+    cout << "loaded webview. let's start the app!\n";
     app = shared_ptr<App>{ new App() };
   }
 };
@@ -36,7 +36,7 @@ int main(int argc, const char * argv[]) {
   window = glfwCreateWindow(800, 600, "OpenGL", nullptr, nullptr); // Windowed
   glfwMakeContextCurrent(window);
 
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   glewExperimental = GL_TRUE;
   glewInit();
@@ -62,5 +62,4 @@ int main(int argc, const char * argv[]) {
   OSXWebView::getInstance()->run();
 
   return EXIT_SUCCESS;
-
 }
