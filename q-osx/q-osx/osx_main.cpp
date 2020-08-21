@@ -36,7 +36,7 @@ int main(int argc, const char * argv[]) {
   window = glfwCreateWindow(800, 600, "OpenGL", nullptr, nullptr); // Windowed
   glfwMakeContextCurrent(window);
 
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
   glewExperimental = GL_TRUE;
   glewInit();
@@ -52,6 +52,19 @@ int main(int argc, const char * argv[]) {
   loopCallback = [&] {
     if (glfwWindowShouldClose(window)) {
       return;
+    }
+    static bool isGrabbed = true;
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+      if (isGrabbed) {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        isGrabbed = false;
+      }
+    }
+    if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS) {
+      if (!isGrabbed) {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        isGrabbed = true;
+      }
     }
     if (app) {
       app->loop(window);
