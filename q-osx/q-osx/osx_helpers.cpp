@@ -5,6 +5,57 @@
 #include "webview.h"
 #include <iostream>
 
+#include "base64.h"
+
+json TypeConverters::cppToJsonPointer(void* pointer) {
+  int encodedLength;
+  char* encodedString = base64(&pointer, sizeof(void*) / sizeof(unsigned char), &encodedLength);
+  
+  {
+    // Demonstrate decoding
+    int decodedLength;
+    unsigned char* decoded = unbase64(encodedString, encodedLength, &decodedLength);
+    
+    void* decodedPointer;
+    memcpy(&decodedPointer, decoded, decodedLength);
+    
+    assert(decodedPointer == pointer);
+    
+    free(decoded);
+  }
+
+  std::string result = encodedString;
+  free(encodedString);
+
+  return result;
+}
+void* TypeConverters::jsonToCppPointer(const json& pointerJson) {
+  void* decodedPointer;
+
+  { // Change the address for decodedPointer
+    string encodedPointer = pointerJson;
+
+    int decodedLength;
+    unsigned char* decoded = unbase64(encodedPointer.c_str(), encodedPointer.size(), &decodedLength);
+    
+    memcpy(&decodedPointer, decoded, decodedLength);
+  }
+  
+  return decodedPointer;
+}
+
+void TypeConverters::memcpyJsonDataToJsonPointer(const json& dataJson, const json& pointerJson) {
+  void* decodedPointer = jsonToCppPointer(pointerJson);
+  
+  { // Clobber the data at decodedPointer
+    string data = dataJson;
+
+    int decodedLength;
+    unsigned char* decoded = unbase64(data.c_str(), data.size(), &decodedLength);
+
+    memcpy(decodedPointer, decoded, decodedLength);
+  }
+}
 
 OSXWebView::OSXWebView(std::string url) {
   _w = new webview::webview {true, nullptr};
@@ -80,3 +131,4 @@ void OSXWebView::setupInstance(std::string url) {
   assert(!instance);
   instance = new OSXWebView(url);
 }
+
