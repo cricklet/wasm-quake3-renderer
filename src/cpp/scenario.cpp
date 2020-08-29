@@ -410,7 +410,7 @@ void BSPScenario::render() {
      glUniformMatrix4fv(_sceneShaderParams.unifCameraTransform, 1, GL_FALSE, glm::value_ptr(cameraTransform));
 
      // And projection transform
-     glm::mat4 projectionTransform = glm::perspective(glm::radians(86.0f), 1200.0f / 800.0f, 5.0f, 1000.0f);
+     glm::mat4 projectionTransform = glm::perspective(glm::radians(86.0f), 1200.0f / 800.0f, 5.0f, 1500.0f);
      glUniformMatrix4fv(_sceneShaderParams.unifProjTransform, 1, GL_FALSE, glm::value_ptr(projectionTransform));
 
      _renderableMap->render(_sceneShaderParams, RenderMode::SOLID, result);
